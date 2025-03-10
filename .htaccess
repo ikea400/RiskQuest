@@ -1,0 +1,11 @@
+RewriteEngine On
+
+# Prévient le routage des fichiers statiques comme les images, stylesheets et les scripts
+RewriteCond %{REQUEST_URI} !\.(png|jpg|webp|gif|jpeg|zip|css|svg|js|pdf)$ [NC]
+
+# Redirection de l'api
+RewriteRule ^api/v1/(?!api\.php/)(.*) /riskquest/api/v1/api.php/$2 [L]
+
+# Redirectiondes pages web
+RewriteRule ^$ /riskquest/assets/html/game.html
+RewriteRule ^([^\/]+)$ /riskquest/assets/html/$1.html [L]

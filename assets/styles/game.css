@@ -1,0 +1,224 @@
+#svg {
+  width: 100%;
+  height: 100%;
+}
+.pays {
+  translate: -3em -10em;
+  scale: 3.5;
+}
+.north-america:hover {
+  stroke-width: 0.8;
+}
+.south-america:hover {
+  stroke-width: 0.8;
+}
+.africa:hover {
+  stroke-width: 0.8;
+}
+.oceania:hover {
+  stroke-width: 0.8;
+}
+.europe:hover {
+  stroke-width: 0.8;
+}
+
+.north-america {
+  fill: rgb(190, 2, 2);
+  stroke: black;
+  stroke-width: 0.3;
+}
+.south-america {
+  fill: rgb(1, 92, 1);
+  stroke: black;
+  stroke-width: 0.3;
+}
+.africa {
+  fill: rgb(116, 11, 11);
+  stroke: black;
+  stroke-width: 0.3;
+}
+.oceania {
+  fill: rgb(225, 255, 90);
+  stroke: black;
+  stroke-width: 0.3;
+}
+.europe {
+  fill: rgb(255, 120, 2);
+  stroke: black;
+  stroke-width: 0.3;
+}
+
+#container-svg {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  top: 5em;
+  bottom: 5em;
+  left: 5em;
+  right: 5em;
+  background-color: rgba(83, 83, 255, 0.664);
+}
+.territoire {
+  transform-box: fill-box;
+}
+
+.selected-territory {
+  stroke: green;
+  stroke-width: 1.5;
+}
+
+.attackable-territory {
+  stroke-width: 1.5;
+}
+
+#hud-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  bottom: 0em;
+  right: 5em;
+  left: 5em;
+}
+
+#hud-side {
+  background-color: transparent;
+}
+
+.side-player {
+  display: flex;
+  flex-direction: row-reverse;
+}
+
+.side-player-color {
+  width: 2em;
+  height: 3em;
+}
+
+.side-player-info {
+  background-color: #062534;
+  width: 3em;
+  color: white;
+}
+
+.side-player-info-troops::before {
+  content: url("../images/person-solid.svg");
+  display: inline-block;
+  height: 1em;
+  width: 1em;
+  margin-right: 5px;
+  fill: white;
+  stroke: white;
+}
+
+.side-player-info-territories::before {
+  content: url("../images/location-dot-solid.svg");
+  display: inline-block;
+  height: 1em;
+  width: 1em;
+  margin-right: 5px;
+}
+
+#turn-hud {
+  display: flex;
+  flex-direction: row;
+}
+
+#turn-hub-img {
+  border-radius: 50%;
+  height: 50px;
+  width: 50px;
+}
+
+#turn-hub-action-img {
+  filter: brightness(0) invert(1);
+  width: 60%; 
+}
+
+
+#turn-hud-action {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%; 
+}
+
+#turn-hud-phase-bars {
+  display: flex;
+  flex-direction: row;
+}
+
+.turn-hud-phase-bar {
+  width: 3em;
+  height: .25em;
+  background-color: gray;
+  margin: 0.25em;
+  border-radius: 1em;
+}
+
+#turn-hud-phase-name {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pastille {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.svg-player1 {
+  fill: #46763c;
+}
+
+.svg-player2 {
+  fill: #8e602c;
+}
+
+.svg-player3 {
+  fill: #917f37;
+}
+
+.svg-player4 {
+  fill: #3d2a46;
+}
+
+.svg-player5 {
+  fill: #32637a;
+}
+
+.svg-player6 {
+  fill: #8d302e;
+}
+
+.background-player1 {
+  background-color: #a2d863;
+}
+
+.background-player2 {
+  background-color: #f27e38;
+}
+
+.background-player3 {
+  background-color: #e8ae25;
+}
+
+.background-player4 {
+  background-color: #714ca6;
+}
+
+.background-player5 {
+  background-color: #40a0ee;
+}
+
+.background-player6 {
+  background-color: #e74344;
+}
