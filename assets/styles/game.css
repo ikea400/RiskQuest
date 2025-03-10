@@ -108,8 +108,7 @@
   height: 1em;
   width: 1em;
   margin-right: 5px;
-  fill: white;
-  stroke: white;
+  filter: brightness(0) invert(1);
 }
 
 .side-player-info-territories::before {
@@ -118,6 +117,7 @@
   height: 1em;
   width: 1em;
   margin-right: 5px;
+  filter: brightness(0) invert(1);
 }
 
 #turn-hud {
@@ -133,9 +133,8 @@
 
 #turn-hub-action-img {
   filter: brightness(0) invert(1);
-  width: 60%; 
+  width: 60%;
 }
-
 
 #turn-hud-action {
   display: flex;
@@ -143,7 +142,7 @@
   align-items: center;
   width: 50px;
   height: 50px;
-  border-radius: 50%; 
+  border-radius: 50%;
 }
 
 #turn-hud-phase-bars {
@@ -153,7 +152,7 @@
 
 .turn-hud-phase-bar {
   width: 3em;
-  height: .25em;
+  height: 0.25em;
   background-color: gray;
   margin: 0.25em;
   border-radius: 1em;
