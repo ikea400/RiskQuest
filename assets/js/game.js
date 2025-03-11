@@ -32,7 +32,7 @@ function rollDice() {
 }
 
 function rollDices(count) {
-  return Array.from({ length: count }, (_, i) => rollDice());
+  return Array.from({ length: count }, rollDice);
 }
 
 /**
@@ -437,11 +437,13 @@ function removeTroopsFromTerritory(territoireId, troopsCount) {
 
   territoiresList[territoireId].troops -= troopsCount;
   updatePastilleTroopsCount(territoireId);
+  updatePlayerHudTroopsCount(territoiresList[territoireId].playerId);
 }
 
 function addTroopsToTerritory(territoireId, troopsCount) {
   territoiresList[territoireId].troops += troopsCount;
   updatePastilleTroopsCount(territoireId);
+  updatePlayerHudTroopsCount(territoiresList[territoireId].playerId);
 }
 
 function checkPlayerDeadState(playerId) {
