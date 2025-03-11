@@ -66,34 +66,43 @@ function getRandomStartingPlayer(playerCount) {
  * @returns {Array} [defenderLostTroops, attackerLostTroops] - The troop losses for the defender and attacker, respectively.
  */
 function blitzAttack(defenderTroopsCount, attackerTroopsCount) {
-  // Determine the minimum number of dice rolls to compare
-  const keepingCount = Math.min(defenderTroopsCount, attackerTroopsCount);
+  console.log(`blitzAttack(${defenderTroopsCount}, ${attackerTroopsCount})`);
+  let defenderTotalLostTroops = 0;
+  let attackerTotalLostTroops = 0;
+  while (defenderTroopsCount > 0 && attackerTroopsCount > 0) {
+    // Determine the minimum number of dice rolls to compare
+    const keepingCount = Math.min(defenderTroopsCount, attackerTroopsCount);
 
-  // Roll dice for the defender, sort in ascending order, and keep the smallest rolls
-  const defenderDices = rollDices(defenderTroopsCount)
-    .sort((a, b) => a - b)
-    .slice(0, keepingCount);
+    // Roll dice for the defender, sort in descending order, and keep the biggest rolls
+    const defenderDices = rollDices(defenderTroopsCount)
+      .sort((a, b) => b - a)
+      .slice(0, keepingCount);
 
-  // Roll dice for the attacker, sort in ascending order, and keep the smallest rolls
-  const attackerDices = rollDices(attackerTroopsCount)
-    .sort((a, b) => a - b)
-    .slice(0, keepingCount);
+    // Roll dice for the attacker, sort in descending order, and keep the biggest rolls
+    const attackerDices = rollDices(attackerTroopsCount)
+      .sort((a, b) => b - a)
+      .slice(0, keepingCount);
 
-  // Initialize counters for troop losses
-  let defenderLostTroops = 0;
-  let attackerLostTroops = 0;
+    // Initialize counters for troop losses
+    let defenderLostTroops = 0;
+    let attackerLostTroops = 0;
 
-  // Compare dice rolls to determine troop losses
-  for (let i = 0; i < keepingCount; i++) {
-    if (attackerDices[i] > defenderDices[i]) {
-      defenderLostTroops++; // Defender loses a troop
-    } else {
-      attackerLostTroops++; // Attacker loses a troop
+    // Compare dice rolls to determine troop losses
+    for (let i = 0; i < keepingCount; i++) {
+      if (attackerDices[i] > defenderDices[i]) {
+        defenderLostTroops++; // Defender loses a troop
+      } else {
+        attackerLostTroops++; // Attacker loses a troop
+      }
     }
-  }
 
+    defenderTroopsCount -= defenderLostTroops;
+    attackerTroopsCount -= attackerLostTroops;
+    defenderTotalLostTroops += defenderLostTroops;
+    attackerTotalLostTroops += attackerLostTroops;
+  }
   // Return the troop losses for both sides
-  return [defenderLostTroops, attackerLostTroops];
+  return [defenderTotalLostTroops, attackerTotalLostTroops];
 }
 
 /**
@@ -217,6 +226,7 @@ const playersList = [
   },
 ];
 
+let currentPlayerCount = undefined;
 let currentPlayerId = 1;
 let selectedTerritoire = undefined;
 let currentPhase = EPhases.ATTACK;
@@ -286,9 +296,9 @@ function countPlayerTroops(playerId) {
 function takeOverTerritory(territoryId, playerId, troopsCount) {
   console.log(`takeOverTerritory(${territoryId}, ${playerId}, ${troopsCount})`);
   let player = playersList[playerId];
-  if (player.troops <= 0) {
+  if (player.troops < troopsCount) {
     throw new Error(
-      `player${playerId} tried to take a territory with no troops left`
+      `player${playerId} tried to take a territory with not enough troops left`
     );
   }
 
@@ -300,15 +310,50 @@ function takeOverTerritory(territoryId, playerId, troopsCount) {
   }
 
   let oldOwnerId = territoire.playerId;
-  territoire.playerId = playerId;
-  territoire.troops = 0;
-
-  updateTerritoryColor(territoryId, playerId);
+  updateTerritoryOwer(territoryId, playerId);
 
   if (oldOwnerId) updatePlayersHudTerritoireCount(oldOwnerId);
   updatePlayersHudTerritoireCount(playerId);
 
   moveTroopsFromPlayer(territoryId, playerId, troopsCount);
+}
+
+function takeOverTerritoryFromTerritory(
+  fromTerritoireId,
+  territoryId,
+  playerId,
+  troopsCount
+) {
+  console.log(
+    `takeOverTerritoryFromTerritory(${fromTerritoireId}, ${territoryId}, ${playerId}, ${troopsCount})`
+  );
+
+  let fromTerritoire = territoiresList[fromTerritoireId];
+  if (fromTerritoire.playerId !== playerId) {
+    throw new Error(
+      `player${playerId} tried to take a territory from a territory that he didnt owned`
+    );
+  }
+  if (fromTerritoire.troops <= troopsCount) {
+    throw new Error(
+      `player${playerId} tried to take a territory from a territory with not enough troops left`
+    );
+  }
+
+  let territoire = territoiresList[territoryId];
+  if (territoire.playerId === playerId) {
+    throw new Error(
+      `player${playerId} tried to take a territory that he had already`
+    );
+  }
+
+  let oldOwnerId = territoire.playerId;
+  updateTerritoryOwer(territoryId, playerId);
+
+  if (oldOwnerId) updatePlayersHudTerritoireCount(oldOwnerId);
+  updatePlayersHudTerritoireCount(playerId);
+
+  moveTroopsFromTerritory(fromTerritoireId, territoryId, playerId, troopsCount);
 }
 
 function moveTroopsFromPlayer(territoireId, playerId, troopsCount) {
@@ -330,8 +375,8 @@ function moveTroopsFromPlayer(territoireId, playerId, troopsCount) {
   }
 
   player.troops -= troopsCount;
-  territoire.troops += troopsCount;
-  updatePastilleTroopsCount(territoireId);
+  addTroopsToTerritory(territoireId, troopsCount);
+  updatePhaseTroopsCount(player.troops);
 }
 
 function moveTroopsFromTerritory(
@@ -366,10 +411,35 @@ function moveTroopsFromTerritory(
     );
   }
 
-  territoire.troops += troopsCount;
-  fromTerritoire.troops -= troopsCount;
+  removeTroopsFromTerritory(fromTerritoireId, troopsCount);
+  addTroopsToTerritory(territoireId, troopsCount);
+}
+
+function removeTroopsFromTerritory(territoireId, troopsCount) {
+  if (territoiresList[territoireId].troops < troopsCount) {
+    throw new Error(
+      `Error: removeTroopsFromTerritory tried to remove ${troopsCount} troops from ${territoireId} with only ${territoiresList[territoireId].troops} troops`
+    );
+  }
+
+  territoiresList[territoireId].troops -= troopsCount;
   updatePastilleTroopsCount(territoireId);
-  updatePastilleTroopsCount(fromTerritoireId);
+}
+
+function addTroopsToTerritory(territoireId, troopsCount) {
+  territoiresList[territoireId].troops += troopsCount;
+  updatePastilleTroopsCount(territoireId);
+}
+
+function checkPlayerDeadState(playerId) {
+  return !Object.values(territoiresList).some(
+    (territoire) => territoire.playerId === playerId
+  );
+}
+
+function updatePlayerDeadState(playerId, dead) {
+  playersList[playerId].dead = dead;
+  document.getElementById(`side-player-info-${playerId}`).hidden = dead;
 }
 
 function initializePlayersHud(playerCount) {
@@ -379,7 +449,7 @@ function initializePlayersHud(playerCount) {
     const troopsCount = countPlayerTroops(playerId);
     hudContent += `<div class="side-player">
         <div class="background-player${playerId} side-player-color"></div>
-        <div class="side-player-info">
+        <div class="side-player-info" id="side-player-info-${playerId}">
             <div class="side-player-info-troops" id="side-player-info-troops-${playerId}">${troopsCount}</div>
             <div class="side-player-info-territories" id="side-player-info-territories-${playerId}">${territoireCount}</div>
         </div>
@@ -429,7 +499,7 @@ function updatePhaseHudPlayer(oldPlayerId, playerId) {
 function updateCurrentPhase(phase) {
   if (phase === currentPhase) {
     throw new Error(
-      `updateCurrentPhase was called with the same phase as the current one: ${phase}`
+      `updateCurrentPhase was called with the same phase as the current one: ${phase.description}`
     );
   }
 
@@ -448,8 +518,32 @@ function updateCurrentPhase(phase) {
   const turnHudPhaseName = document.getElementById("turn-hud-phase-name");
   turnHudPhaseName.innerText = phase.description;
 
+  if (phase === EPhases.DRAFT) {
+    const turnHubActionImg = document.getElementById("turn-hub-action-img");
+    turnHubActionImg.src = "./assets/images/person-solid.svg";
+    const turnHubActionTroopsCount = document.getElementById(
+      "turn-hub-action-troops-count"
+    );
+    turnHubActionTroopsCount.hidden = false;
+    turnHubActionTroopsCount.innerText = playersList[currentPlayerId].troops;
+  } else if (currentPhase === EPhases.DRAFT) {
+    const turnHubActionImg = document.getElementById("turn-hub-action-img");
+    turnHubActionImg.src = "./assets/images/chevrons-right-solid.svg";
+    const turnHubActionTroopsCount = document.getElementById(
+      "turn-hub-action-troops-count"
+    );
+    turnHubActionTroopsCount.hidden = true;
+  }
+
   // Update the current phase
   currentPhase = phase;
+}
+
+function updatePhaseTroopsCount(troopsCount) {
+  const turnHubActionTroopsCount = document.getElementById(
+    "turn-hub-action-troops-count"
+  );
+  turnHubActionTroopsCount.innerText = troopsCount;
 }
 
 function setCurrentPlayer(playerId) {
@@ -472,6 +566,10 @@ function setCurrentPlayer(playerId) {
   updatePhaseHudPlayer(currentPlayerId, playerId);
 
   currentPlayerId = playerId;
+}
+
+function getNextplayerId(playerId, playerCount) {
+  return (playerId % playerCount) + 1;
 }
 
 function createPastille(territoireId, playerId) {
@@ -499,10 +597,9 @@ function createPastille(territoireId, playerId) {
   document.body.appendChild(newDiv);
 }
 
-function updateTerritoryColor(territoireId, playerId) {
+function updateTerritoryOwer(territoireId, playerId) {
   const territoire = territoiresList[territoireId];
-  let territoireSvg = document.getElementById(territoireId);
-
+  const territoireSvg = document.getElementById(territoireId);
   if (territoire.playerId)
     territoireSvg.classList.remove(`svg-player${territoire.playerId}`);
   territoireSvg.classList.add(`svg-player${playerId}`);
@@ -513,6 +610,9 @@ function updateTerritoryColor(territoireId, playerId) {
   } else {
     changeBackgroundPlayer(pastille, territoire.playerId, playerId);
   }
+
+  territoire.troops = 0;
+  territoire.playerId = playerId;
 }
 
 function updatePastilleTroopsCount(territoireId) {
@@ -540,7 +640,7 @@ function startTurnTerritoriesSelection(playerCount, callback) {
       Object.values(territoiresList).some((territoire) => !territoire.playerId)
     ) {
       // Some unselected territories remain
-      playerId = (playerId % playerCount) + 1;
+      playerId = getNextplayerId(playerId, playerCount);
       setCurrentPlayer(playerId);
     } else {
       // All territories where selected
@@ -563,7 +663,7 @@ function startRandomTerritoryDistribution(playerCount) {
     takeOverTerritory(territoires[territoireIndex], playerId, 1);
     territoires.splice(territoireIndex, 1);
 
-    playerId = (playerId % playerCount) + 1;
+    playerId = getNextplayerId(playerId, playerCount);
   } while (territoires.length > 0);
 }
 
@@ -633,6 +733,7 @@ function addTroops(playerId, troopsCount) {
   let player = playersList[playerId];
   player.troops += troopsCount;
   updatePlayerHudTroopsCount(playerId);
+  updatePhaseTroopsCount(player.troops);
 }
 
 function setSelectedTerritoire(territoireId) {
@@ -646,14 +747,130 @@ function startDraftPhase(callback) {
   console.log("startDraftPhase");
   updateCurrentPhase(EPhases.DRAFT);
 
+  // Récupère les térritoires possédé par le joueur
   const ownedTerritoriesIds = Object.keys(territoiresList).filter(
     (territoireId) => territoiresList[territoireId].playerId === currentPlayerId
   );
 
+  // Calcule le nombre de nouvelle troop de la phase draft
   const newTroops = countNewTroops(ownedTerritoriesIds, currentPlayerId);
 
+  // Ajouter les troupes
   addTroops(currentPlayerId, newTroops);
 
+  function territoireHandler() {
+    moveTroopsFromPlayer(this.id, currentPlayerId, 1);
+
+    // Tous les pieces ont été placé
+    if (playersList[currentPlayerId].troops <= 0) {
+      // Enlever tous les listener sur les territoires
+      for (const territoire of ownedTerritoriesIds) {
+        document
+          .getElementById(territoire)
+          .removeEventListener("click", territoireHandler);
+      }
+
+      setAttackableTerritoires([]);
+      startAttackPhase(callback);
+    }
+  }
+
+  // Enregistre le territoireHandler sur tous les territoires
+  for (const territoire of ownedTerritoriesIds) {
+    document
+      .getElementById(territoire)
+      .addEventListener("click", territoireHandler);
+  }
+  setAttackableTerritoires(ownedTerritoriesIds);
+}
+
+function setAttackableTerritoires(territoiresId) {
+  removeCssClass("attackable-territory");
+  for (const territoireId of territoiresId) {
+    document.getElementById(territoireId).classList.add("attackable-territory");
+  }
+}
+
+function startAttackPhase(callback) {
+  console.log("startAttackPhase");
+  updateCurrentPhase(EPhases.ATTACK);
+
+  const territoriesIds = Object.keys(territoiresList);
+  const territoiresSvgs = territoriesIds.map((territoireId) =>
+    document.getElementById(territoireId)
+  );
+
+  const turnHudAction = document.getElementById("turn-hud-action");
+  function nextHandler() {
+    setSelectedTerritoire(null);
+    setAttackableTerritoires([]);
+    turnHudAction.removeEventListener("click", nextHandler);
+    for (const territoireSvg of territoiresSvgs) {
+      territoireSvg.removeEventListener("click", territoireHandler);
+    }
+    startFortifyPhase(callback);
+  }
+  turnHudAction.addEventListener("click", nextHandler);
+
+  function territoireHandler() {
+    if (territoiresList[this.id].playerId === currentPlayerId) {
+      selectedTerritoire = this.id;
+      setAttackableTerritoires(getAttackableNeighbour(this.id));
+    }
+    if (!selectedTerritoire) {
+      return;
+    }
+
+    const attackables = getAttackableNeighbour(selectedTerritoire);
+    if (!attackables.includes(this.id)) {
+      return;
+    }
+
+    const defenderTerritoireId = this.id;
+    const attackerTerritoireId = selectedTerritoire;
+
+    // Calculer le nombre de troops perdu des deux bords.
+    [defenderLostTroops, attackerLostTroops] = blitzAttack(
+      territoiresList[defenderTerritoireId].troops,
+      territoiresList[attackerTerritoireId].troops - 1
+    );
+    console.log(defenderLostTroops, attackerLostTroops);
+    // Enlever les troops
+    if (defenderLostTroops > 0)
+      removeTroopsFromTerritory(defenderTerritoireId, defenderLostTroops);
+    if (attackerLostTroops > 0)
+      removeTroopsFromTerritory(attackerTerritoireId, attackerLostTroops);
+
+    if (territoiresList[defenderTerritoireId].troops <= 0) {
+      const defenderPlayerId = territoiresList[defenderTerritoireId].playerId;
+      takeOverTerritoryFromTerritory(
+        attackerTerritoireId,
+        defenderTerritoireId,
+        currentPlayerId,
+        territoiresList[attackerTerritoireId].troops - 1
+      );
+
+      updatePlayerDeadState(
+        defenderPlayerId,
+        checkPlayerDeadState(defenderPlayerId)
+      );
+    }
+
+    setSelectedTerritoire(null);
+    setAttackableTerritoires([]);
+  }
+
+  for (const territoireSvg of territoiresSvgs) {
+    territoireSvg.addEventListener("click", territoireHandler);
+  }
+}
+
+function startFortifyPhase(callback) {
+  console.log("startFortifyPhase");
+  /*
+  const ownedTerritoriesIds = Object.keys(territoiresList).filter(
+    (territoireId) => territoiresList[territoireId].playerId === currentPlayerId
+  );
   const territoiresSvgs = ownedTerritoriesIds.map((territoireId) =>
     document.getElementById(territoireId)
   );
@@ -661,7 +878,7 @@ function startDraftPhase(callback) {
   const turnHudAction = document.getElementById("turn-hud-action");
   function nextHandler() {
     setSelectedTerritoire(null);
-    turnHudAction.removeEventListener("click", turnHudAction);
+    turnHudAction.removeEventListener("click", nextHandler);
     for (const territoireSvg of territoiresSvgs) {
       territoireSvg.removeEventListener("click", territoireHandler);
     }
@@ -694,107 +911,30 @@ function startDraftPhase(callback) {
   for (const territoireSvg of territoiresSvgs) {
     territoireSvg.addEventListener("click", territoireHandler);
   }
-}
-
-function setAttackableTerritoires(territoiresId) {
-  removeCssClass("attackable-territory");
-  for (const territoireId of territoiresId) {
-    document.getElementById(territoireId).classList.add("attackable-territory");
-  }
-}
-
-function startAttackPhase(callback) {
-  console.log("startAttackPhase");
-  updateCurrentPhase(EPhases.ATTACK);
-
-  const territoriesIds = Object.keys(territoiresList);
-  const territoiresSvgs = territoriesIds.map((territoireId) =>
-    document.getElementById(territoireId)
-  );
-
-  const turnHudAction = document.getElementById("turn-hud-action");
-  function nextHandler() {
-    setSelectedTerritoire(null);
-    setAttackableTerritoires([]);
-    turnHudAction.removeEventListener("click", turnHudAction);
-    for (const territoireSvg of territoiresSvgs) {
-      territoireSvg.removeEventListener("click", territoireHandler);
-    }
-    startFortifyPhase(callback);
-  }
-  turnHudAction.addEventListener("click", nextHandler);
-
-  function territoireHandler() {
-    if (territoiresList[this.id].playerId === currentPlayerId) {
-      selectedTerritoire = this.id;
-      setAttackableTerritoires(getAttackableNeighbour(this.id));
-    }
-    if (!selectedTerritoire) {
-      return;
-    }
-
-    const attackables = getAttackableNeighbour(selectedTerritoire);
-    if (!attackables.includes(this.id)) {
-      return;
-    }
-
-    console.log(
-      blitzAttack(
-        territoiresList[this.id].troops,
-        territoiresList[selectedTerritoire].troops - 1
-      )
-    );
-
-    setSelectedTerritoire(null);
-    setAttackableTerritoires([]);
-  }
-
-  for (const territoireSvg of territoiresSvgs) {
-    territoireSvg.addEventListener("click", territoireHandler);
-  }
-
-  // const turnHudAction = document.getElementById("turn-hud-action");
-  // function nextHandler() {
-  //   setSelectedTerritoire(null);
-  //   turnHudAction.removeEventListener("click", turnHudAction);
-  //   for (const territoireSvg of territoiresSvgs) {
-  //     territoireSvg.removeEventListener("click", territoireHandler);
-  //   }
-
-  //   startFortifyPhase(callback);
-  // }
-  // turnHudAction.addEventListener("click", nextHandler);
-
-  // function territoireHandler() {
-  //   if (!selectedTerritoire) {
-  //     setSelectedTerritoire(this.id);
-  //     return;
-  //   }
-
-  //   const attackables = getAttackableNeighbour(selectedTerritoire);
-  //   if (attackables.includes(this.id)) {
-  //     console.log("Attacking");
-
-  //     console.log(blitzAttack(territoiresList[this.id].troops, territoiresList[selectedTerritoire].troops - 1));
-  //     setSelectedTerritoire(null);
-  //   } else {
-  //     setSelectedTerritoire(this.id);
-  //   }
-  // }
-
-  // for (const territoireSvg of territoiresSvgs) {
-  //   territoireSvg.addEventListener("click", territoireHandler);
-  // }
-}
-
-function startFortifyPhase(callback) {
-  console.log("startFortifyPhase");
-  gameFinished = true;
+  */
   callback();
 }
 
 function startOneRound(callback) {
-  startDraftPhase(callback);
+  startDraftPhase(() => {
+    if (!gameFinished) {
+      let nextPlayerId = currentPlayerId;
+      do {
+        nextPlayerId = getNextplayerId(nextPlayerId, currentPlayerCount);
+        console.log(nextPlayerId, playersList[nextPlayerId]);
+      } while (
+        playersList[nextPlayerId].dead &&
+        nextPlayerId !== currentPlayerId
+      );
+
+      if (nextPlayerId === currentPlayerId) {
+        gameFinished = true;
+      } else {
+        setCurrentPlayer(nextPlayerId);
+      }
+    }
+    callback();
+  });
 }
 
 function startMainLoop(callback) {
@@ -811,6 +951,7 @@ function startMainLoop(callback) {
 
 document.addEventListener("DOMContentLoaded", function () {
   const playerCount = 6;
+  currentPlayerCount = playerCount;
 
   // Initialization des troops
   for (let i = 1; i <= playerCount; i++) {
@@ -835,7 +976,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let containerPays = document.getElementById("pays-background");
   containerPays.addEventListener("click", function () {
-    selectedTerritoire(null);
+    setSelectedTerritoire(null);
     setAttackableTerritoires([]);
   });
 
