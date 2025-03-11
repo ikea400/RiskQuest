@@ -74,14 +74,12 @@ function blitzAttack(defenderTroopsCount, attackerTroopsCount) {
     const keepingCount = Math.min(defenderTroopsCount, attackerTroopsCount);
 
     // Roll dice for the defender, sort in descending order, and keep the biggest rolls
-    const defenderDices = rollDices(defenderTroopsCount)
-      .sort((a, b) => b - a)
-      .slice(0, keepingCount);
+    const defenderDices = rollDices(defenderTroopsCount).sort((a, b) => b - a);
 
     // Roll dice for the attacker, sort in descending order, and keep the biggest rolls
-    const attackerDices = rollDices(attackerTroopsCount)
-      .sort((a, b) => b - a)
-      .slice(0, keepingCount);
+    const attackerDices = rollDices(attackerTroopsCount).sort((a, b) => b - a);
+
+    console.log(defenderDices, attackerDices);
 
     // Initialize counters for troop losses
     let defenderLostTroops = 0;
