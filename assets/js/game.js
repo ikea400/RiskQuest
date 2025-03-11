@@ -60,6 +60,43 @@ function getRandomStartingPlayer(playerCount) {
 }
 
 /**
+ * Simulates a blitz attack, determining troop losses for both sides based on dice rolls.
+ * @param {number} defenderTroopsCount - Number of troops on the defending side.
+ * @param {number} attackerTroopsCount - Number of troops on the attacking side.
+ * @returns {Array} [defenderLostTroops, attackerLostTroops] - The troop losses for the defender and attacker, respectively.
+ */
+function blitzAttack(defenderTroopsCount, attackerTroopsCount) {
+  // Determine the minimum number of dice rolls to compare
+  const keepingCount = Math.min(defenderTroopsCount, attackerTroopsCount);
+
+  // Roll dice for the defender, sort in ascending order, and keep the smallest rolls
+  const defenderDices = rollDices(defenderTroopsCount)
+    .sort((a, b) => a - b)
+    .slice(0, keepingCount);
+
+  // Roll dice for the attacker, sort in ascending order, and keep the smallest rolls
+  const attackerDices = rollDices(attackerTroopsCount)
+    .sort((a, b) => a - b)
+    .slice(0, keepingCount);
+
+  // Initialize counters for troop losses
+  let defenderLostTroops = 0;
+  let attackerLostTroops = 0;
+
+  // Compare dice rolls to determine troop losses
+  for (let i = 0; i < keepingCount; i++) {
+    if (attackerDices[i] > defenderDices[i]) {
+      defenderLostTroops++; // Defender loses a troop
+    } else {
+      attackerLostTroops++; // Attacker loses a troop
+    }
+  }
+
+  // Return the troop losses for both sides
+  return [defenderLostTroops, attackerLostTroops];
+}
+
+/**
  * Retourne le nombre de troupes initial pour chaque joueur en fonction du nombre de joueurs.
  *
  * @param {number} playerCount - Le nombre de joueurs participant à la partie.
@@ -623,6 +660,7 @@ function startDraftPhase(callback) {
 
   const turnHudAction = document.getElementById("turn-hud-action");
   function nextHandler() {
+    setSelectedTerritoire(null);
     turnHudAction.removeEventListener("click", turnHudAction);
     for (const territoireSvg of territoiresSvgs) {
       territoireSvg.removeEventListener("click", territoireHandler);
@@ -641,7 +679,12 @@ function startDraftPhase(callback) {
     const reachables = getReachableTerritories(this.id);
     if (reachables.includes(selectedTerritoire)) {
       console.log("Moving");
-      moveTroopsFromTerritory(selectedTerritoire, this.id, currentPlayerId, territoiresList[selectedTerritoire].troops - 1);
+      moveTroopsFromTerritory(
+        selectedTerritoire,
+        this.id,
+        currentPlayerId,
+        territoiresList[selectedTerritoire].troops - 1
+      );
       setSelectedTerritoire(null);
     } else {
       setSelectedTerritoire(this.id);
@@ -653,10 +696,95 @@ function startDraftPhase(callback) {
   }
 }
 
+function setAttackableTerritoires(territoiresId) {
+  removeCssClass("attackable-territory");
+  for (const territoireId of territoiresId) {
+    document.getElementById(territoireId).classList.add("attackable-territory");
+  }
+}
+
 function startAttackPhase(callback) {
   console.log("startAttackPhase");
-  startFortifyPhase(callback);
-  //startDraftPhase(callback);
+  updateCurrentPhase(EPhases.ATTACK);
+
+  const territoriesIds = Object.keys(territoiresList);
+  const territoiresSvgs = territoriesIds.map((territoireId) =>
+    document.getElementById(territoireId)
+  );
+
+  const turnHudAction = document.getElementById("turn-hud-action");
+  function nextHandler() {
+    setSelectedTerritoire(null);
+    setAttackableTerritoires([]);
+    turnHudAction.removeEventListener("click", turnHudAction);
+    for (const territoireSvg of territoiresSvgs) {
+      territoireSvg.removeEventListener("click", territoireHandler);
+    }
+    startFortifyPhase(callback);
+  }
+  turnHudAction.addEventListener("click", nextHandler);
+
+  function territoireHandler() {
+    if (territoiresList[this.id].playerId === currentPlayerId) {
+      selectedTerritoire = this.id;
+      setAttackableTerritoires(getAttackableNeighbour(this.id));
+    }
+    if (!selectedTerritoire) {
+      return;
+    }
+
+    const attackables = getAttackableNeighbour(selectedTerritoire);
+    if (!attackables.includes(this.id)) {
+      return;
+    }
+
+    console.log(
+      blitzAttack(
+        territoiresList[this.id].troops,
+        territoiresList[selectedTerritoire].troops - 1
+      )
+    );
+
+    setSelectedTerritoire(null);
+    setAttackableTerritoires([]);
+  }
+
+  for (const territoireSvg of territoiresSvgs) {
+    territoireSvg.addEventListener("click", territoireHandler);
+  }
+
+  // const turnHudAction = document.getElementById("turn-hud-action");
+  // function nextHandler() {
+  //   setSelectedTerritoire(null);
+  //   turnHudAction.removeEventListener("click", turnHudAction);
+  //   for (const territoireSvg of territoiresSvgs) {
+  //     territoireSvg.removeEventListener("click", territoireHandler);
+  //   }
+
+  //   startFortifyPhase(callback);
+  // }
+  // turnHudAction.addEventListener("click", nextHandler);
+
+  // function territoireHandler() {
+  //   if (!selectedTerritoire) {
+  //     setSelectedTerritoire(this.id);
+  //     return;
+  //   }
+
+  //   const attackables = getAttackableNeighbour(selectedTerritoire);
+  //   if (attackables.includes(this.id)) {
+  //     console.log("Attacking");
+
+  //     console.log(blitzAttack(territoiresList[this.id].troops, territoiresList[selectedTerritoire].troops - 1));
+  //     setSelectedTerritoire(null);
+  //   } else {
+  //     setSelectedTerritoire(this.id);
+  //   }
+  // }
+
+  // for (const territoireSvg of territoiresSvgs) {
+  //   territoireSvg.addEventListener("click", territoireHandler);
+  // }
 }
 
 function startFortifyPhase(callback) {
@@ -707,9 +835,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let containerPays = document.getElementById("pays-background");
   containerPays.addEventListener("click", function () {
-    selectedTerritoire = undefined;
-    removeCssClass("selected-territory");
-    removeCssClass("attackable-territory");
+    selectedTerritoire(null);
+    setAttackableTerritoires([]);
   });
 
   return;
