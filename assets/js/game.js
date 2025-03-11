@@ -271,11 +271,13 @@ function takeOverTerritory(territoryId, playerId, troopsCount) {
   if (oldOwnerId) updatePlayersHudTerritoireCount(oldOwnerId);
   updatePlayersHudTerritoireCount(playerId);
 
-  moveTroops(territoryId, playerId, troopsCount);
+  moveTroopsFromPlayer(territoryId, playerId, troopsCount);
 }
 
-function moveTroops(territoireId, playerId, troopsCount) {
-  console.log(`moveTroops(${territoireId}, ${playerId}, ${troopsCount})`);
+function moveTroopsFromPlayer(territoireId, playerId, troopsCount) {
+  console.log(
+    `moveTroopsFromPlayer(${territoireId}, ${playerId}, ${troopsCount})`
+  );
   let territoire = territoiresList[territoireId];
   if (territoire.playerId != playerId) {
     throw new Error(
@@ -293,6 +295,44 @@ function moveTroops(territoireId, playerId, troopsCount) {
   player.troops -= troopsCount;
   territoire.troops += troopsCount;
   updatePastilleTroopsCount(territoireId);
+}
+
+function moveTroopsFromTerritory(
+  fromTerritoireId,
+  territoireId,
+  playerId,
+  troopsCount
+) {
+  console.log(
+    `moveTroopsFromTerritory(${fromTerritoireId}, ${territoireId}, ${playerId}, ${troopsCount})`
+  );
+  let territoire = territoiresList[territoireId];
+  let fromTerritoire = territoiresList[fromTerritoireId];
+
+  // Check if the territories belong to the player
+  if (territoire.playerId !== playerId) {
+    throw new Error(
+      `Error: Target territoire (${territoireId}) is not controlled by player ${playerId}.`
+    );
+  }
+  if (fromTerritoire.playerId !== playerId) {
+    throw new Error(
+      `Error: Source territoire (${fromTerritoireId}) is not controlled by player ${playerId}.`
+    );
+  }
+
+  // Check if there are enough troops to move
+  // Check if there are enough troops to move while leaving at least 1 troop in the source
+  if (fromTerritoire.troops - troopsCount < 1) {
+    throw new Error(
+      `Error: Source territoire (${fromTerritoireId}) must retain at least 1 troop. Available: ${fromTerritoire.troops}, Attempted to move: ${troopsCount}.`
+    );
+  }
+
+  territoire.troops += troopsCount;
+  fromTerritoire.troops -= troopsCount;
+  updatePastilleTroopsCount(territoireId);
+  updatePastilleTroopsCount(fromTerritoireId);
 }
 
 function initializePlayersHud(playerCount) {
@@ -316,6 +356,11 @@ function updatePlayersHudTerritoireCount(playerId) {
     `side-player-info-territories-${playerId}`
   );
   element.innerText = countPlayerTerritoires(playerId);
+}
+
+function updatePlayerHudTroopsCount(playerId) {
+  let element = document.getElementById(`side-player-info-troops-${playerId}`);
+  element.innerText = countPlayerTroops(playerId);
 }
 
 function changeBackgroundPlayer(element, oldPLayerId, newPlayerId) {
@@ -495,25 +540,128 @@ function startRandomTroopsPlacement(playerCount) {
 
     while (player.troops > 0) {
       let territoireIndex = randomInteger(0, territoires.length - 1);
-      moveTroops(territoires[territoireIndex], playerId, 1);
+      moveTroopsFromPlayer(territoires[territoireIndex], playerId, 1);
     }
   }
 }
 
-function startDraftPhase(callback) {
-  const territoiresCount = Object.values(territoiresList).filter(
-    (territoire) => territoire.playerId === currentPlayerId
-  ).length;
+function countNewTroops(ownedTerritoriesIds, playerId) {
+  /*
+  At the beginning of every turn (including your first), count the
+  number of territories you currently occupy, then divide the total by three
+  (ignore any fraction).
+  You will always receive at least 3 armies on a turn, even if you occupy fewer
+  than 9 territories.
+  */
+  const territoiresCount = ownedTerritoriesIds.length;
+  let newTroops = Math.max(Math.floor(territoiresCount / 3), 3);
 
-  startAttackPhase(callback);
+  /*
+  In addition, at the beginning of your turn you will receive
+  armies for each continent you control. (To control a continent, you must
+  occupy all its territories at the start of your turn.)
+  */
+  const continents = [];
+  for (const territoireId of Object.keys(territoiresList)) {
+    const territoire = territoiresList[territoireId];
+    if (territoire.playerId != playerId) {
+      continents[territoireId.continent] = false;
+    } else if (continents[territoireId.continent] === undefined) {
+      continents[territoireId.continent] = true;
+    }
+  }
+
+  const bonuses = {
+    "north-america": 5,
+    "south-america": 2,
+    europe: 5,
+    africa: 3,
+    asia: 7,
+    australia: 2,
+  };
+  for (const continentId in continents) {
+    if (continents[continentId] === true) {
+      newTroops += bonuses[continentId] || 0;
+    }
+  }
+  return newTroops;
+}
+
+function addTroops(playerId, troopsCount) {
+  console.log(`addTroops(${playerId}, ${troopsCount})`);
+  if (troopsCount <= 0) {
+    throw new Error(`player${playerId} tried to add ${troopsCount} troops`);
+  }
+
+  let player = playersList[playerId];
+  player.troops += troopsCount;
+  updatePlayerHudTroopsCount(playerId);
+}
+
+function setSelectedTerritoire(territoireId) {
+  removeCssClass("selected-territory");
+  if (territoireId)
+    document.getElementById(territoireId).classList.add("selected-territory");
+  selectedTerritoire = territoireId;
+}
+
+function startDraftPhase(callback) {
+  console.log("startDraftPhase");
+  updateCurrentPhase(EPhases.DRAFT);
+
+  const ownedTerritoriesIds = Object.keys(territoiresList).filter(
+    (territoireId) => territoiresList[territoireId].playerId === currentPlayerId
+  );
+
+  const newTroops = countNewTroops(ownedTerritoriesIds, currentPlayerId);
+
+  addTroops(currentPlayerId, newTroops);
+
+  const territoiresSvgs = ownedTerritoriesIds.map((territoireId) =>
+    document.getElementById(territoireId)
+  );
+
+  const turnHudAction = document.getElementById("turn-hud-action");
+  function nextHandler() {
+    turnHudAction.removeEventListener("click", turnHudAction);
+    for (const territoireSvg of territoiresSvgs) {
+      territoireSvg.removeEventListener("click", territoireHandler);
+    }
+
+    startAttackPhase(callback);
+  }
+  turnHudAction.addEventListener("click", nextHandler);
+
+  function territoireHandler() {
+    if (!selectedTerritoire) {
+      setSelectedTerritoire(this.id);
+      return;
+    }
+
+    const reachables = getReachableTerritories(this.id);
+    if (reachables.includes(selectedTerritoire)) {
+      console.log("Moving");
+      moveTroopsFromTerritory(selectedTerritoire, this.id, currentPlayerId, territoiresList[selectedTerritoire].troops - 1);
+      setSelectedTerritoire(null);
+    } else {
+      setSelectedTerritoire(this.id);
+    }
+  }
+
+  for (const territoireSvg of territoiresSvgs) {
+    territoireSvg.addEventListener("click", territoireHandler);
+  }
 }
 
 function startAttackPhase(callback) {
+  console.log("startAttackPhase");
   startFortifyPhase(callback);
   //startDraftPhase(callback);
 }
 
 function startFortifyPhase(callback) {
+  console.log("startFortifyPhase");
+  gameFinished = true;
   callback();
 }
 
@@ -536,7 +684,7 @@ function startMainLoop(callback) {
 document.addEventListener("DOMContentLoaded", function () {
   const playerCount = 6;
 
-  // Initialization des tropps
+  // Initialization des troops
   for (let i = 1; i <= playerCount; i++) {
     playersList[i].troops = getStartingTroops(playerCount);
   }
@@ -553,7 +701,17 @@ document.addEventListener("DOMContentLoaded", function () {
   startRandomTroopsPlacement(playerCount);
 
   console.log("Distribution is done");
-  startMainLoop();
+  startMainLoop(() => {
+    console.log("Main game loop is done");
+  });
+
+  let containerPays = document.getElementById("pays-background");
+  containerPays.addEventListener("click", function () {
+    selectedTerritoire = undefined;
+    removeCssClass("selected-territory");
+    removeCssClass("attackable-territory");
+  });
+
   return;
   let pays = document.getElementsByClassName("pays");
   for (let continent of pays) {
@@ -593,11 +751,4 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     }
   }
-
-  let containerPays = document.getElementById("pays-background");
-  containerPays.addEventListener("click", function () {
-    selectedTerritoire = undefined;
-    removeCssClass("selected-territory");
-    removeCssClass("attackable-territory");
-  });
 });
