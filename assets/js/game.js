@@ -12,8 +12,19 @@
 const MIN_PLAYER_COUNT = 3;
 const MAX_PLAYER_COUNT = 6;
 
+const crypto = window.crypto || window.msCrypto;
+
+// credits https://stackoverflow.com/a/42321673
 function randomInteger(min, max) {
-  return min + Math.round(Math.random() * (max - min));
+  const randomBuffer = new Uint32Array(1);
+
+  crypto.getRandomValues(randomBuffer);
+
+  let randomNumber = randomBuffer[0] / (0xffffffff + 1);
+
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(randomNumber * (max - min + 1)) + min;
 }
 
 function rollDice() {
@@ -21,7 +32,7 @@ function rollDice() {
 }
 
 function rollDices(count) {
-  return Array.from({ length: count }, () => rollDice());
+  return Array.from({ length: count }, (_, i) => rollDice());
 }
 
 /**
@@ -74,10 +85,14 @@ function blitzAttack(defenderTroopsCount, attackerTroopsCount) {
     const keepingCount = Math.min(defenderTroopsCount, attackerTroopsCount);
 
     // Roll dice for the defender, sort in descending order, and keep the biggest rolls
-    const defenderDices = rollDices(defenderTroopsCount).sort((a, b) => b - a);
+    const defenderDices = rollDices(defenderTroopsCount)
+      .sort((a, b) => b - a)
+      .slice(0, keepingCount);
 
     // Roll dice for the attacker, sort in descending order, and keep the biggest rolls
-    const attackerDices = rollDices(attackerTroopsCount).sort((a, b) => b - a);
+    const attackerDices = rollDices(attackerTroopsCount)
+      .sort((a, b) => b - a)
+      .slice(0, keepingCount);
 
     console.log(defenderDices, attackerDices);
 

@@ -4,7 +4,7 @@
 }
 .pays {
   translate: -3em -10em;
-  scale: 3; /*3.5*/
+  scale: 4; /*3.5*/
 }
 .north-america:hover {
   stroke-width: 0.8;
