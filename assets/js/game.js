@@ -570,6 +570,24 @@ function getNextplayerId(playerId, playerCount) {
   return (playerId % playerCount) + 1;
 }
 
+const resizeObserver = new ResizeObserver(() => {
+  const pastilles = document.getElementsByClassName("pastille");
+  for (let i = 0; i < pastilles.length; i++) {
+      // Get the bounding box of the path
+    const territoireId = pastilles.item(i).getAttribute("territoire");
+    const territoire = document.getElementById(territoireId);
+    const bbox = territoire.getBoundingClientRect();
+
+    // Calculate the center of the bounding box
+    const centerX = bbox.x + bbox.width / 2;
+    const centerY = bbox.y + bbox.height / 2;
+
+    pastilles.item(i).style.left = centerX - 12.5 + "px";
+    pastilles.item(i).style.top = centerY - 12.5 + "px";
+  }
+});
+
+
 function createPastille(territoireId, playerId) {
   const territoire = document.getElementById(territoireId);
   territoire.classList.add(`svg-player${playerId}`);
@@ -587,6 +605,7 @@ function createPastille(territoireId, playerId) {
   newDiv.classList.add(`background-player${playerId}`);
   newDiv.classList.add(`pastille`);
   newDiv.innerText = 1;
+  newDiv.setAttribute("territoire", territoireId);
   newDiv.style.position = "absolute";
   newDiv.style.left = centerX - 12.5 + "px";
   newDiv.style.top = centerY - 12.5 + "px";
@@ -962,6 +981,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   startRandomTerritoryDistribution(playerCount);
 
+  
+
   console.log("Selection is done");
 
   startRandomTroopsPlacement(playerCount);
@@ -976,7 +997,7 @@ document.addEventListener("DOMContentLoaded", function () {
     setSelectedTerritoire(null);
     setAttackableTerritoires([]);
   });
-
+  resizeObserver.observe(document.body);
   return;
   let pays = document.getElementsByClassName("pays");
   for (let continent of pays) {
