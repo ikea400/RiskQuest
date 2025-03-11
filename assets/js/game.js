@@ -867,7 +867,8 @@ function startAttackPhase(callback) {
 
 function startFortifyPhase(callback) {
   console.log("startFortifyPhase");
-  /*
+  updateCurrentPhase(EPhases.FORTIFY);
+
   const ownedTerritoriesIds = Object.keys(territoiresList).filter(
     (territoireId) => territoiresList[territoireId].playerId === currentPlayerId
   );
@@ -883,7 +884,7 @@ function startFortifyPhase(callback) {
       territoireSvg.removeEventListener("click", territoireHandler);
     }
 
-    startAttackPhase(callback);
+    callback();
   }
   turnHudAction.addEventListener("click", nextHandler);
 
@@ -911,8 +912,6 @@ function startFortifyPhase(callback) {
   for (const territoireSvg of territoiresSvgs) {
     territoireSvg.addEventListener("click", territoireHandler);
   }
-  */
-  callback();
 }
 
 function startOneRound(callback) {
