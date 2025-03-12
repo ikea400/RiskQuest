@@ -1015,43 +1015,6 @@ document.addEventListener("DOMContentLoaded", function () {
     setAttackableTerritoires([]);
   });
   resizeObserver.observe(document.body);
-  return;
-  let pays = document.getElementsByClassName("pays");
-  for (let continent of pays) {
-    for (let territoire of continent.children) {
-      territoire.addEventListener("click", function () {
-        selectedTerritoire = this.id;
 
-        // Remove any previously selected territorys
-        removeCssClass("selected-territory");
-        removeCssClass("attackable-territory");
-
-        this.classList.add("selected-territory");
-        continent.appendChild(this); // rerender
-
-        console.log(territoiresList[this.id]);
-
-        const attackables = getAttackableNeighbour(this.id);
-        console.log(attackables);
-        for (const attackable of attackables) {
-          document
-            .getElementById(attackable)
-            .classList.add("attackable-territory");
-        }
-      });
-
-      territoire.addEventListener("contextmenu", function (event) {
-        event.preventDefault();
-
-        removeCssClass("attackable-territory");
-        const reachables = getReachableTerritories(this.id);
-        console.log(reachables);
-        for (const reachable of reachables) {
-          document
-            .getElementById(reachable)
-            .classList.add("attackable-territory");
-        }
-      });
-    }
-  }
+  new Popup();
 });
