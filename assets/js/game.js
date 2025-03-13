@@ -820,7 +820,11 @@ function startDraftPhase(callback) {
 function setAttackableTerritoires(territoiresId) {
   removeCssClass("attackable-territory");
   for (const territoireId of territoiresId) {
-    document.getElementById(territoireId).classList.add("attackable-territory");
+    const territoire = document.getElementById(territoireId);
+    territoire.classList.add("attackable-territory");
+    // Déplace l'element a la fin de son parent pour qu'il soit afficher pardessus ces frère
+    // pour permettre a sont stroke d'aparraite et ne pas etre cacher.
+    territoire.parentElement.appendChild(territoire);
   }
 }
 
@@ -1006,7 +1010,7 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log("Main game loop is done");
   });
 
-  let containerPays = document.getElementById("svg");
+  let containerPays = document.getElementById("pays-background");
   containerPays.addEventListener("click", function () {
     setSelectedTerritoire(null);
     setAttackableTerritoires([]);
