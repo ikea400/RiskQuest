@@ -36,9 +36,9 @@ function getAttackableNeighbour(territoire) {
 }
 
 function getReachableTerritories(territoire) {
-  playerId = territoiresList[territoire].playerId;
-  let listeTemporaires = [territoire];
-  let listFinales = [];
+  const playerId = territoiresList[territoire].playerId;
+  const listeTemporaires = [territoire];
+  const listFinales = [];
   do {
     const territoire = listeTemporaires.pop();
     listFinales.push(territoire);
