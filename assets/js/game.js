@@ -1006,7 +1006,7 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log("Main game loop is done");
   });
 
-  let containerPays = document.getElementById("pays-background");
+  let containerPays = document.getElementById("svg");
   containerPays.addEventListener("click", function () {
     setSelectedTerritoire(null);
     setAttackableTerritoires([]);
