@@ -57,13 +57,6 @@ function getReachableTerritories(territoire) {
   return listFinales;
 }
 
-function removeCssClass(cssClass) {
-  const elements = Array.from(document.getElementsByClassName(cssClass));
-  for (const element of elements) {
-    element.classList.remove(cssClass);
-  }
-}
-
 function countPlayerTerritoires(playerId) {
   let count = 0;
   for (const territoireId in territoiresList) {
@@ -365,7 +358,9 @@ function getNextplayerId(playerId, playerCount) {
   return (playerId % playerCount) + 1;
 }
 
-const resizeObserver = new ResizeObserver(() => {
+const resizeObserver = new ResizeObserver(updatePastillesPosition);
+
+function updatePastillesPosition() {
   const pastilles = document.getElementsByClassName("pastille");
   for (let i = 0; i < pastilles.length; i++) {
     // Get the bounding box of the path
@@ -379,8 +374,9 @@ const resizeObserver = new ResizeObserver(() => {
 
     pastilles.item(i).style.left = centerX - 12.5 + "px";
     pastilles.item(i).style.top = centerY - 12.5 + "px";
+    console.log("asfa");
   }
-});
+}
 
 function createPastille(territoireId, playerId) {
   const territoire = document.getElementById(territoireId);
@@ -400,7 +396,7 @@ function createPastille(territoireId, playerId) {
   newDiv.classList.add(`pastille`);
   newDiv.innerText = 1;
   newDiv.setAttribute("territoire", territoireId);
-  newDiv.style.position = "absolute";
+  newDiv.style.position = "fixed";
   newDiv.style.left = centerX - 12.5 + "px";
   newDiv.style.top = centerY - 12.5 + "px";
 
@@ -548,7 +544,7 @@ function addTroops(playerId, troopsCount) {
 }
 
 function setSelectedTerritoire(territoireId) {
-  removeCssClass("selected-territory");
+  utils.removeCssClass("selected-territory");
   if (territoireId)
     document.getElementById(territoireId).classList.add("selected-territory");
   selectedTerritoire = territoireId;
@@ -596,7 +592,7 @@ function startDraftPhase(callback) {
 }
 
 function setAttackableTerritoires(territoiresId) {
-  removeCssClass("attackable-territory");
+  utils.removeCssClass("attackable-territory");
   for (const territoireId of territoiresId) {
     const territoire = document.getElementById(territoireId);
     territoire.classList.add("attackable-territory");
@@ -627,7 +623,7 @@ function startAttackPhase(callback) {
   }
   turnHudAction.addEventListener("click", nextHandler);
 
-  function territoireHandler() {
+  async function territoireHandler() {
     if (territoiresList[this.id].playerId === currentPlayerId) {
       selectedTerritoire = this.id;
       setAttackableTerritoires(getAttackableNeighbour(this.id));
@@ -643,9 +639,14 @@ function startAttackPhase(callback) {
 
     const defenderTerritoireId = this.id;
     const attackerTerritoireId = selectedTerritoire;
-
+    console.log(
+      utils.blitzAttack(
+        territoiresList[defenderTerritoireId].troops,
+        territoiresList[attackerTerritoireId].troops - 1
+      )
+    );
     // Calculer le nombre de troops perdu des deux bords.
-    [defenderLostTroops, attackerLostTroops] = utils.blitzAttack(
+    let [defenderLostTroops, attackerLostTroops] = utils.blitzAttack(
       territoiresList[defenderTerritoireId].troops,
       territoiresList[attackerTerritoireId].troops - 1
     );
@@ -662,13 +663,36 @@ function startAttackPhase(callback) {
         attackerTerritoireId,
         defenderTerritoireId,
         currentPlayerId,
-        territoiresList[attackerTerritoireId].troops - 1
+        1
       );
 
       updatePlayerDeadState(
         defenderPlayerId,
         checkPlayerDeadState(defenderPlayerId)
       );
+
+      let count = territoiresList[attackerTerritoireId].troops - 1;
+      if (territoiresList[attackerTerritoireId].troops > 4) {
+        const popup = new CountPopup({
+          min: 3,
+          max: territoiresList[attackerTerritoireId].troops - 1,
+        });
+        const result = await popup.show();
+        if (result.cancel === true) {
+          count = 0;
+        } else if (result.value > 1) {
+          count = result.value;
+        }
+      }
+
+      if (count) {
+        moveTroopsFromTerritory(
+          attackerTerritoireId,
+          defenderTerritoireId,
+          currentPlayerId,
+          count
+        );
+      }
     }
 
     setSelectedTerritoire(null);
@@ -794,10 +818,5 @@ document.addEventListener("DOMContentLoaded", function () {
     setAttackableTerritoires([]);
   });
   resizeObserver.observe(document.body);
-
-  // setTimeout(async () => {
-  //   const popup = new CountPopup();
-  //   const result = await popup.show();
-  //   console.log(result);
-  // }, 500);
+  window.addEventListener("resize", updatePastillesPosition);
 });

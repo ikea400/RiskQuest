@@ -103,3 +103,10 @@ export function blitzAttack(defenderTroopsCount, attackerTroopsCount) {
   // Return the troop losses for both sides
   return [defenderTotalLostTroops, attackerTotalLostTroops];
 }
+
+export function removeCssClass(cssClass) {
+  const elements = Array.from(document.getElementsByClassName(cssClass));
+  for (const element of elements) {
+    element.classList.remove(cssClass);
+  }
+}
