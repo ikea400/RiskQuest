@@ -1,8 +1,9 @@
-
+  * {
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+  }
   body {
       background-color: #121212;
       color: #fff;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
       padding: 0;
       overflow: hidden;
@@ -55,7 +56,7 @@
   #pays-background {
     fill: transparent;
     pointer-events: all;
-}
+  }
 
 .selected-territory {
   stroke: green;
@@ -84,6 +85,8 @@
   bottom: 2em;
   left: 2em;
 }
+
+
 
 #card-button {
   perspective: 1000px;
@@ -156,6 +159,7 @@
 
 #hud-side {
   background-color: transparent;
+  z-index: 100;
 }
 
 .side-player {
@@ -166,12 +170,26 @@
 .side-player-color {
   width: 2em;
   height: 3em;
+  border-radius: 1em;
+  margin: 5px;
+  box-shadow: 
+      2px 5px 7px rgba(0, 0, 0, 0.259),
+      inset 0 2px 2px rgba(255, 255, 255, 0.312);
 }
 
 .side-player-info {
   background-color: #062534;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 5px;
   width: 3em;
   color: white;
+  border-radius: 1em;
+  margin: 5px;
+  box-shadow: 
+      2px 5px 7px rgba(0, 0, 0, 0.259),
+      inset 0 2px 2px rgba(255, 255, 255, 0.312);
 }
 
 .side-player-info-troops::before {
@@ -203,6 +221,13 @@
   width: 50px;
 }
 
+#turn-hub-action {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+}
+
 #turn-hub-action-img {
   filter: brightness(0) invert(1);
   width: 60%;
@@ -212,6 +237,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  
 }
 
 #turn-hud-action {
@@ -220,12 +246,27 @@
   align-items: center;
   width: 50px;
   height: 50px;
+  padding: 5px;
   border-radius: 50%;
+  box-shadow: 
+      2px 5px 7px rgba(0, 0, 0, 0.259),
+      inset 0 2px 2px rgba(255, 255, 255, 0.312);
 }
 
 #turn-hud-phase-bars {
   display: flex;
   flex-direction: row;
+}
+
+#turn-hud-name {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0.5em;
+  border-radius: 1em;
+  box-shadow: 
+      2px 5px 7px rgba(0, 0, 0, 0.259),
+      inset 0 2px 2px rgba(255, 255, 255, 0.312);
 }
 
 .turn-hud-phase-bar {
@@ -240,6 +281,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+#turn-hub-action-troops-count {
+  font-weight: bold;
+  position: absolute;
+  z-index: 1000;
+  color: black;
 }
 
 .pastille {
