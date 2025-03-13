@@ -374,7 +374,6 @@ function updatePastillesPosition() {
 
     pastilles.item(i).style.left = centerX - 12.5 + "px";
     pastilles.item(i).style.top = centerY - 12.5 + "px";
-    console.log("asfa");
   }
 }
 
@@ -436,10 +435,6 @@ function startTurnTerritoriesSelection(playerCount, callback) {
   let playerId = currentPlayerId;
 
   function handler() {
-    console.log("Test" + playerId);
-
-    this.removeEventListener("click", handler);
-
     const territoireId = this.id;
     takeOverTerritory(territoireId, playerId, 1);
 
@@ -457,7 +452,7 @@ function startTurnTerritoriesSelection(playerCount, callback) {
 
   for (const territoire of territoires) {
     if (territoiresList[territoire.id]) {
-      territoire.addEventListener("click", handler);
+      territoire.addEventListener("click", handler, {once: true});
     }
   }
 }
@@ -615,13 +610,12 @@ function startAttackPhase(callback) {
   function nextHandler() {
     setSelectedTerritoire(null);
     setAttackableTerritoires([]);
-    turnHudAction.removeEventListener("click", nextHandler);
     for (const territoireSvg of territoiresSvgs) {
       territoireSvg.removeEventListener("click", territoireHandler);
     }
     startFortifyPhase(callback);
   }
-  turnHudAction.addEventListener("click", nextHandler);
+  turnHudAction.addEventListener("click", nextHandler, {once: true});
 
   async function territoireHandler() {
     if (territoiresList[this.id].playerId === currentPlayerId) {

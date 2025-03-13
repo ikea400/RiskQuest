@@ -1,69 +1,66 @@
-  * {
-    font-family:Verdana, Geneva, Tahoma, sans-serif;
-  }
-  body {
-      background-color: #121212;
-      color: #fff;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-  }
-  
-  #container-svg {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      position: absolute;
-      top: 0em;
-      bottom: 0em;
-      left: 0em;
-      right: 0em;
-    
-  }
-  
-  #svg {
-      width: 100%;
-      height: 100%;
-      max-width: none;
-      max-height: none;
-      transform: scale(2);
-      paint-order: stroke;
-  }
+* {
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+body {
+  background-color: #121212;
+  color: #fff;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
 
-  #stripes {
-    opacity: 0.8;
-  }
-  
-  
-  .territoire {
-      fill: #2a2a2a;
-      transition: all 0.3s ease;
-      transform-origin: center;
-      cursor: pointer;
-      
-  }
-  
-  .territoire:hover {
-      mask: url(#patternOverlay);
-      stroke: #999;
-      stroke-width: 0.8;
-      transform: scale(1.01);
-      box-shadow: drop-shadow(0px 0px 5px rgba(255, 255, 255, 0.432));
-  }
+#container-svg {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  top: 0em;
+  bottom: 0em;
+  left: 0em;
+  right: 0em;
+}
 
-  #pays-background {
-    fill: transparent;
-    pointer-events: all;
-  }
+#svg {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  transform: scale(2);
+  paint-order: stroke;
+}
+
+#stripes {
+  opacity: 0.8;
+}
+
+.territoire {
+  fill: #2a2a2a;
+  transition: all 0.3s ease;
+  transform-origin: center;
+  cursor: pointer;
+}
+
+.territoire:hover {
+  mask: url(#patternOverlay);
+  stroke: #999;
+  stroke-width: 0.8;
+  transform: scale(1.01);
+  box-shadow: drop-shadow(0px 0px 5px rgba(255, 255, 255, 0.432));
+}
+
+#pays-background {
+  fill: transparent;
+  pointer-events: all;
+}
 
 .selected-territory {
   stroke: green;
   stroke-width: 1.5;
 }
 
-.attackable-territory{
+.attackable-territory {
   stroke: #ffffff;
   stroke-linecap: square;
   stroke-opacity: 0.9;
@@ -86,18 +83,14 @@
   left: 2em;
 }
 
-
-
 #card-button {
   perspective: 1000px;
-  
 }
 
 #cards-img {
   max-width: 75px; /* Small button size */
   border-radius: 8px;
-  box-shadow: 
-    0 6px 12px rgba(255, 255, 255, 0.1),
+  box-shadow: 0 6px 12px rgba(255, 255, 255, 0.1),
     0 2px 4px rgba(255, 255, 255, 0.2);
   cursor: pointer;
   border: 2px solid #555;
@@ -105,20 +98,17 @@
 
 #card-button:hover {
   transform: translateY(-5px) translateZ(10px);
-  box-shadow: 
-    0 10px 20px rgba(255, 255, 255, 0.15),
+  box-shadow: 0 10px 20px rgba(255, 255, 255, 0.15),
     0 6px 6px rgba(255, 255, 255, 0.2);
 }
 
 #card-button:active {
   transform: translateY(2px) translateZ(0);
-  box-shadow: 
-    0 2px 4px rgba(255, 255, 255, 0.1),
+  box-shadow: 0 2px 4px rgba(255, 255, 255, 0.1),
     0 1px 2px rgba(255, 255, 255, 0.2);
 }
 
 .card-layout {
-
   position: absolute;
   top: 50%;
   left: 100%;
@@ -137,7 +127,7 @@
   transition: all 0.3s ease;
 }
 
-.cards-container:hover .card-layout{
+.cards-container:hover .card-layout {
   opacity: 1;
   visibility: visible;
 }
@@ -172,9 +162,8 @@
   height: 3em;
   border-radius: 1em;
   margin: 5px;
-  box-shadow: 
-      2px 5px 7px rgba(0, 0, 0, 0.259),
-      inset 0 2px 2px rgba(255, 255, 255, 0.312);
+  box-shadow: 2px 5px 7px rgba(0, 0, 0, 0.259),
+    inset 0 2px 2px rgba(255, 255, 255, 0.312);
 }
 
 .side-player-info {
@@ -187,9 +176,8 @@
   color: white;
   border-radius: 1em;
   margin: 5px;
-  box-shadow: 
-      2px 5px 7px rgba(0, 0, 0, 0.259),
-      inset 0 2px 2px rgba(255, 255, 255, 0.312);
+  box-shadow: 2px 5px 7px rgba(0, 0, 0, 0.259),
+    inset 0 2px 2px rgba(255, 255, 255, 0.312);
 }
 
 .side-player-info-troops::before {
@@ -225,7 +213,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  
 }
 
 #turn-hub-action-img {
@@ -237,7 +224,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  
 }
 
 #turn-hud-action {
@@ -248,9 +234,8 @@
   height: 50px;
   padding: 5px;
   border-radius: 50%;
-  box-shadow: 
-      2px 5px 7px rgba(0, 0, 0, 0.259),
-      inset 0 2px 2px rgba(255, 255, 255, 0.312);
+  box-shadow: 2px 5px 7px rgba(0, 0, 0, 0.259),
+    inset 0 2px 2px rgba(255, 255, 255, 0.312);
 }
 
 #turn-hud-phase-bars {
@@ -264,9 +249,8 @@
   justify-content: center;
   margin: 0.5em;
   border-radius: 1em;
-  box-shadow: 
-      2px 5px 7px rgba(0, 0, 0, 0.259),
-      inset 0 2px 2px rgba(255, 255, 255, 0.312);
+  box-shadow: 2px 5px 7px rgba(0, 0, 0, 0.259),
+    inset 0 2px 2px rgba(255, 255, 255, 0.312);
 }
 
 .turn-hud-phase-bar {
@@ -298,50 +282,49 @@
   height: 35px;
   border-radius: 50%;
   pointer-events: none;
-  box-shadow: 
-      2px 5px 7px rgba(0, 0, 0, 0.259),
-      inset 0 2px 2px rgba(255, 255, 255, 0.312);
+  box-shadow: 2px 5px 7px rgba(0, 0, 0, 0.259),
+    inset 0 2px 2px rgba(255, 255, 255, 0.312);
 }
 
-#pastille-alaska{
-  translate: 0em -1.5em ;
+#pastille-alaska {
+  translate: 0em -1.5em;
 }
 
-#pastille-greenland{
-  translate: 0.6em -2.2em ;
+#pastille-greenland {
+  translate: 0.6em -2.2em;
 }
-#pastille-quebec{
-  translate: -0.75em -0.3em ;
+#pastille-quebec {
+  translate: -0.75em -0.3em;
 }
-#pastille-venezuela{
-  translate: -1.5em -0.7em ;
+#pastille-venezuela {
+  translate: -1.5em -0.7em;
 }
-#pastille-ontario{
-  translate: -0.5em -0.3em ;
+#pastille-ontario {
+  translate: -0.5em -0.3em;
 }
-#pastille-alberta{
-  translate: -0.3em -0.3em ;
+#pastille-alberta {
+  translate: -0.3em -0.3em;
 }
-#pastille-westernUs{
-  translate: -0.4em -0.47em ;
+#pastille-westernUs {
+  translate: -0.4em -0.47em;
 }
-#pastille-easternUs{
-  translate: -1.2em -0.25em ;
+#pastille-easternUs {
+  translate: -1.2em -0.25em;
 }
-#pastille-northwestTerritory{
-  translate: -1em 3.85em ;
+#pastille-northwestTerritory {
+  translate: -1em 3.85em;
 }
-#pastille-centralAmerica{
-  translate: -1.5em -1.65em ;
+#pastille-centralAmerica {
+  translate: -1.5em -1.65em;
 }
-#pastille-brazil{
-  translate: 0.15em -1.2em ;
+#pastille-brazil {
+  translate: 0.15em -1.2em;
 }
-#pastille-argentina{
-  translate: -0.52em -1.4em ;
+#pastille-argentina {
+  translate: -0.52em -1.4em;
 }
-#pastille-peru{
-  translate: -0.25em 0em ;
+#pastille-peru {
+  translate: -0.25em 0em;
 }
 .svg-player1 {
   fill: #4ade80;
