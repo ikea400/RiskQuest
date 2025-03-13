@@ -590,7 +590,7 @@ function getNextplayerId(playerId, playerCount) {
 const resizeObserver = new ResizeObserver(() => {
   const pastilles = document.getElementsByClassName("pastille");
   for (let i = 0; i < pastilles.length; i++) {
-      // Get the bounding box of the path
+    // Get the bounding box of the path
     const territoireId = pastilles.item(i).getAttribute("territoire");
     const territoire = document.getElementById(territoireId);
     const bbox = territoire.getBoundingClientRect();
@@ -603,7 +603,6 @@ const resizeObserver = new ResizeObserver(() => {
     pastilles.item(i).style.top = centerY - 12.5 + "px";
   }
 });
-
 
 function createPastille(territoireId, playerId) {
   const territoire = document.getElementById(territoireId);
@@ -821,7 +820,11 @@ function startDraftPhase(callback) {
 function setAttackableTerritoires(territoiresId) {
   removeCssClass("attackable-territory");
   for (const territoireId of territoiresId) {
-    document.getElementById(territoireId).classList.add("attackable-territory");
+    const territoire = document.getElementById(territoireId);
+    territoire.classList.add("attackable-territory");
+    // Déplace l'element a la fin de son parent pour qu'il soit afficher pardessus ces frère
+    // pour permettre a sont stroke d'aparraite et ne pas etre cacher.
+    territoire.parentElement.appendChild(territoire);
   }
 }
 
@@ -998,8 +1001,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   startRandomTerritoryDistribution(playerCount);
 
-  
-
   console.log("Selection is done");
 
   startRandomTroopsPlacement(playerCount);
@@ -1009,12 +1010,16 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log("Main game loop is done");
   });
 
-  let containerPays = document.getElementById("svg");
+  let containerPays = document.getElementById("pays-background");
   containerPays.addEventListener("click", function () {
     setSelectedTerritoire(null);
     setAttackableTerritoires([]);
   });
   resizeObserver.observe(document.body);
 
-  new Popup();
+  // setTimeout(async () => {
+  //   const popup = new CountPopup();
+  //   const result = await popup.show();
+  //   console.log(result);
+  // }, 500);
 });
