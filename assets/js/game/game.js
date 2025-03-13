@@ -709,25 +709,28 @@ function startFortifyPhase(callback) {
   updateCurrentPhase(EPhases.FORTIFY);
 
   const ownedTerritoriesIds = Object.keys(territoiresList).filter(
-    (territoireId) => territoiresList[territoireId].playerId === currentPlayerId
+    (territoireId) =>
+      territoiresList[territoireId].playerId === currentPlayerId &&
+      territoiresList[territoireId].troops > 1
   );
   const territoiresSvgs = ownedTerritoriesIds.map((territoireId) =>
     document.getElementById(territoireId)
   );
 
-  const turnHudAction = document.getElementById("turn-hud-action");
   function nextHandler() {
     setSelectedTerritoire(null);
-    turnHudAction.removeEventListener("click", nextHandler);
+
     for (const territoireSvg of territoiresSvgs) {
       territoireSvg.removeEventListener("click", territoireHandler);
     }
 
     callback();
   }
-  turnHudAction.addEventListener("click", nextHandler);
 
-  function territoireHandler() {
+  const turnHudAction = document.getElementById("turn-hud-action");
+  turnHudAction.addEventListener("click", nextHandler, { once: true });
+
+  async function territoireHandler() {
     if (!selectedTerritoire) {
       setSelectedTerritoire(this.id);
       return;
@@ -735,14 +738,23 @@ function startFortifyPhase(callback) {
 
     const reachables = getReachableTerritories(this.id);
     if (reachables.includes(selectedTerritoire)) {
-      console.log("Moving");
-      moveTroopsFromTerritory(
-        selectedTerritoire,
-        this.id,
-        currentPlayerId,
-        territoiresList[selectedTerritoire].troops - 1
-      );
-      setSelectedTerritoire(null);
+      const popup = new CountPopup({
+        min: 1,
+        max: territoiresList[this.id].troops - 1,
+      });
+
+      const result = await popup.show();
+
+      if (result.cancel === false && result.value > 0) {
+        moveTroopsFromTerritory(
+          selectedTerritoire,
+          this.id,
+          currentPlayerId,
+          result.value
+        );
+
+        nextHandler();
+      }
     } else {
       setSelectedTerritoire(this.id);
     }
