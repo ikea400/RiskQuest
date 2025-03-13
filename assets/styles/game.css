@@ -41,6 +41,7 @@
       transition: all 0.3s ease;
       transform-origin: center;
       cursor: pointer;
+      
   }
   
   .territoire:hover {
@@ -61,8 +62,19 @@
   stroke-width: 1.5;
 }
 
-.attackable-territory {
-  stroke-width: 1.5;
+.attackable-territory{
+  stroke: #ffffff;
+  stroke-linecap: square;
+  stroke-opacity: 0.9;
+  stroke-width: 1;
+  stroke-dasharray: 3;
+  animation: dash 15s linear;
+}
+
+@keyframes dash {
+  to {
+    stroke-dashoffset: 20;
+  }
 }
 
 .cards-container {
