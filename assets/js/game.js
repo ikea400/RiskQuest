@@ -590,7 +590,7 @@ function getNextplayerId(playerId, playerCount) {
 const resizeObserver = new ResizeObserver(() => {
   const pastilles = document.getElementsByClassName("pastille");
   for (let i = 0; i < pastilles.length; i++) {
-      // Get the bounding box of the path
+    // Get the bounding box of the path
     const territoireId = pastilles.item(i).getAttribute("territoire");
     const territoire = document.getElementById(territoireId);
     const bbox = territoire.getBoundingClientRect();
@@ -603,7 +603,6 @@ const resizeObserver = new ResizeObserver(() => {
     pastilles.item(i).style.top = centerY - 12.5 + "px";
   }
 });
-
 
 function createPastille(territoireId, playerId) {
   const territoire = document.getElementById(territoireId);
@@ -998,8 +997,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   startRandomTerritoryDistribution(playerCount);
 
-  
-
   console.log("Selection is done");
 
   startRandomTroopsPlacement(playerCount);
@@ -1016,5 +1013,9 @@ document.addEventListener("DOMContentLoaded", function () {
   });
   resizeObserver.observe(document.body);
 
-  new Popup();
+  // setTimeout(async () => {
+  //   const popup = new CountPopup();
+  //   const result = await popup.show();
+  //   console.log(result);
+  // }, 500);
 });
