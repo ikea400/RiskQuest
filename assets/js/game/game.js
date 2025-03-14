@@ -452,7 +452,7 @@ function startTurnTerritoriesSelection(playerCount, callback) {
 
   for (const territoire of territoires) {
     if (territoiresList[territoire.id]) {
-      territoire.addEventListener("click", handler, {once: true});
+      territoire.addEventListener("click", handler, { once: true });
     }
   }
 }
@@ -615,7 +615,7 @@ function startAttackPhase(callback) {
     }
     startFortifyPhase(callback);
   }
-  turnHudAction.addEventListener("click", nextHandler, {once: true});
+  turnHudAction.addEventListener("click", nextHandler, { once: true });
 
   async function territoireHandler() {
     if (territoiresList[this.id].playerId === currentPlayerId) {
@@ -666,10 +666,11 @@ function startAttackPhase(callback) {
       );
 
       let count = territoiresList[attackerTerritoireId].troops - 1;
-      if (territoiresList[attackerTerritoireId].troops > 4) {
+      if (territoiresList[attackerTerritoireId].troops > 3) {
         const popup = new CountPopup({
-          min: 3,
+          min: 2,
           max: territoiresList[attackerTerritoireId].troops - 1,
+          cancel: false,
         });
         const result = await popup.show();
         if (result.cancel === true) {
@@ -679,7 +680,7 @@ function startAttackPhase(callback) {
         }
       }
 
-      if (count) {
+      if (count > 0) {
         moveTroopsFromTerritory(
           attackerTerritoireId,
           defenderTerritoireId,
@@ -734,7 +735,7 @@ function startFortifyPhase(callback) {
     if (reachables.includes(selectedTerritoire)) {
       const popup = new CountPopup({
         min: 1,
-        max: territoiresList[this.id].troops - 1,
+        max: territoiresList[selectedTerritoire].troops - 1,
       });
 
       const result = await popup.show();

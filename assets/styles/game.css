@@ -42,6 +42,7 @@ body {
   cursor: pointer;
 }
 
+
 .territoire:hover {
   mask: url(#patternOverlay);
   stroke: #999;

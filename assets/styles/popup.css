@@ -24,7 +24,8 @@
 }
 
 .popup-count-countainer {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
   background-color: rgba(0, 0, 0, 0.25);
   font: 1.2rem "Fira Sans", sans-serif;
 }
@@ -34,6 +35,8 @@
   font-size: xx-large;
   cursor: pointer;
   user-select: none;
+  align-self: center;
+  justify-self: center;
 }
 
 .popup-count-overlay {
