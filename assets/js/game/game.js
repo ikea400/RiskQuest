@@ -5,6 +5,12 @@ import {
   territoiresList,
   playersList,
 } from "./data.js";
+import {
+  getAttackableNeighbour,
+  getReachableTerritories,
+  countPlayerTerritoires,
+  countPlayerTroops,
+} from "./logic.js";
 
 // window.addEventListener("pageshow", function (event) {
 //   // S'assurer qu'un token et username est disponible sinon redirection vers la page principale
@@ -23,60 +29,14 @@ let selectedTerritoire = undefined;
 let currentPhase = EPhases.ATTACK;
 let gameFinished = false;
 
-function getAttackableNeighbour(territoire) {
-  let playerId = territoiresList[territoire].playerId;
-  let voisins = territoiresList[territoire].connection;
-  let listFinales = [];
-  for (const voisin of voisins) {
-    if (territoiresList[voisin].playerId != playerId) {
-      listFinales.push(voisin);
-    }
-  }
-  return listFinales;
-}
-
-function getReachableTerritories(territoire) {
-  const playerId = territoiresList[territoire].playerId;
-  const listeTemporaires = [territoire];
-  const listFinales = [];
-  do {
-    const territoire = listeTemporaires.pop();
-    listFinales.push(territoire);
-    let voisins = territoiresList[territoire].connection;
-    for (const voisin of voisins) {
-      if (territoiresList[voisin].playerId === playerId) {
-        if (
-          !listeTemporaires.includes(voisin) &&
-          !listFinales.includes(voisin)
-        ) {
-          listeTemporaires.push(voisin);
-        }
-      }
-    }
-  } while (listeTemporaires.length != 0);
-  return listFinales;
-}
-
-function countPlayerTerritoires(playerId) {
-  let count = 0;
-  for (const territoireId in territoiresList) {
-    if (territoiresList[territoireId].playerId === playerId) {
-      count++;
-    }
-  }
-  return count;
-}
-
-function countPlayerTroops(playerId) {
-  let count = playersList[playerId].troops;
-  for (const territoireId in territoiresList) {
-    if (territoiresList[territoireId].playerId === playerId) {
-      count += territoiresList[territoireId].troops || 0;
-    }
-  }
-  return count;
-}
-
+/**
+ * Prend le contrôle d'un territoire pour un joueur donné et met à jour les troupes.
+ *
+ * @param {string} territoryId - L'ID du territoire à conquérir.
+ * @param {string} playerId - L'ID du joueur qui prend le contrôle du territoire.
+ * @param {number} troopsCount - Le nombre de troupes utilisées pour conquérir le territoire.
+ * @throws {Error} Si le joueur n'a pas assez de troupes ou s'il possède déjà le territoire.
+ */
 function takeOverTerritory(territoryId, playerId, troopsCount) {
   console.log(`takeOverTerritory(${territoryId}, ${playerId}, ${troopsCount})`);
   let player = playersList[playerId];
