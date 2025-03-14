@@ -35,7 +35,7 @@ export const EPhases = Object.freeze({
 export const territoiresList = {
   alaska: {
     continent: "north-america",
-    connection: ["northwestTerritory", "alberta","kamchakta"],
+    connection: ["northwestTerritory", "alberta", "kamchakta"],
   },
   northwestTerritory: {
     continent: "north-america",
@@ -43,7 +43,7 @@ export const territoiresList = {
   },
   greenland: {
     continent: "north-america",
-    connection: ["northwestTerritory", "ontario", "quebec","iceland"],
+    connection: ["northwestTerritory", "ontario", "quebec", "iceland"],
   },
   alberta: {
     continent: "north-america",
@@ -86,7 +86,7 @@ export const territoiresList = {
   },
   brazil: {
     continent: "south-america",
-    connection: ["venezuela", "peru", "argentina","northAfrica"],
+    connection: ["venezuela", "peru", "argentina", "northAfrica"],
   },
   argentina: {
     continent: "south-america",
@@ -94,119 +94,163 @@ export const territoiresList = {
   },
   northAfrica: {
     continent: "africa",
-    connection: ["brazil","egypt","congo","eastAfrica","westernEurope","southernEurope"],
+    connection: [
+      "brazil",
+      "egypt",
+      "congo",
+      "eastAfrica",
+      "westernEurope",
+      "southernEurope",
+    ],
   },
   congo: {
     continent: "africa",
-    connection: ["northAfrica","southAfrica","eastAfrica"],
+    connection: ["northAfrica", "southAfrica", "eastAfrica"],
   },
   southAfrica: {
     continent: "africa",
-    connection: ["madagascar","congo","eastAfrica"],
+    connection: ["madagascar", "congo", "eastAfrica"],
   },
   madagascar: {
     continent: "africa",
-    connection: ["southAfrica","eastAfrica"],
+    connection: ["southAfrica", "eastAfrica"],
   },
   eastAfrica: {
     continent: "africa",
-    connection: ["madagascar","southAfrica","congo","northAfrica","egypt","middleEast"],
+    connection: [
+      "madagascar",
+      "southAfrica",
+      "congo",
+      "northAfrica",
+      "egypt",
+      "middleEast",
+    ],
   },
   egypt: {
     continent: "africa",
-    connection: ["middleEast","southernEurope","northAfrica","eastAfrica"],
+    connection: ["middleEast", "southernEurope", "northAfrica", "eastAfrica"],
   },
   westernEurope: {
     continent: "europe",
-    connection: ["northAfrica","southernEurope","northernEurope","greatBritain"],
+    connection: [
+      "northAfrica",
+      "southernEurope",
+      "northernEurope",
+      "greatBritain",
+    ],
   },
   southernEurope: {
     continent: "europe",
-    connection: ["westernEurope","middleEast","egypt","ukraine","northernEurope","northAfrica"],
+    connection: [
+      "westernEurope",
+      "middleEast",
+      "egypt",
+      "ukraine",
+      "northernEurope",
+      "northAfrica",
+    ],
   },
   northernEurope: {
     continent: "europe",
-    connection: ["greatBritain","westernEurope","southernEurope","ukraine","scandinavia"],
+    connection: [
+      "greatBritain",
+      "westernEurope",
+      "southernEurope",
+      "ukraine",
+      "scandinavia",
+    ],
   },
   greatBritain: {
     continent: "europe",
-    connection: ["iceland","scandinavia","northernEurope","westernEurope"],
+    connection: ["iceland", "scandinavia", "northernEurope", "westernEurope"],
   },
   iceland: {
     continent: "europe",
-    connection: ["greenland","greatBritain","scandinavia"],
+    connection: ["greenland", "greatBritain", "scandinavia"],
   },
   scandinavia: {
     continent: "europe",
-    connection: ["greatBritain","iceland","northernEurope","ukraine"],
+    connection: ["greatBritain", "iceland", "northernEurope", "ukraine"],
   },
   ukraine: {
     continent: "europe",
-    connection: ["scandinavia","northernEurope","southernEurope","ural","afghanistan"],
+    connection: [
+      "scandinavia",
+      "northernEurope",
+      "southernEurope",
+      "ural",
+      "afghanistan",
+    ],
   },
   middleEast: {
     continent: "asia",
-    connection: ["egypt","eastAfrica","india","afghanistan","southernEurope"],
+    connection: [
+      "egypt",
+      "eastAfrica",
+      "india",
+      "afghanistan",
+      "southernEurope",
+    ],
   },
   afghanistan: {
     continent: "asia",
-    connection: ["middleEast","india","china","ural","ukraine"],
+    connection: ["middleEast", "india", "china", "ural", "ukraine"],
   },
   ural: {
     continent: "asia",
-    connection: ["ukraine","afghanistan","china","siberia"],
+    connection: ["ukraine", "afghanistan", "china", "siberia"],
   },
   india: {
     continent: "asia",
-    connection: ["middleEast","afghanistan","china"],
+    connection: ["middleEast", "afghanistan", "china"],
   },
   siberia: {
     continent: "asia",
-    connection: ["ural","china","mongolia","irkutsk","yakutsk"],
+    connection: ["ural", "china", "mongolia", "irkutsk", "yakutsk"],
   },
   china: {
     continent: "asia",
-    connection: ["siam","india","afghanistan","ural","siberia","mongolia"],
+    connection: ["siam", "india", "afghanistan", "ural", "siberia", "mongolia"],
   },
   mongolia: {
     continent: "asia",
-    connection: ["japan","china","siberia","irkutsk","kamchakta"],
+    connection: ["japan", "china", "siberia", "irkutsk", "kamchakta"],
   },
   japan: {
     continent: "asia",
-    connection: ["mongolia","kamchakta"],
+    connection: ["mongolia", "kamchakta"],
   },
   irkutsk: {
     continent: "asia",
-    connection: ["mongolia","siberia","yakutsk","kamchakta"],
+    connection: ["mongolia", "siberia", "yakutsk", "kamchakta"],
   },
   yakutsk: {
     continent: "asia",
-    connection: ["siberia","irkutsk","kamchakta"],
+    connection: ["siberia", "irkutsk", "kamchakta"],
   },
   kamchakta: {
     continent: "",
-    connection: ["yakutsk","irkutsk","mongolia","japan","alaska"],
+    connection: ["yakutsk", "irkutsk", "mongolia", "japan", "alaska"],
   },
   siam: {
     continent: "asia",
-    connection: ["china","indonesia"],
+    connection: ["china", "indonesia"],
   },
   indonesia: {
     continent: "oceania",
-    connection: ["siam","newGuinea","westernAustralia"],
+    connection: ["siam", "newGuinea", "westernAustralia"],
   },
   newGuinea: {
     continent: "oceania",
-    connection: ["easternAustralia","westernAustralia","indonesia"],
+    connection: ["easternAustralia", "westernAustralia", "indonesia"],
   },
   westernAustralia: {
     continent: "oceania",
-    connection: ["newGuinea","easternAustralia","indonesia"],
+    connection: ["newGuinea", "easternAustralia", "indonesia"],
   },
   easternAustralia: {
     continent: "oceania",
-    connection: ["westernAustralia","newGuinea"],
+    connection: ["westernAustralia", "newGuinea"],
   },
 };
 
