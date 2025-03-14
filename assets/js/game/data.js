@@ -185,7 +185,7 @@ export const territoiresList = {
     connection: ["siberia","irkutsk","kamchakta"],
   },
   kamchakta: {
-    continent: "",
+    continent: "asia",
     connection: ["yakutsk","irkutsk","mongolia","japan","alaska"],
   },
   siam: {
