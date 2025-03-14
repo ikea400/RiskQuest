@@ -138,6 +138,7 @@ export const territoiresList = {
       "northernEurope",
       "greatBritain",
     ],
+    pastille: { x: 0.5, y: 0.5 },
   },
   southernEurope: {
     continent: "europe",
