@@ -111,7 +111,7 @@ class CountPopup extends PopupBase {
             <img id="popup-count-confirm-img" src="./assets/images/circle-check-solid.svg" alt="next">
         </div>
         <div class="popup-count-overlay"></div>
-        <div class="popup-count-countainer">
+        <div class="popup-count-countainer" autofocus>
           <div id="popup-count-number-1" class="popup-count-number">1</div>
           <div id="popup-count-number-2" class="popup-count-number">2</div>
           <div id="popup-count-number-3" class="popup-count-number">3</div>
@@ -123,8 +123,22 @@ class CountPopup extends PopupBase {
 
     const popupCountConfirm = document.getElementById("popup-count-confirm");
     popupCountConfirm.addEventListener("click", () => {
-      this.resolve({ cancel: false });
+      this.resolve({ cancel: false, value: this.params.current });
     });
+
+    document.addEventListener("keydown", (event) => {
+      console.log(event);
+    });
+
+    for (let i = 1; i <= 5; i++) {
+      const popupCountNumber = document.getElementById(
+        `popup-count-number-${i}`
+      );
+      popupCountNumber.addEventListener("click", (event) => {
+        this.params.current = parseInt(event.currentTarget.innerText);
+        this.#updateDisplayText();
+      });
+    }
   }
 
   show() {
@@ -147,10 +161,10 @@ class CountPopup extends PopupBase {
     const rotate = (num) => {
       const range = this.params.max - this.params.min + 1; // Calculate the range
       return (
-        ((((num - this.params.min) % range) + range) % range) +
-        this.params.min
+        ((((num - this.params.min) % range) + range) % range) + this.params.min
       );
     };
+
     function clamp(value, min, max) {
       return Math.min(Math.max(value, min), max);
     }
@@ -170,7 +184,9 @@ class CountPopup extends PopupBase {
     ];
 
     for (let i = 0; i < numbers.length; i++) {
-      const popupCountNumber = document.getElementById(`popup-count-number-${i + 1}`);
+      const popupCountNumber = document.getElementById(
+        `popup-count-number-${i + 1}`
+      );
       popupCountNumber.innerText = numbers[i];
     }
   }

@@ -24,7 +24,8 @@
 }
 
 .popup-count-countainer {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
   background-color: rgba(0, 0, 0, 0.25);
   font: 1.2rem "Fira Sans", sans-serif;
 }
@@ -32,6 +33,10 @@
 .popup-count-number {
   padding: 1.5rem;
   font-size: xx-large;
+  cursor: pointer;
+  user-select: none;
+  align-self: center;
+  justify-self: center;
 }
 
 .popup-count-overlay {
@@ -59,8 +64,10 @@
   background: radial-gradient(circle, white 50%, black 100%);
   border-radius: 50%;
   border-width: 0px;
+  cursor: pointer;
 }
 
 #popup-count-confirm-img {
-  filter: opacity(0.2) drop-shadow(0 0 0 green) drop-shadow(0 0 0 green) drop-shadow(0 0 0 green) drop-shadow(0 0 0 green);
+  filter: opacity(0.2) drop-shadow(0 0 0 green) drop-shadow(0 0 0 green)
+    drop-shadow(0 0 0 green) drop-shadow(0 0 0 green);
 }
