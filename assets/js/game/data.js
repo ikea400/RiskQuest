@@ -1,28 +1,3 @@
-export const MIN_PLAYER_COUNT = 3;
-export const MAX_PLAYER_COUNT = 6;
-
-/**
- * Retourne le nombre de troupes initial pour chaque joueur en fonction du nombre de joueurs.
- *
- * @param {number} playerCount - Le nombre de joueurs participant à la partie.
- * @returns {number} - Le nombre de troupes initial attribué à chaque joueur.
- * @throws {Error} - Lance une erreur si le nombre de joueurs est inférieur à MIN_PLAYER_COUNT ou supérieur à MAX_PLAYER_COUNT.
- *
- * @reference https://www.hasbro.com/common/instruct/risk.pdf
- * Si 3 joueurs participent, chaque joueur reçoit 35 unités d'infanterie.
- * Si 4 joueurs participent, chaque joueur reçoit 30 unités d'infanterie.
- * Si 5 joueurs participent, chaque joueur reçoit 25 unités d'infanterie.
- * Si 6 joueurs participent, chaque joueur reçoit 20 unités d'infanterie.
- */
-export function getStartingTroops(playerCount) {
-  if (playerCount < MIN_PLAYER_COUNT || playerCount > MAX_PLAYER_COUNT) {
-    throw new Error("There must be between 3 and 6 player");
-  }
-
-  const troopsList = [35, 30, 25, 20];
-  return troopsList[playerCount - MIN_PLAYER_COUNT];
-}
-
 export const EPhases = Object.freeze({
   NONE: Symbol("NONE"),
   PICKING: Symbol("PICKING"),
@@ -31,6 +6,15 @@ export const EPhases = Object.freeze({
   ATTACK: Symbol("ATTACK"),
   FORTIFY: Symbol("FORTIFY"),
 });
+
+export const data = {
+  MIN_PLAYER_COUNT: 3,
+  MAX_PLAYER_COUNT: 6,
+
+  currentPlayerId: 1,
+  selectedTerritoire: undefined,
+  currentPhase: EPhases.ATTACK,
+};
 
 export const territoiresList = {
   alaska: {
@@ -282,3 +266,25 @@ export const playersList = [
     img: "./assets/images/player6-profile.webp",
   },
 ];
+
+/**
+ * Retourne le nombre de troupes initial pour chaque joueur en fonction du nombre de joueurs.
+ *
+ * @param {number} playerCount - Le nombre de joueurs participant à la partie.
+ * @returns {number} - Le nombre de troupes initial attribué à chaque joueur.
+ * @throws {Error} - Lance une erreur si le nombre de joueurs est inférieur à MIN_PLAYER_COUNT ou supérieur à MAX_PLAYER_COUNT.
+ *
+ * @reference https://www.hasbro.com/common/instruct/risk.pdf
+ * Si 3 joueurs participent, chaque joueur reçoit 35 unités d'infanterie.
+ * Si 4 joueurs participent, chaque joueur reçoit 30 unités d'infanterie.
+ * Si 5 joueurs participent, chaque joueur reçoit 25 unités d'infanterie.
+ * Si 6 joueurs participent, chaque joueur reçoit 20 unités d'infanterie.
+ */
+export function getStartingTroops(playerCount) {
+  if (playerCount < data.MIN_PLAYER_COUNT || playerCount > data.MAX_PLAYER_COUNT) {
+    throw new Error("There must be between 3 and 6 player");
+  }
+
+  const troopsList = [35, 30, 25, 20];
+  return troopsList[playerCount - data.MIN_PLAYER_COUNT];
+}

@@ -1,12 +1,10 @@
 import * as utils from "./utils.js";
 import {
   getStartingTroops,
+  data,
   EPhases,
   territoiresList,
   playersList,
-  checkPlayerDeadState,
-  initializePlayersHud,
-  updateCurrentPhase,
 } from "./data.js";
 import {
   getAttackableNeighbour,
@@ -14,8 +12,21 @@ import {
   takeOverTerritory,
   updatePlayerDeadState,
   setCurrentPlayer,
+  countNewTroops,
+  setSelectedTerritoire,
+  checkPlayerDeadState,
+  moveTroopsFromPlayer,
+  addTroops,
+  removeTroopsFromTerritory,
+  moveTroopsFromTerritory,
+  takeOverTerritoryFromTerritory,
 } from "./logic.js";
-import { updatePastillesPosition, changeBackgroundPlayer } from "./display.js";
+import {
+  updatePastillesPosition,
+  setAttackableTerritoires,
+  initializePlayersHud,
+  updateCurrentPhase,
+} from "./display.js";
 
 // window.addEventListener("pageshow", function (event) {
 //   // S'assurer qu'un token et username est disponible sinon redirection vers la page principale
@@ -29,15 +40,7 @@ import { updatePastillesPosition, changeBackgroundPlayer } from "./display.js";
 // });
 
 let currentPlayerCount = undefined;
-let currentPlayerId = 1;
-let selectedTerritoire = undefined;
-let currentPhase = EPhases.ATTACK;
 let gameFinished = false;
-
-function getNextplayerId(playerId, playerCount) {
-  return (playerId % playerCount) + 1;
-}
-
 const resizeObserver = new ResizeObserver(updatePastillesPosition);
 
 function startTurnTerritoriesSelection(playerCount, callback) {
@@ -46,7 +49,7 @@ function startTurnTerritoriesSelection(playerCount, callback) {
 
   const territoires = document.getElementsByClassName("territoire");
 
-  let playerId = currentPlayerId;
+  let playerId = data.currentPlayerId;
 
   function handler() {
     const territoireId = this.id;
@@ -56,7 +59,7 @@ function startTurnTerritoriesSelection(playerCount, callback) {
       Object.values(territoiresList).some((territoire) => !territoire.playerId)
     ) {
       // Some unselected territories remain
-      playerId = getNextplayerId(playerId, playerCount);
+      playerId = utils.getNextplayerId(playerId, playerCount);
       setCurrentPlayer(playerId);
     } else {
       // All territories where selected
@@ -73,13 +76,13 @@ function startTurnTerritoriesSelection(playerCount, callback) {
 
 function startRandomTerritoryDistribution(playerCount) {
   let territoires = Object.keys(territoiresList);
-  let playerId = currentPlayerId;
+  let playerId = data.currentPlayerId;
   do {
     let territoireIndex = utils.randomInteger(0, territoires.length - 1);
     takeOverTerritory(territoires[territoireIndex], playerId, 1);
     territoires.splice(territoireIndex, 1);
 
-    playerId = getNextplayerId(playerId, playerCount);
+    playerId = utils.getNextplayerId(playerId, playerCount);
   } while (territoires.length > 0);
 }
 
@@ -98,87 +101,27 @@ function startRandomTroopsPlacement(playerCount) {
   }
 }
 
-function countNewTroops(ownedTerritoriesIds, playerId) {
-  /*
-  At the beginning of every turn (including your first), count the
-  number of territories you currently occupy, then divide the total by three
-  (ignore any fraction).
-  You will always receive at least 3 armies on a turn, even if you occupy fewer
-  than 9 territories.
-  */
-  const territoiresCount = ownedTerritoriesIds.length;
-  let newTroops = Math.max(Math.floor(territoiresCount / 3), 3);
-
-  /*
-  In addition, at the beginning of your turn you will receive
-  armies for each continent you control. (To control a continent, you must
-  occupy all its territories at the start of your turn.)
-  */
-  const continents = [];
-  for (const territoireId of Object.keys(territoiresList)) {
-    const territoire = territoiresList[territoireId];
-    if (territoire.playerId != playerId) {
-      continents[territoireId.continent] = false;
-    } else if (continents[territoireId.continent] === undefined) {
-      continents[territoireId.continent] = true;
-    }
-  }
-
-  const bonuses = {
-    "north-america": 5,
-    "south-america": 2,
-    europe: 5,
-    africa: 3,
-    asia: 7,
-    australia: 2,
-  };
-  for (const continentId in continents) {
-    if (continents[continentId] === true) {
-      newTroops += bonuses[continentId] || 0;
-    }
-  }
-  return newTroops;
-}
-
-function addTroops(playerId, troopsCount) {
-  console.log(`addTroops(${playerId}, ${troopsCount})`);
-  if (troopsCount <= 0) {
-    throw new Error(`player${playerId} tried to add ${troopsCount} troops`);
-  }
-
-  let player = playersList[playerId];
-  player.troops += troopsCount;
-  updatePlayerHudTroopsCount(playerId);
-  updatePhaseTroopsCount(player.troops);
-}
-
-function setSelectedTerritoire(territoireId) {
-  utils.removeCssClass("selected-territory");
-  if (territoireId)
-    document.getElementById(territoireId).classList.add("selected-territory");
-  selectedTerritoire = territoireId;
-}
-
 function startDraftPhase(callback) {
   console.log("startDraftPhase");
   updateCurrentPhase(EPhases.DRAFT);
 
   // Récupère les térritoires possédé par le joueur
   const ownedTerritoriesIds = Object.keys(territoiresList).filter(
-    (territoireId) => territoiresList[territoireId].playerId === currentPlayerId
+    (territoireId) =>
+      territoiresList[territoireId].playerId === data.currentPlayerId
   );
 
   // Calcule le nombre de nouvelle troop de la phase draft
-  const newTroops = countNewTroops(ownedTerritoriesIds, currentPlayerId);
+  const newTroops = countNewTroops(ownedTerritoriesIds, data.currentPlayerId);
 
   // Ajouter les troupes
-  addTroops(currentPlayerId, newTroops);
+  addTroops(data.currentPlayerId, newTroops);
 
   function territoireHandler() {
-    moveTroopsFromPlayer(this.id, currentPlayerId, 1);
+    moveTroopsFromPlayer(this.id, data.currentPlayerId, 1);
 
     // Tous les pieces ont été placé
-    if (playersList[currentPlayerId].troops <= 0) {
+    if (playersList[data.currentPlayerId].troops <= 0) {
       // Enlever tous les listener sur les territoires
       for (const territoire of ownedTerritoriesIds) {
         document
@@ -197,18 +140,8 @@ function startDraftPhase(callback) {
       .getElementById(territoire)
       .addEventListener("click", territoireHandler);
   }
-  setAttackableTerritoires(ownedTerritoriesIds);
-}
 
-function setAttackableTerritoires(territoiresId) {
-  utils.removeCssClass("attackable-territory");
-  for (const territoireId of territoiresId) {
-    const territoire = document.getElementById(territoireId);
-    territoire.classList.add("attackable-territory");
-    // Déplace l'element a la fin de son parent pour qu'il soit afficher pardessus ces frère
-    // pour permettre a sont stroke d'aparraite et ne pas etre cacher.
-    territoire.parentElement.appendChild(territoire);
-  }
+  setAttackableTerritoires(ownedTerritoriesIds);
 }
 
 function startAttackPhase(callback) {
@@ -232,21 +165,21 @@ function startAttackPhase(callback) {
   turnHudAction.addEventListener("click", nextHandler, { once: true });
 
   async function territoireHandler() {
-    if (territoiresList[this.id].playerId === currentPlayerId) {
-      selectedTerritoire = this.id;
+    if (territoiresList[this.id].playerId === data.currentPlayerId) {
+      setSelectedTerritoire(this.id);
       setAttackableTerritoires(getAttackableNeighbour(this.id));
     }
-    if (!selectedTerritoire) {
+    if (!data.selectedTerritoire) {
       return;
     }
 
-    const attackables = getAttackableNeighbour(selectedTerritoire);
+    const attackables = getAttackableNeighbour(data.selectedTerritoire);
     if (!attackables.includes(this.id)) {
       return;
     }
 
     const defenderTerritoireId = this.id;
-    const attackerTerritoireId = selectedTerritoire;
+    const attackerTerritoireId = data.selectedTerritoire;
     console.log(
       utils.blitzAttack(
         territoiresList[defenderTerritoireId].troops,
@@ -270,7 +203,7 @@ function startAttackPhase(callback) {
       takeOverTerritoryFromTerritory(
         attackerTerritoireId,
         defenderTerritoireId,
-        currentPlayerId,
+        data.currentPlayerId,
         1
       );
 
@@ -298,7 +231,7 @@ function startAttackPhase(callback) {
         moveTroopsFromTerritory(
           attackerTerritoireId,
           defenderTerritoireId,
-          currentPlayerId,
+          data.currentPlayerId,
           count
         );
       }
@@ -319,8 +252,7 @@ function startFortifyPhase(callback) {
 
   const ownedTerritoriesIds = Object.keys(territoiresList).filter(
     (territoireId) =>
-      territoiresList[territoireId].playerId === currentPlayerId &&
-      territoiresList[territoireId].troops > 1
+      territoiresList[territoireId].playerId === data.currentPlayerId
   );
   const territoiresSvgs = ownedTerritoriesIds.map((territoireId) =>
     document.getElementById(territoireId)
@@ -340,32 +272,34 @@ function startFortifyPhase(callback) {
   turnHudAction.addEventListener("click", nextHandler, { once: true });
 
   async function territoireHandler() {
-    if (!selectedTerritoire) {
-      setSelectedTerritoire(this.id);
+    if (!data.selectedTerritoire) {
+      if (territoiresList[this.id].troops > 1) {
+        setSelectedTerritoire(this.id);
+      }
       return;
     }
 
-    const reachables = getReachableTerritories(this.id);
-    if (reachables.includes(selectedTerritoire)) {
+    const reachables = getReachableTerritories(data.selectedTerritoire);
+    if (reachables.includes(this.id)) {
       const popup = new CountPopup({
         min: 1,
-        max: territoiresList[selectedTerritoire].troops - 1,
+        max: territoiresList[data.selectedTerritoire].troops - 1,
       });
 
       const result = await popup.show();
 
       if (result.cancel === false && result.value > 0) {
         moveTroopsFromTerritory(
-          selectedTerritoire,
+          data.selectedTerritoire,
           this.id,
-          currentPlayerId,
+          data.currentPlayerId,
           result.value
         );
 
         nextHandler();
       }
     } else {
-      setSelectedTerritoire(this.id);
+      setSelectedTerritoire(territoiresList[this.id].troops > 1 ? this.id : null);
     }
   }
 
@@ -377,16 +311,16 @@ function startFortifyPhase(callback) {
 function startOneRound(callback) {
   startDraftPhase(() => {
     if (!gameFinished) {
-      let nextPlayerId = currentPlayerId;
+      let nextPlayerId = data.currentPlayerId;
       do {
-        nextPlayerId = getNextplayerId(nextPlayerId, currentPlayerCount);
+        nextPlayerId = utils.getNextplayerId(nextPlayerId, currentPlayerCount);
         console.log(nextPlayerId, playersList[nextPlayerId]);
       } while (
         playersList[nextPlayerId].dead &&
-        nextPlayerId !== currentPlayerId
+        nextPlayerId !== data.currentPlayerId
       );
 
-      if (nextPlayerId === currentPlayerId) {
+      if (nextPlayerId === data.currentPlayerId) {
         gameFinished = true;
       } else {
         setCurrentPlayer(nextPlayerId);
@@ -402,9 +336,12 @@ function startMainLoop(callback) {
       callback();
       return;
     }
+
+    // Commence un rounde
     startOneRound(handler);
   };
 
+  // Demarage de la boucle
   handler();
 }
 

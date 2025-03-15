@@ -1,11 +1,14 @@
-import { territoiresList, playersList } from "./data.js";
+import { data, territoiresList, playersList } from "./data.js";
 import {
   updateTerritoryOwer,
   updatePlayersHudTerritoireCount,
   updatePlayerHudTroopsCount,
   updatePastilleTroopsCount,
   updatePhaseTroopsCount,
+  changeBackgroundPlayer,
+  updatePhaseHudPlayer,
 } from "./display.js";
+import * as utils from "./utils.js";
 
 /**
  * Récupère les territoires voisins attaquables d'un territoire donné.
@@ -47,6 +50,7 @@ export function getReachableTerritories(territoire) {
       }
     }
   } while (canditats.length != 0);
+  console.log(reachables);
   return reachables;
 }
 
@@ -135,7 +139,7 @@ function addTroopsToTerritory(territoireId, troopsCount) {
  * @param {number} troopsCount - Le nombre de troupes à déplacer.
  * @throws {Error} Si le joueur ne possède pas le territoire ou s'il n'a pas assez de troupes.
  */
-function moveTroopsFromPlayer(territoireId, playerId, troopsCount) {
+export function moveTroopsFromPlayer(territoireId, playerId, troopsCount) {
   console.log(
     `moveTroopsFromPlayer(${territoireId}, ${playerId}, ${troopsCount})`
   );
@@ -165,7 +169,7 @@ function moveTroopsFromPlayer(territoireId, playerId, troopsCount) {
  * @param {number} troopsCount - Le nombre de troupes à retirer du territoire.
  * @throws {Error} Si le territoire n'a pas suffisamment de troupes pour effectuer le retrait.
  */
-function removeTroopsFromTerritory(territoireId, troopsCount) {
+export function removeTroopsFromTerritory(territoireId, troopsCount) {
   if (territoiresList[territoireId].troops < troopsCount) {
     throw new Error(
       `Error: removeTroopsFromTerritory tried to remove ${troopsCount} troops from ${territoireId} with only ${territoiresList[territoireId].troops} troops`
@@ -186,7 +190,7 @@ function removeTroopsFromTerritory(territoireId, troopsCount) {
  * @param {number} troopsCount - Le nombre de troupes à déplacer.
  * @throws {Error} Si le joueur ne contrôle pas l'un des territoires ou si le territoire source n'a pas assez de troupes.
  */
-function moveTroopsFromTerritory(
+export function moveTroopsFromTerritory(
   fromTerritoireId,
   territoireId,
   playerId,
@@ -291,7 +295,7 @@ export function setCurrentPlayer(playerId) {
 
   // Update turn hud bar name
   let turnHudName = document.getElementById("turn-hud-name");
-  changeBackgroundPlayer(turnHudName, currentPlayerId, playerId);
+  changeBackgroundPlayer(turnHudName, data.currentPlayerId, playerId);
   turnHudName.innerText = player.name;
 
   // Update turn hud profile image
@@ -300,10 +304,91 @@ export function setCurrentPlayer(playerId) {
 
   // Update turn hud action background
   let turnHudAction = document.getElementById("turn-hud-action");
-  changeBackgroundPlayer(turnHudAction, currentPlayerId, playerId);
+  changeBackgroundPlayer(turnHudAction, data.currentPlayerId, playerId);
 
   // Update turn hud phase color
-  updatePhaseHudPlayer(currentPlayerId, playerId);
+  updatePhaseHudPlayer(data.currentPlayerId, playerId);
 
-  currentPlayerId = playerId;
+  data.currentPlayerId = playerId;
+}
+
+/**
+ * Compte le nombre de nouvelles troupes qu'un joueur reçoit à chaque début de tour.
+ *
+ * @param {Array} ownedTerritoriesIds - Liste des identifiants des territoires possédés par le joueur.
+ * @param {number} playerId - Identifiant du joueur en cours.
+ * @returns {number} - Nombre total de nouvelles troupes attribuées au joueur.
+ */
+export function countNewTroops(ownedTerritoriesIds, playerId) {
+  /*
+  At the beginning of every turn (including your first), count the
+  number of territories you currently occupy, then divide the total by three
+  (ignore any fraction).
+  You will always receive at least 3 armies on a turn, even if you occupy fewer
+  than 9 territories.
+  */
+  const territoiresCount = ownedTerritoriesIds.length;
+  let newTroops = Math.max(Math.floor(territoiresCount / 3), 3);
+
+  /*
+  In addition, at the beginning of your turn you will receive
+  armies for each continent you control. (To control a continent, you must
+  occupy all its territories at the start of your turn.)
+  */
+  const continents = [];
+  for (const territoireId of Object.keys(territoiresList)) {
+    const territoire = territoiresList[territoireId];
+    if (territoire.playerId != playerId) {
+      continents[territoireId.continent] = false;
+    } else if (continents[territoireId.continent] === undefined) {
+      continents[territoireId.continent] = true;
+    }
+  }
+
+  const bonuses = {
+    "north-america": 5,
+    "south-america": 2,
+    europe: 5,
+    africa: 3,
+    asia: 7,
+    australia: 2,
+  };
+  for (const continentId in continents) {
+    if (continents[continentId] === true) {
+      newTroops += bonuses[continentId] || 0;
+    }
+  }
+  return newTroops;
+}
+
+/**
+ * Ajoute un nombre spécifié de troupes au joueur donné.
+ *
+ * @param {number} playerId - Identifiant du joueur à qui ajouter les troupes.
+ * @param {number} troopsCount - Nombre de troupes à ajouter.
+ * @throws {Error} - Génère une erreur si le nombre de troupes à ajouter est inférieur ou égal à zéro.
+ */
+export function addTroops(playerId, troopsCount) {
+  console.log(`addTroops(${playerId}, ${troopsCount})`);
+  if (troopsCount <= 0) {
+    throw new Error(`player${playerId} tried to add ${troopsCount} troops`);
+  }
+
+  let player = playersList[playerId];
+  player.troops += troopsCount;
+  updatePlayerHudTroopsCount(playerId);
+  updatePhaseTroopsCount(player.troops);
+}
+
+/**
+ * Définit le territoire sélectionné en ajoutant une classe CSS et met à jour la variable correspondante.
+ *
+ * @param {string|null} territoireId - Identifiant du territoire à sélectionner.
+ * Si null ou undefined, aucun territoire ne sera sélectionné.
+ */
+export function setSelectedTerritoire(territoireId) {
+  utils.removeCssClass("selected-territory");
+  if (territoireId)
+    document.getElementById(territoireId).classList.add("selected-territory");
+  data.selectedTerritoire = territoireId;
 }

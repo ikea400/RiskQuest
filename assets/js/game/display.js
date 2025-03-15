@@ -1,5 +1,6 @@
-import { territoiresList, EPhases } from "./data.js";
-import { countPlayerTerritoires } from "./logic.js";
+import { data, EPhases, territoiresList, playersList } from "./data.js";
+import { countPlayerTerritoires, countPlayerTroops } from "./logic.js";
+import * as utils from "./utils.js";
 
 export function updatePastillesPosition() {
   const pastilles = document.getElementsByClassName("pastille");
@@ -122,7 +123,7 @@ const getPhaseElement = (phase) => {
 };
 
 export function updatePhaseHudPlayer(oldPlayerId, playerId) {
-  let element = getPhaseElement(currentPhase);
+  let element = getPhaseElement(data.currentPhase);
 
   if (element) {
     changeBackgroundPlayer(element, oldPlayerId, playerId);
@@ -130,22 +131,22 @@ export function updatePhaseHudPlayer(oldPlayerId, playerId) {
 }
 
 export function updateCurrentPhase(phase) {
-  if (phase === currentPhase) {
+  if (phase === data.currentPhase) {
     throw new Error(
       `updateCurrentPhase was called with the same phase as the current one: ${phase.description}`
     );
   }
 
   // Remove the class from the current phase's element
-  const currentElement = getPhaseElement(currentPhase);
+  const currentElement = getPhaseElement(data.currentPhase);
   if (currentElement) {
-    currentElement.classList.remove(`background-player${currentPlayerId}`);
+    currentElement.classList.remove(`background-player${data.currentPlayerId}`);
   }
 
   // Add/remove the class for the new phase's element
   const newElement = getPhaseElement(phase);
   if (newElement) {
-    newElement.classList.add(`background-player${currentPlayerId}`);
+    newElement.classList.add(`background-player${data.currentPlayerId}`);
   }
 
   const turnHudPhaseName = document.getElementById("turn-hud-phase-name");
@@ -158,8 +159,9 @@ export function updateCurrentPhase(phase) {
       "turn-hub-action-troops-count"
     );
     turnHubActionTroopsCount.hidden = false;
-    turnHubActionTroopsCount.innerText = playersList[currentPlayerId].troops;
-  } else if (currentPhase === EPhases.DRAFT) {
+    turnHubActionTroopsCount.innerText =
+    playersList[data.currentPlayerId].troops;
+  } else if (data.currentPhase === EPhases.DRAFT) {
     const turnHubActionImg = document.getElementById("turn-hub-action-img");
     turnHubActionImg.src = "./assets/images/chevrons-right-solid.svg";
     const turnHubActionTroopsCount = document.getElementById(
@@ -169,5 +171,16 @@ export function updateCurrentPhase(phase) {
   }
 
   // Update the current phase
-  currentPhase = phase;
+  data.currentPhase = phase;
+}
+
+export function setAttackableTerritoires(territoiresId) {
+  utils.removeCssClass("attackable-territory");
+  for (const territoireId of territoiresId) {
+    const territoire = document.getElementById(territoireId);
+    territoire.classList.add("attackable-territory");
+    // Déplace l'element a la fin de son parent pour qu'il soit afficher pardessus ces frère
+    // pour permettre a sont stroke d'aparraite et ne pas etre cacher.
+    territoire.parentElement.appendChild(territoire);
+  }
 }

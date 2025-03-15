@@ -1,9 +1,8 @@
-const crypto = window.crypto || window.msCrypto;
-
 // credits https://stackoverflow.com/a/42321673
 export function randomInteger(min, max) {
   const randomBuffer = new Uint32Array(1);
 
+  const crypto = window.crypto || window.msCrypto;
   crypto.getRandomValues(randomBuffer);
 
   let randomNumber = randomBuffer[0] / (0xffffffff + 1);
@@ -109,4 +108,8 @@ export function removeCssClass(cssClass) {
   for (const element of elements) {
     element.classList.remove(cssClass);
   }
+}
+
+export function getNextplayerId(playerId, playerCount) {
+  return (playerId % playerCount) + 1;
 }
