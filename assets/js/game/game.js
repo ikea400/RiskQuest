@@ -258,8 +258,14 @@ function startFortifyPhase(callback) {
     document.getElementById(territoireId)
   );
 
+  const turnHudAction = document.getElementById("turn-hud-action");
+  turnHudAction.addEventListener("click", nextHandler);
+
   function nextHandler() {
     setSelectedTerritoire(null);
+
+    // On doit supprimer le handler manuellement sans utiliser { once: true } car nextHandler peut etre appeler manuellement.
+    turnHudAction.removeEventListener("click", nextHandler);
 
     for (const territoireSvg of territoiresSvgs) {
       territoireSvg.removeEventListener("click", territoireHandler);
@@ -267,9 +273,6 @@ function startFortifyPhase(callback) {
 
     callback();
   }
-
-  const turnHudAction = document.getElementById("turn-hud-action");
-  turnHudAction.addEventListener("click", nextHandler, { once: true });
 
   async function territoireHandler() {
     if (!data.selectedTerritoire) {
