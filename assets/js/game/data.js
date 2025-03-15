@@ -239,6 +239,22 @@ export const territoiresList = {
   },
 };
 
+export const continentsList = {
+  "north-america": { bonus: 5, territoires: [] },
+  "south-america": { bonus: 2, territoires: [] },
+  europe: { bonus: 5, territoires: [] },
+  africa: { bonus: 3, territoires: [] },
+  asia: { bonus: 7, territoires: [] },
+  oceania: { bonus: 2, territoires: [] },
+};
+
+// Remplie les continents avec leurs territoires pour éviter de devoir le faire manuellement.
+for (const territoireId in territoiresList) {
+  const territoire = territoiresList[territoireId];
+
+  continentsList[territoire.continent].territoires.push(territoireId);
+}
+
 export const playersList = [
   undefined,
   {
@@ -281,7 +297,10 @@ export const playersList = [
  * Si 6 joueurs participent, chaque joueur reçoit 20 unités d'infanterie.
  */
 export function getStartingTroops(playerCount) {
-  if (playerCount < data.MIN_PLAYER_COUNT || playerCount > data.MAX_PLAYER_COUNT) {
+  if (
+    playerCount < data.MIN_PLAYER_COUNT ||
+    playerCount > data.MAX_PLAYER_COUNT
+  ) {
     throw new Error("There must be between 3 and 6 player");
   }
 

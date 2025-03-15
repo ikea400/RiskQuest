@@ -59,7 +59,7 @@ function startTurnTerritoriesSelection(playerCount, callback) {
       Object.values(territoiresList).some((territoire) => !territoire.playerId)
     ) {
       // Some unselected territories remain
-      playerId = utils.getNextplayerId(playerId, playerCount);
+      playerId = utils.getNextPlayerId(playerId, playerCount);
       setCurrentPlayer(playerId);
     } else {
       // All territories where selected
@@ -82,7 +82,7 @@ function startRandomTerritoryDistribution(playerCount) {
     takeOverTerritory(territoires[territoireIndex], playerId, 1);
     territoires.splice(territoireIndex, 1);
 
-    playerId = utils.getNextplayerId(playerId, playerCount);
+    playerId = utils.getNextPlayerId(playerId, playerCount);
   } while (territoires.length > 0);
 }
 
@@ -302,7 +302,9 @@ function startFortifyPhase(callback) {
         nextHandler();
       }
     } else {
-      setSelectedTerritoire(territoiresList[this.id].troops > 1 ? this.id : null);
+      setSelectedTerritoire(
+        territoiresList[this.id].troops > 1 ? this.id : null
+      );
     }
   }
 
@@ -316,7 +318,7 @@ function startOneRound(callback) {
     if (!gameFinished) {
       let nextPlayerId = data.currentPlayerId;
       do {
-        nextPlayerId = utils.getNextplayerId(nextPlayerId, currentPlayerCount);
+        nextPlayerId = utils.getNextPlayerId(nextPlayerId, currentPlayerCount);
         console.log(nextPlayerId, playersList[nextPlayerId]);
       } while (
         playersList[nextPlayerId].dead &&

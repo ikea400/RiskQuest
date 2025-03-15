@@ -1,4 +1,4 @@
-import { data, territoiresList, playersList } from "./data.js";
+import { data, territoiresList, playersList, continentsList } from "./data.js";
 import {
   updateTerritoryOwer,
   updatePlayersHudTerritoireCount,
@@ -285,28 +285,39 @@ export function checkPlayerDeadState(playerId) {
   );
 }
 
+/**
+ * Met à jour l'état de mort d'un joueur.
+ *
+ * @param {number} playerId - L'identifiant du joueur à mettre à jour.
+ * @param {boolean} dead - Indique si le joueur est mort (true) ou vivant (false).
+ */
 export function updatePlayerDeadState(playerId, dead) {
   playersList[playerId].dead = dead;
   document.getElementById(`side-player-info-${playerId}`).hidden = dead;
 }
 
+/**
+ * Définit le joueur actuel et met à jour l'affichage de l'interface utilisateur en conséquence.
+ *
+ * @param {number} playerId - L'identifiant du joueur qui devient le joueur actuel.
+ */
 export function setCurrentPlayer(playerId) {
   const player = playersList[playerId];
 
-  // Update turn hud bar name
+  // Met à jour le nom sur la barre d'interface du tour
   let turnHudName = document.getElementById("turn-hud-name");
   changeBackgroundPlayer(turnHudName, data.currentPlayerId, playerId);
   turnHudName.innerText = player.name;
 
-  // Update turn hud profile image
+  // Met à jour l'image de profil sur l'interface du tour
   let turnHubImg = document.getElementById("turn-hub-img");
   turnHubImg.src = player.img;
 
-  // Update turn hud action background
+  // Met à jour l'arrière-plan de l'action sur l'interface du tour
   let turnHudAction = document.getElementById("turn-hud-action");
   changeBackgroundPlayer(turnHudAction, data.currentPlayerId, playerId);
 
-  // Update turn hud phase color
+  // Met à jour la couleur de la phase sur l'interface du tour
   updatePhaseHudPlayer(data.currentPlayerId, playerId);
 
   data.currentPlayerId = playerId;
@@ -330,34 +341,17 @@ export function countNewTroops(ownedTerritoriesIds, playerId) {
   const territoiresCount = ownedTerritoriesIds.length;
   let newTroops = Math.max(Math.floor(territoiresCount / 3), 3);
 
-  /*
-  In addition, at the beginning of your turn you will receive
-  armies for each continent you control. (To control a continent, you must
-  occupy all its territories at the start of your turn.)
-  */
-  const continents = [];
-  for (const territoireId of Object.keys(territoiresList)) {
-    const territoire = territoiresList[territoireId];
-    if (territoire.playerId != playerId) {
-      continents[territoireId.continent] = false;
-    } else if (continents[territoireId.continent] === undefined) {
-      continents[territoireId.continent] = true;
+  for (const continentId in continentsList) {
+    const continent = continentsList[continentId];
+    
+    const territoireNotOwnedByPlayer = (territoireId) =>
+      territoiresList[territoireId].playerId !== playerId;
+
+    if (!continent.territoires.some(territoireNotOwnedByPlayer)) {
+      newTroops += continent.bonus;
     }
   }
 
-  const bonuses = {
-    "north-america": 5,
-    "south-america": 2,
-    europe: 5,
-    africa: 3,
-    asia: 7,
-    australia: 2,
-  };
-  for (const continentId in continents) {
-    if (continents[continentId] === true) {
-      newTroops += bonuses[continentId] || 0;
-    }
-  }
   return newTroops;
 }
 
@@ -387,7 +381,7 @@ export function addTroops(playerId, troopsCount) {
  * Si null ou undefined, aucun territoire ne sera sélectionné.
  */
 export function setSelectedTerritoire(territoireId) {
-  utils.removeCssClass("selected-territory");
+  utils.removeClassFromElements("selected-territory");
   if (territoireId)
     document.getElementById(territoireId).classList.add("selected-territory");
   data.selectedTerritoire = territoireId;

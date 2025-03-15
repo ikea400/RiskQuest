@@ -1,4 +1,13 @@
-// credits https://stackoverflow.com/a/42321673
+/**
+ * Génère un nombre entier aléatoire dans une plage donnée.
+ * Utilise l'API Web Crypto pour produire un nombre sécurisé.
+ *
+ * @param {number} min - La valeur minimale (incluse).
+ * @param {number} max - La valeur maximale (incluse).
+ * @returns {number} Un nombre entier entre min et max.
+ *
+ * @see https://stackoverflow.com/a/42321673
+ */
 export function randomInteger(min, max) {
   const randomBuffer = new Uint32Array(1);
 
@@ -12,10 +21,21 @@ export function randomInteger(min, max) {
   return Math.floor(randomNumber * (max - min + 1)) + min;
 }
 
+/**
+ * Lance un dé à six faces.
+ *
+ * @returns {number} Un nombre entier entre 1 et 6.
+ */
 export function rollDice() {
   return randomInteger(1, 6);
 }
 
+/**
+ * Lance plusieurs dés et retourne les résultats sous forme de tableau.
+ *
+ * @param {number} count - Le nombre de dés à lancer.
+ * @returns {number[]} Un tableau contenant les résultats de chaque dé.
+ */
 export function rollDices(count) {
   return Array.from({ length: count }, rollDice);
 }
@@ -103,13 +123,25 @@ export function blitzAttack(defenderTroopsCount, attackerTroopsCount) {
   return [defenderTotalLostTroops, attackerTotalLostTroops];
 }
 
-export function removeCssClass(cssClass) {
+/**
+ * Supprime une classe CSS spécifique de tous les éléments HTML qui possèdent cette classe.
+ *
+ * @param {string} cssClass - Le nom de la classe CSS à supprimer.
+ */
+export function removeClassFromElements(cssClass) {
   const elements = Array.from(document.getElementsByClassName(cssClass));
   for (const element of elements) {
     element.classList.remove(cssClass);
   }
 }
 
-export function getNextplayerId(playerId, playerCount) {
+/**
+ * Calcule l'identifiant du prochain joueur dans un jeu, basé sur l'identifiant actuel et le nombre total de joueurs.
+ *
+ * @param {number} playerId - L'identifiant actuel du joueur.
+ * @param {number} playerCount - Le nombre total de joueurs.
+ * @returns {number} L'identifiant du prochain joueur.
+ */
+export function getNextPlayerId(playerId, playerCount) {
   return (playerId % playerCount) + 1;
 }
