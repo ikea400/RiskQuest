@@ -117,20 +117,27 @@ function startDraftPhase(callback) {
   // Ajouter les troupes
   addTroops(data.currentPlayerId, newTroops);
 
-  function territoireHandler() {
-    moveTroopsFromPlayer(this.id, data.currentPlayerId, 1);
+  async function territoireHandler() {
+    const popup = new CountPopup({
+      min: 1,
+      max: playersList[data.currentPlayerId].troops,
+    });
+    const result = await popup.show();
+    if (result.cancel === false && result.value > 0) {
+      moveTroopsFromPlayer(this.id, data.currentPlayerId, result.value);
 
-    // Tous les pieces ont été placé
-    if (playersList[data.currentPlayerId].troops <= 0) {
-      // Enlever tous les listener sur les territoires
-      for (const territoire of ownedTerritoriesIds) {
-        document
-          .getElementById(territoire)
-          .removeEventListener("click", territoireHandler);
+      // Tous les pieces ont été placé
+      if (playersList[data.currentPlayerId].troops <= 0) {
+        // Enlever tous les listener sur les territoires
+        for (const territoire of ownedTerritoriesIds) {
+          document
+            .getElementById(territoire)
+            .removeEventListener("click", territoireHandler);
+        }
+
+        setAttackableTerritoires([]);
+        startAttackPhase(callback);
       }
-
-      setAttackableTerritoires([]);
-      startAttackPhase(callback);
     }
   }
 
@@ -180,17 +187,31 @@ function startAttackPhase(callback) {
 
     const defenderTerritoireId = this.id;
     const attackerTerritoireId = data.selectedTerritoire;
-    console.log(
-      utils.blitzAttack(
+
+    const popup = new AttackPopup({
+      max: Math.min(territoiresList[attackerTerritoireId].troops - 1, 3),
+    });
+
+    const result = await popup.show();
+    if (result.cancel === true) {
+      return;
+    }
+
+    // Calculer le nombre de troops perdu des deux bords.
+    let defenderLostTroops;
+    let attackerLostTroops;
+    if (result.value === 0) {
+      [defenderLostTroops, attackerLostTroops] = utils.blitzAttack(
         territoiresList[defenderTerritoireId].troops,
         territoiresList[attackerTerritoireId].troops - 1
-      )
-    );
-    // Calculer le nombre de troops perdu des deux bords.
-    let [defenderLostTroops, attackerLostTroops] = utils.blitzAttack(
-      territoiresList[defenderTerritoireId].troops,
-      territoiresList[attackerTerritoireId].troops - 1
-    );
+      );
+    } else {
+      [defenderLostTroops, attackerLostTroops] = utils.classicAttack(
+        Math.min(territoiresList[defenderTerritoireId].troops, 2),
+        result.value
+      );
+    }
+
     console.log(defenderLostTroops, attackerLostTroops);
     // Enlever les troops
     if (defenderLostTroops > 0)
@@ -377,8 +398,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let containerPays = document.getElementById("pays-background");
   containerPays.addEventListener("click", function () {
-    setSelectedTerritoire(null);
-    setAttackableTerritoires([]);
+    if (data.currentPhase != EPhases.DRAFT) {
+      setSelectedTerritoire(null);
+      setAttackableTerritoires([]);
+    }
   });
   resizeObserver.observe(document.body);
   window.addEventListener("resize", updatePastillesPosition);

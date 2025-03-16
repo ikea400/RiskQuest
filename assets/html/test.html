@@ -4,77 +4,81 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
+
     <style>
+      @import url("https://fonts.googleapis.com/css2?family=Noto+Emoji:wght@300..700&family=Tilt+Warp&display=swap");
+
+      .noto-emoji-1000 {
+        font-family: "Noto Emoji", sans-serif;
+        font-optical-sizing: auto;
+        font-weight: 1000;
+        font-style: normal;
+      }
+
       #background-popup {
         display: flex;
         justify-content: center;
-        align-items: flex-end;
+        align-items: center;
         position: absolute;
         top: 0;
         bottom: 0;
         right: 0;
         left: 0;
+        background-color: blue;
       }
 
-      .popup-count {
-        position: relative;
-        border: 0.25%;
-      }
-
-      .popup-count-countainer {
+      #attack-popup {
         display: flex;
-        background-color: rgba(0, 0, 0, 0.25);
-        font: 1.2rem "Fira Sans", sans-serif;
-      }
-
-      .popup-count-number {
-        padding: 1.5rem;
-        font-size: xx-large;
-      }
-
-      .popup-count-overlay {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        pointer-events: none;
-        height: 6em;
-        width: 6em;
-        border: 0.5em solid black;
-        border-radius: 100%;
-      }
-
-      .popup-count-confirm {
-        position: absolute;
-        top: 50%;
-        left: 100%;
-        transform: translate(-20%, -50%);
-        pointer-events: none;
-        height: 4em;
-        width: 4em;
-        border: 1px solid black;
-        border-radius: 100%;
-        border-width: 0.5em;
-        display: flex;
-        justify-content: center;
         align-items: center;
+      }
+
+      .attack-popup-action-img {
+        width: 2em;
+      }
+
+      #attack-popup-center {
+        display: flex;
+        flex-direction: column;
+        justify-content: end;
+        align-items: center;
+        width: 8em;
+      }
+
+      #attack-popup-dice {
+        font: 4em "Gill Sans", sans-serif;
+        font-weight: 1000;
+        -webkit-text-stroke: 0.05em black;
+        color: white;
+        user-select: none;
+      }
+
+      #attack-popup-name {
+        font-size: 2em;
+        -webkit-text-stroke: 1.5px black;
+        color: white;
+        user-select: none;
       }
     </style>
   </head>
   <body>
     <div id="background-popup">
-      <div class="popup-count">
-        <div class="popup-count-confirm">
-            <img sr="./images/circle-check-solid.svg" alt="next">
+      <div id="attack-popup">
+        <img
+          src="../images/chevron-left-solid.svg"
+          alt="left"
+          id="attack-popup-left-img"
+          class="attack-popup-action-img"
+        />
+        <div id="attack-popup-center">
+          <div id="attack-popup-dice">3</div>
+          <div id="attack-popup-name" class="noto-emoji-1000">Blitz</div>
         </div>
-        <div class="popup-count-overlay"></div>
-        <div class="popup-count-countainer">
-          <div class="popup-count-number">1</div>
-          <div class="popup-count-number">2</div>
-          <div class="popup-count-number">3</div>
-          <div class="popup-count-number">4</div>
-          <div class="popup-count-number">5</div>
-        </div>
+        <img
+          src="../images/chevron-right-solid.svg"
+          alt="left"
+          id="attack-popup-right-img"
+          class="attack-popup-action-img"
+        />
       </div>
     </div>
   </body>

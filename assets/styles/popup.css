@@ -1,3 +1,4 @@
+/*background*/
 .background-popup {
   position: absolute;
   top: 0;
@@ -18,6 +19,7 @@
   align-items: center;
 }
 
+/*count popup*/
 #count-popup {
   margin-bottom: 6em;
   position: relative;
@@ -70,4 +72,41 @@
 #popup-count-confirm-img {
   filter: opacity(0.2) drop-shadow(0 0 0 green) drop-shadow(0 0 0 green)
     drop-shadow(0 0 0 green) drop-shadow(0 0 0 green);
+}
+
+/*attack popup*/
+#attack-popup {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6em;
+}
+
+.attack-popup-action-img {
+  width: 2em;
+  padding: 1em;
+  cursor: pointer;
+}
+
+#attack-popup-center {
+  display: flex;
+  flex-direction: column;
+  justify-content: end;
+  align-items: center;
+  width: 6em;
+  cursor: pointer;
+}
+
+#attack-popup-dice {
+  font: 4em "Gill Sans", sans-serif;
+  font-weight: 1000;
+  -webkit-text-stroke: 0.05em black;
+  color: white;
+  user-select: none;
+}
+
+#attack-popup-name {
+  font-size: 2em;
+  -webkit-text-stroke: 1.5px black;
+  color: white;
+  user-select: none;
 }

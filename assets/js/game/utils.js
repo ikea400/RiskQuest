@@ -123,6 +123,41 @@ export function blitzAttack(defenderTroopsCount, attackerTroopsCount) {
   return [defenderTotalLostTroops, attackerTotalLostTroops];
 }
 
+export function classicAttack(defenderTroopsCount, attackerTroopsCount) {
+  console.log(`classicAttack(${defenderTroopsCount}, ${attackerTroopsCount})`);
+
+  // Determine the minimum number of dice rolls to compare
+  const keepingCount = Math.min(defenderTroopsCount, attackerTroopsCount);
+
+  // Roll dice for the defender, sort in descending order, and keep the biggest rolls
+  const defenderDices = rollDices(defenderTroopsCount)
+    .sort((a, b) => b - a)
+    .slice(0, keepingCount);
+
+  // Roll dice for the attacker, sort in descending order, and keep the biggest rolls
+  const attackerDices = rollDices(attackerTroopsCount)
+    .sort((a, b) => b - a)
+    .slice(0, keepingCount);
+
+  console.log(defenderDices, attackerDices);
+
+  // Initialize counters for troop losses
+  let defenderLostTroops = 0;
+  let attackerLostTroops = 0;
+
+  // Compare dice rolls to determine troop losses
+  for (let i = 0; i < keepingCount; i++) {
+    if (attackerDices[i] > defenderDices[i]) {
+      defenderLostTroops++; // Defender loses a troop
+    } else {
+      attackerLostTroops++; // Attacker loses a troop
+    }
+  }
+
+  // Return the troop losses for both sides
+  return [defenderLostTroops, attackerLostTroops];
+}
+
 /**
  * Supprime une classe CSS spécifique de tous les éléments HTML qui possèdent cette classe.
  *
