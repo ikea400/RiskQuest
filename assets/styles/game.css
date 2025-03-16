@@ -25,9 +25,6 @@ body {
 #svg {
   width: 100%;
   height: 100%;
-  max-width: none;
-  max-height: none;
-  transform: scale(2);
   paint-order: stroke;
 }
 
@@ -178,11 +175,13 @@ body {
   bottom: 0em;
   right: 5em;
   left: 5em;
+  pointer-events: none;
 }
 
 #hud-side {
   background-color: transparent;
   z-index: 100;
+  pointer-events: none;
 }
 
 .side-player {
