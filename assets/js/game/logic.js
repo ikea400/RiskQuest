@@ -343,7 +343,7 @@ export function countNewTroops(ownedTerritoriesIds, playerId) {
 
   for (const continentId in continentsList) {
     const continent = continentsList[continentId];
-    
+
     const territoireNotOwnedByPlayer = (territoireId) =>
       territoiresList[territoireId].playerId !== playerId;
 

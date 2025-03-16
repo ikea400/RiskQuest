@@ -106,7 +106,7 @@
 
 #attack-popup-name {
   font-size: 2em;
-  -webkit-text-stroke: 1.5px black;
+  -webkit-text-stroke: 0.1em black;
   color: white;
   user-select: none;
 }

@@ -277,3 +277,31 @@ export function setAttackableTerritoires(territoiresId) {
     territoire.parentElement.appendChild(territoire);
   }
 }
+
+export function addTroopsChangeParticle(territoireId, playerId, troopsCount) {
+  console.log(`addTroopsChangeParticle(${territoireId}, ${troopsCount})`);
+  const formatter = new Intl.NumberFormat("en-US", {
+    signDisplay: "always", // Always show "+" or "-"
+  });
+
+  const pastille = document.getElementById(`pastille-${territoireId}`);
+
+  const particule = document.createElement("div");
+  particule.textContent = formatter.format(troopsCount);
+  particule.className = `change-particule kanit-900 color-player${playerId}`;
+  particule.style.left = pastille.style.left; // Position the particule
+  particule.style.top = pastille.style.top;
+
+  requestAnimationFrame(() => {
+    particule.style.transform = "translate(-50%, -50%) translateY(-70px)"; // Move upwards
+    particule.style.fontSize = 0; // Fade out
+  });
+
+  console.log(pastille.style.left, pastille.style.top);
+
+  setTimeout(() => {
+    particule.remove();
+  }, 1000);
+
+  document.body.appendChild(particule);
+}

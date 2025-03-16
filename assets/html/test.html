@@ -7,11 +7,17 @@
 
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Noto+Emoji:wght@300..700&family=Tilt+Warp&display=swap");
+      @import url("https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
 
       .noto-emoji-1000 {
         font-family: "Noto Emoji", sans-serif;
         font-optical-sizing: auto;
         font-weight: 1000;
+      }
+
+      .kanit {
+        font-family: "Kanit", sans-serif;
+        font-weight: 900;
         font-style: normal;
       }
 
@@ -24,62 +30,51 @@
         bottom: 0;
         right: 0;
         left: 0;
-        background-color: blue;
       }
 
-      #attack-popup {
-        display: flex;
-        align-items: center;
-      }
-
-      .attack-popup-action-img {
-        width: 2em;
-      }
-
-      #attack-popup-center {
-        display: flex;
-        flex-direction: column;
-        justify-content: end;
-        align-items: center;
-        width: 8em;
-      }
-
-      #attack-popup-dice {
-        font: 4em "Gill Sans", sans-serif;
-        font-weight: 1000;
-        -webkit-text-stroke: 0.05em black;
+      #add-button {
+        font-size: 3em;
         color: white;
-        user-select: none;
-      }
-
-      #attack-popup-name {
-        font-size: 2em;
         -webkit-text-stroke: 1.5px black;
+      }
+
+      .change-particule {
+        position: absolute;
+        transition: transform 1s ease-out, font-size 1s 0.5s;
+        transform: translate(-50%, -50%);
+        font-size: 3em;
         color: white;
-        user-select: none;
+        -webkit-text-stroke: 1.5px black;
       }
     </style>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const addButton = document.getElementById("add-button");
+        addButton.addEventListener("click", (event) => {
+          const particule = document.createElement("div");
+          particule.textContent = "+3";
+          particule.className = "change-particule noto-emoji-1000";
+          particule.style.left = `${event.clientX}px`; // Position the particule
+          particule.style.top = `${event.clientY - 20}px`;
+
+          requestAnimationFrame(() => {
+            particule.style.transform =
+              "translate(-50%, -50%) translateY(-50px)"; // Move upwards
+            particule.style.fontSize = 0; // Fade out
+          });
+
+          setTimeout(() => {
+            particule.remove();
+          }, 1000);
+
+          document.body.appendChild(particule);
+        });
+      });
+    </script>
   </head>
   <body>
     <div id="background-popup">
-      <div id="attack-popup">
-        <img
-          src="../images/chevron-left-solid.svg"
-          alt="left"
-          id="attack-popup-left-img"
-          class="attack-popup-action-img"
-        />
-        <div id="attack-popup-center">
-          <div id="attack-popup-dice">3</div>
-          <div id="attack-popup-name" class="noto-emoji-1000">Blitz</div>
-        </div>
-        <img
-          src="../images/chevron-right-solid.svg"
-          alt="left"
-          id="attack-popup-right-img"
-          class="attack-popup-action-img"
-        />
-      </div>
+      <button id="add-button" class="kanit">Add content</button>
     </div>
   </body>
 </html>

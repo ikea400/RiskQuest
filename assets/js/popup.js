@@ -204,7 +204,7 @@ class AttackPopup extends PopupBase {
         />
         <div id="attack-popup-center">
           <div id="attack-popup-dice">3</div>
-          <div id="attack-popup-name" class="noto-emoji-1000">Blitz</div>
+          <div id="attack-popup-name" class="kanit-900">Blitz</div>
         </div>
         <img
           src="./assets/images/chevron-right-solid.svg"

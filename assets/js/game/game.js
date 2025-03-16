@@ -26,6 +26,7 @@ import {
   setAttackableTerritoires,
   initializePlayersHud,
   updateCurrentPhase,
+  addTroopsChangeParticle,
 } from "./display.js";
 
 // window.addEventListener("pageshow", function (event) {
@@ -125,6 +126,7 @@ function startDraftPhase(callback) {
     const result = await popup.show();
     if (result.cancel === false && result.value > 0) {
       moveTroopsFromPlayer(this.id, data.currentPlayerId, result.value);
+      addTroopsChangeParticle(this.id, data.currentPlayerId, result.value);
 
       // Tous les pieces ont été placé
       if (playersList[data.currentPlayerId].troops <= 0) {
@@ -214,10 +216,14 @@ function startAttackPhase(callback) {
 
     console.log(defenderLostTroops, attackerLostTroops);
     // Enlever les troops
-    if (defenderLostTroops > 0)
+    if (defenderLostTroops > 0) {
       removeTroopsFromTerritory(defenderTerritoireId, defenderLostTroops);
-    if (attackerLostTroops > 0)
+      addTroopsChangeParticle(defenderTerritoireId, territoiresList[defenderTerritoireId].playerId, -defenderLostTroops);
+    }
+    if (attackerLostTroops > 0) {
       removeTroopsFromTerritory(attackerTerritoireId, attackerLostTroops);
+      addTroopsChangeParticle(attackerTerritoireId, data.currentPlayerId, -defenderLostTroops);
+    }
 
     if (territoiresList[defenderTerritoireId].troops <= 0) {
       const defenderPlayerId = territoiresList[defenderTerritoireId].playerId;

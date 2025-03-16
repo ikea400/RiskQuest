@@ -108,7 +108,6 @@ body {
   }
 }
 
-
 .cards-container {
   position: fixed;
   transform: translateY(-50%);
@@ -321,46 +320,6 @@ body {
   transform: translate(-50%, -50%);
 }
 
-#pastille-alaska {
-  translate: 0em -1.5em;
-}
-
-#pastille-greenland {
-  translate: 0.6em -2.2em;
-}
-#pastille-quebec {
-  translate: -0.75em -0.3em;
-}
-#pastille-venezuela {
-  translate: -1.5em -0.7em;
-}
-#pastille-ontario {
-  translate: -0.5em -0.3em;
-}
-#pastille-alberta {
-  translate: -0.3em -0.3em;
-}
-#pastille-westernUs {
-  translate: -0.4em -0.47em;
-}
-#pastille-easternUs {
-  translate: -1.2em -0.25em;
-}
-#pastille-northwestTerritory {
-  translate: -1em 3.85em;
-}
-#pastille-centralAmerica {
-  translate: -1.5em -1.65em;
-}
-#pastille-brazil {
-  translate: 0.15em -1.2em;
-}
-#pastille-argentina {
-  translate: -0.52em -1.4em;
-}
-#pastille-peru {
-  translate: -0.25em 0em;
-}
 .svg-player1 {
   fill: #4ade80;
 }
@@ -379,23 +338,47 @@ body {
 .svg-player6 {
   fill: #f87171;
 }
+
 .background-player1 {
   background-color: #a2d863;
 }
+.color-player1 {
+  color: #a2d863;
+}
+
 .background-player2 {
   background-color: #f27e38;
 }
+.color-player2 {
+  color: #f27e38;
+}
+
 .background-player3 {
   background-color: #e8ae25;
 }
+.color-player3 {
+  color: #e8ae25;
+}
+
 .background-player4 {
   background-color: #714ca6;
 }
+.color-player4 {
+  color: #714ca6;
+}
+
 .background-player5 {
   background-color: #40a0ee;
 }
+.color-player5 {
+  color: #40a0ee;
+}
+
 .background-player6 {
   background-color: #e74344;
+}
+.color-player6 {
+  color: #e74344;
 }
 
 #background {
@@ -405,4 +388,13 @@ body {
   object-fit: cover;
   height: 100%;
   width: 100%;
+}
+
+.change-particule {
+  position: absolute;
+  transition: transform 1s ease-out, font-size 1s 0.5s;
+  transform: translate(-50%, -50%) translateY(-20px);
+  font-size: 3em;
+  -webkit-text-stroke: 3px black;
+  user-select: none;
 }
