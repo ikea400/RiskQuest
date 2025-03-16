@@ -95,15 +95,19 @@ body {
   stroke-linecap: square;
   stroke-opacity: 0.9;
   stroke-width: 1;
-  stroke-dasharray: 3;
-  animation: dash 15s linear;
+  stroke-dasharray: 3 3;
+  animation: dash 3s linear infinite;
 }
 
 @keyframes dash {
+  from {
+    stroke-dashoffset: 0;
+  }
   to {
-    stroke-dashoffset: 20;
+    stroke-dashoffset: 6;
   }
 }
+
 
 .cards-container {
   position: fixed;
