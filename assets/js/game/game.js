@@ -790,7 +790,8 @@ function startMainLoop(callback) {
 document.addEventListener("DOMContentLoaded", function () {
   const playerCount = 6;
   currentPlayerCount = playerCount;
-
+  
+  
   // Initialization des troops
   for (let i = 1; i <= playerCount; i++) {
     playersList[i].troops = getStartingTroops(playerCount);
@@ -798,7 +799,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Création dynamiques du side player hud
   initializePlayersHud(playerCount);
-
+  
   setCurrentPlayer(utils.getRandomStartingPlayer(playerCount));
 
   startRandomTerritoryDistribution(playerCount);
