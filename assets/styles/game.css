@@ -1,32 +1,6 @@
 * {
   font-family: Verdana, Geneva, Tahoma, sans-serif;
 }
-body {
-  background-color: #121212;
-  color: #fff;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-}
-
-#container-svg {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: absolute;
-  top: 0em;
-  bottom: 0em;
-  left: 0em;
-  right: 0em;
-}
-
-#svg {
-  width: 100%;
-  height: 100%;
-  paint-order: stroke;
-}
 
 body {
   color: #fff;
@@ -51,11 +25,10 @@ body {
 
 #svg {
   width: 100%;
-  height: 100%;
-  max-width: none;
-  max-height: none;
-  transform: scale(2);
+  height: auto;
+  max-height: 100vh;
   paint-order: stroke;
+  overflow: visible;
 }
 
 #stripes {
