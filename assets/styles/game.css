@@ -148,7 +148,7 @@ body {
   bottom: 0em;
   right: 5em;
   left: 5em;
-  pointer-events: none;
+  user-select: none;
 }
 
 #hud-side {
