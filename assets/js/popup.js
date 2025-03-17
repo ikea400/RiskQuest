@@ -130,7 +130,7 @@ class CountPopup extends PopupBase {
       this.popupCountNumber.className = 'number';
       this.popupCountNumber.textContent = i;
       numberTrack.appendChild(this.popupCountNumber);
-      numberTrack.style.width = i*35 + "px";
+      numberTrack.style.width = i*40 + "px";
     }
 
   const slider = document.getElementById("popup-count-range");
