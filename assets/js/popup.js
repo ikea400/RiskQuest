@@ -34,8 +34,6 @@ class PopupBase {
           return;
         }
 
-        console.log("Test");
-
         this.resolve({ cancel: true });
       });
     }
@@ -92,7 +90,6 @@ class TestPopup extends PopupBase {
 
   #applyDefault() {
     this.params.id ??= "TestPopup";
-    this.params.classList ??= [];
   }
 }
 
@@ -184,12 +181,6 @@ updateNumber(activeNumber){
 
 }
 
-  show() {
-    return super.show(function () {
-      console.log("SHould be there");
-    });
-  }
-
   #applyDefault() {
     this.params.id ??= "count-popup";
     this.params.classList ??= [];
@@ -232,5 +223,78 @@ updateNumber(activeNumber){
       );
       popupCountNumber.innerText = numbers[i];
     }
+  }
+}
+
+class AttackPopup extends PopupBase {
+  constructor(params = {}) {
+    super(params);
+    this.init();
+  }
+
+  init() {
+    this.#applyDefault();
+    super.init();
+
+    this.current = this.params.current;
+
+    this.popupDiv.innerHTML = `
+        <img
+          src="./assets/images/chevron-left-solid.svg"
+          alt="left"
+          id="attack-popup-left-img"
+          class="attack-popup-action-img"
+        />
+        <div id="attack-popup-center">
+          <div id="attack-popup-dice">3</div>
+          <div id="attack-popup-name" class="kanit-900">Blitz</div>
+        </div>
+        <img
+          src="./assets/images/chevron-right-solid.svg"
+          alt="left"
+          id="attack-popup-right-img"
+          class="attack-popup-action-img"
+        />`;
+
+    const attackPopupLeft = document.getElementById("attack-popup-left-img");
+    attackPopupLeft.addEventListener("click", () => {
+      this.#updateDisplayText(-1);
+    });
+
+    const attackPopupRight = document.getElementById("attack-popup-right-img");
+    attackPopupRight.addEventListener("click", () => {
+      this.#updateDisplayText(1);
+    });
+
+    const attackPopupCenter = document.getElementById("attack-popup-center");
+    attackPopupCenter.addEventListener("click", () => {
+      this.resolve({ cancel: false, value: this.current });
+    });
+  }
+
+  #applyDefault() {
+    this.params.id ??= "attack-popup";
+    this.params.bottom ??= true;
+    this.params.cancel ??= true;
+    this.params.max ??= 3;
+    this.params.min ??= 0; // 0 representing blitz
+    this.params.current ??= this.params.min === 0 ? 0 : this.params.max;
+  }
+
+  #updateDisplayText(offset) {
+    const rotate = (num) => {
+      const range = this.params.max - this.params.min + 1; // Calculate the range
+      return (
+        ((((num - this.params.min) % range) + range) % range) + this.params.min
+      );
+    };
+
+    this.current = rotate(this.current + offset);
+
+    const attackPopupDice = document.getElementById("attack-popup-dice");
+    attackPopupDice.textContent = this.current === 0 ? 3 : this.current;
+
+    const attackPopupName = document.getElementById("attack-popup-name");
+    attackPopupName.textContent = this.current === 0 ? "Blitz" : "Classic";
   }
 }

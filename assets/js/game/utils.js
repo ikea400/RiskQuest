@@ -1,9 +1,17 @@
-const crypto = window.crypto || window.msCrypto;
-
-// credits https://stackoverflow.com/a/42321673
+/**
+ * Génère un nombre entier aléatoire dans une plage donnée.
+ * Utilise l'API Web Crypto pour produire un nombre sécurisé.
+ *
+ * @param {number} min - La valeur minimale (incluse).
+ * @param {number} max - La valeur maximale (incluse).
+ * @returns {number} Un nombre entier entre min et max.
+ *
+ * @see https://stackoverflow.com/a/42321673
+ */
 export function randomInteger(min, max) {
   const randomBuffer = new Uint32Array(1);
 
+  const crypto = window.crypto || window.msCrypto;
   crypto.getRandomValues(randomBuffer);
 
   let randomNumber = randomBuffer[0] / (0xffffffff + 1);
@@ -13,10 +21,21 @@ export function randomInteger(min, max) {
   return Math.floor(randomNumber * (max - min + 1)) + min;
 }
 
+/**
+ * Lance un dé à six faces.
+ *
+ * @returns {number} Un nombre entier entre 1 et 6.
+ */
 export function rollDice() {
   return randomInteger(1, 6);
 }
 
+/**
+ * Lance plusieurs dés et retourne les résultats sous forme de tableau.
+ *
+ * @param {number} count - Le nombre de dés à lancer.
+ * @returns {number[]} Un tableau contenant les résultats de chaque dé.
+ */
 export function rollDices(count) {
   return Array.from({ length: count }, rollDice);
 }
@@ -104,9 +123,60 @@ export function blitzAttack(defenderTroopsCount, attackerTroopsCount) {
   return [defenderTotalLostTroops, attackerTotalLostTroops];
 }
 
-export function removeCssClass(cssClass) {
+export function classicAttack(defenderTroopsCount, attackerTroopsCount) {
+  console.log(`classicAttack(${defenderTroopsCount}, ${attackerTroopsCount})`);
+
+  // Determine the minimum number of dice rolls to compare
+  const keepingCount = Math.min(defenderTroopsCount, attackerTroopsCount);
+
+  // Roll dice for the defender, sort in descending order, and keep the biggest rolls
+  const defenderDices = rollDices(defenderTroopsCount)
+    .sort((a, b) => b - a)
+    .slice(0, keepingCount);
+
+  // Roll dice for the attacker, sort in descending order, and keep the biggest rolls
+  const attackerDices = rollDices(attackerTroopsCount)
+    .sort((a, b) => b - a)
+    .slice(0, keepingCount);
+
+  console.log(defenderDices, attackerDices);
+
+  // Initialize counters for troop losses
+  let defenderLostTroops = 0;
+  let attackerLostTroops = 0;
+
+  // Compare dice rolls to determine troop losses
+  for (let i = 0; i < keepingCount; i++) {
+    if (attackerDices[i] > defenderDices[i]) {
+      defenderLostTroops++; // Defender loses a troop
+    } else {
+      attackerLostTroops++; // Attacker loses a troop
+    }
+  }
+
+  // Return the troop losses for both sides
+  return [defenderLostTroops, attackerLostTroops];
+}
+
+/**
+ * Supprime une classe CSS spécifique de tous les éléments HTML qui possèdent cette classe.
+ *
+ * @param {string} cssClass - Le nom de la classe CSS à supprimer.
+ */
+export function removeClassFromElements(cssClass) {
   const elements = Array.from(document.getElementsByClassName(cssClass));
   for (const element of elements) {
     element.classList.remove(cssClass);
   }
+}
+
+/**
+ * Calcule l'identifiant du prochain joueur dans un jeu, basé sur l'identifiant actuel et le nombre total de joueurs.
+ *
+ * @param {number} playerId - L'identifiant actuel du joueur.
+ * @param {number} playerCount - Le nombre total de joueurs.
+ * @returns {number} L'identifiant du prochain joueur.
+ */
+export function getNextPlayerId(playerId, playerCount) {
+  return (playerId % playerCount) + 1;
 }
