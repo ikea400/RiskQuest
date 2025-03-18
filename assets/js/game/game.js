@@ -218,11 +218,19 @@ function startAttackPhase(callback) {
     // Enlever les troops
     if (defenderLostTroops > 0) {
       removeTroopsFromTerritory(defenderTerritoireId, defenderLostTroops);
-      addTroopsChangeParticle(defenderTerritoireId, territoiresList[defenderTerritoireId].playerId, -defenderLostTroops);
+      addTroopsChangeParticle(
+        defenderTerritoireId,
+        territoiresList[defenderTerritoireId].playerId,
+        -defenderLostTroops
+      );
     }
     if (attackerLostTroops > 0) {
       removeTroopsFromTerritory(attackerTerritoireId, attackerLostTroops);
-      addTroopsChangeParticle(attackerTerritoireId, data.currentPlayerId, -defenderLostTroops);
+      addTroopsChangeParticle(
+        attackerTerritoireId,
+        data.currentPlayerId,
+        -defenderLostTroops
+      );
     }
 
     if (territoiresList[defenderTerritoireId].troops <= 0) {
