@@ -229,7 +229,7 @@ function startAttackPhase(callback) {
       addTroopsChangeParticle(
         attackerTerritoireId,
         data.currentPlayerId,
-        -defenderLostTroops
+        -attackerLostTroops
       );
     }
 
