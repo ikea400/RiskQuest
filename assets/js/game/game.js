@@ -44,6 +44,73 @@ let currentPlayerCount = undefined;
 let gameFinished = false;
 const resizeObserver = new ResizeObserver(updatePastillesPosition);
 
+function updatePastillesPosition() {
+  const pastilles = document.getElementsByClassName("pastille");
+  for (let i = 0; i < pastilles.length; i++) {
+    // Get the bounding box of the path
+    const territoireId = pastilles.item(i).getAttribute("territoire");
+    const territoire = document.getElementById(territoireId);
+    const bbox = territoire.getBoundingClientRect();
+    const offset = territoiresList[territoireId].pastille ?? {x:0.5, y:0.5};
+    // Calculate the center of the bounding box
+    const centerX = bbox.x + bbox.width * (offset.x  || 0.5);
+    const centerY = bbox.y + bbox.height * (offset.y  || 0.5);
+
+    pastilles.item(i).style.left = centerX - 12.5 + "px";
+    pastilles.item(i).style.top = centerY - 12.5 + "px";
+  }
+}
+
+function createPastille(territoireId, playerId) {
+  const territoire = document.getElementById(territoireId);
+  territoire.classList.add(`svg-player${playerId}`);
+
+  // Get the bounding box of the path
+  const bbox = territoire.getBoundingClientRect();
+  
+  const offset = territoiresList[territoireId].pastille ?? {x:0.5, y:0.5};
+  // Calculate the center of the bounding box
+  const centerX = bbox.x + bbox.width * (offset.x  || 0.5);
+  const centerY = bbox.y + bbox.height * (offset.y  || 0.5);
+  
+  // Create a new div element
+  const newDiv = document.createElement("div");
+  newDiv.id = `pastille-${territoireId}`;
+  newDiv.classList.add(`background-player${playerId}`);
+  newDiv.classList.add(`pastille`);
+  newDiv.innerText = 1;
+  newDiv.setAttribute("territoire", territoireId);
+  newDiv.style.position = "fixed";
+  newDiv.style.left = centerX - 12.5 + "px";
+  newDiv.style.top = centerY - 12.5 + "px";
+
+  // Append the div to the body
+  document.body.appendChild(newDiv);
+}
+
+function updateTerritoryOwer(territoireId, playerId) {
+  const territoire = territoiresList[territoireId];
+  const territoireSvg = document.getElementById(territoireId);
+  if (territoire.playerId)
+    territoireSvg.classList.remove(`svg-player${territoire.playerId}`);
+  territoireSvg.classList.add(`svg-player${playerId}`);
+
+  let pastille = document.getElementById(`pastille-${territoireId}`);
+  if (!pastille) {
+    createPastille(territoireId, playerId);
+  } else {
+    changeBackgroundPlayer(pastille, territoire.playerId, playerId);
+  }
+
+  territoire.troops = 0;
+  territoire.playerId = playerId;
+}
+
+function updatePastilleTroopsCount(territoireId) {
+  const element = document.getElementById(`pastille-${territoireId}`);
+  element.innerText = territoiresList[territoireId].troops || 0;
+}
+
 function startTurnTerritoriesSelection(playerCount, callback) {
   // mise à jour de la phase courante
   updateCurrentPhase(EPhases.PICKING);
