@@ -130,7 +130,7 @@ class CountPopup extends PopupBase {
       this.popupCountNumber.className = 'number';
       this.popupCountNumber.textContent = i;
       numberTrack.appendChild(this.popupCountNumber);
-      numberTrack.style.width = i*40 + "px";
+      numberTrack.style.width = i*45 + "px";
     }
 
   const slider = document.getElementById("popup-count-range");
@@ -239,22 +239,30 @@ class AttackPopup extends PopupBase {
     this.current = this.params.current;
 
     this.popupDiv.innerHTML = `
-        <img
-          src="./assets/images/chevron-left-solid.svg"
-          alt="left"
-          id="attack-popup-left-img"
-          class="attack-popup-action-img"
-        />
-        <div id="attack-popup-center">
-          <div id="attack-popup-dice">3</div>
-          <div id="attack-popup-name" class="kanit-900">Blitz</div>
+        <div id="attack-container">
+          <div class="left-right-button">
+            <img
+              src="./assets/images/chevron-left-solid.svg"
+              alt="left"
+              id="attack-popup-left-img"
+              class="attack-popup-action-img"
+            />
+          </div>
+          <div id="attack-popup-center">
+            <div id="attack-popup-dice">
+            </div>
+            <div id="attack-popup-name" class="kanit-900">Blitz</div>
+          </div>
+          <div class="left-right-button">
+            <img
+              src="./assets/images/chevron-right-solid.svg"
+              alt="left"
+              id="attack-popup-right-img"
+              class="attack-popup-action-img"
+            />
+          </div>
         </div>
-        <img
-          src="./assets/images/chevron-right-solid.svg"
-          alt="left"
-          id="attack-popup-right-img"
-          class="attack-popup-action-img"
-        />`;
+        `;
 
     const attackPopupLeft = document.getElementById("attack-popup-left-img");
     attackPopupLeft.addEventListener("click", () => {
@@ -292,8 +300,15 @@ class AttackPopup extends PopupBase {
     this.current = rotate(this.current + offset);
 
     const attackPopupDice = document.getElementById("attack-popup-dice");
-    attackPopupDice.textContent = this.current === 0 ? 3 : this.current;
-
+    const attackDice = document.createElement('div');
+    attackDice.innerHTML = `<img src="./assets/images/perspective-dice-six-faces-one.svg" class="dice" alt="dice">`;
+    console.log(this.current);
+    if(this.current === 0 ) {
+      attackPopupDice.innerHTML = '';
+    }else{
+      attackPopupDice.appendChild(attackDice); 
+    }
+      
     const attackPopupName = document.getElementById("attack-popup-name");
     attackPopupName.textContent = this.current === 0 ? "Blitz" : "Classic";
   }

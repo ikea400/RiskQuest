@@ -389,7 +389,11 @@ document.addEventListener("DOMContentLoaded", function () {
   const playerCount = 6;
   currentPlayerCount = playerCount;
   
-  
+  const popup = new AttackPopup({
+    max: 3,
+  });
+
+  const result = popup.show();
   // Initialization des troops
   for (let i = 1; i <= playerCount; i++) {
     playersList[i].troops = getStartingTroops(playerCount);
