@@ -240,7 +240,7 @@ class AttackPopup extends PopupBase {
 
     this.popupDiv.innerHTML = `
         <div id="attack-container">
-          <div class="left-right-button">
+          <div class="left-right-button" id="left-button">
             <img
               src="./assets/images/chevron-left-solid.svg"
               alt="left"
@@ -253,7 +253,7 @@ class AttackPopup extends PopupBase {
             </div>
             <div id="attack-popup-name" class="kanit-900">Blitz</div>
           </div>
-          <div class="left-right-button">
+          <div class="left-right-button" id="right-button">
             <img
               src="./assets/images/chevron-right-solid.svg"
               alt="left"
@@ -264,12 +264,12 @@ class AttackPopup extends PopupBase {
         </div>
         `;
 
-    const attackPopupLeft = document.getElementById("attack-popup-left-img");
+    const attackPopupLeft = document.getElementById("left-button");
     attackPopupLeft.addEventListener("click", () => {
       this.#updateDisplayText(-1);
     });
 
-    const attackPopupRight = document.getElementById("attack-popup-right-img");
+    const attackPopupRight = document.getElementById("right-button");
     attackPopupRight.addEventListener("click", () => {
       this.#updateDisplayText(1);
     });
