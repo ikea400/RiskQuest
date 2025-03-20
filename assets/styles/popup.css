@@ -110,3 +110,16 @@
   color: white;
   user-select: none;
 }
+#flex-center-popup-cards {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1em;
+}
+.background-popup-cards {
+  background-color: rgba(0, 0, 0, 0.6);
+  background-blend-mode: darken;
+  z-index: 9;
+}

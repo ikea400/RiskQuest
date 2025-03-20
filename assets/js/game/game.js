@@ -385,9 +385,17 @@ function startMainLoop(callback) {
   handler();
 }
 
+function cardHandler() {
+  if (document.getElementById("flex-center-popup-cards") == null) {
+    const popup = new CardPopup({});
+    popup.show();
+  }
+}
+
 document.addEventListener("DOMContentLoaded", function () {
   const playerCount = 6;
   currentPlayerCount = playerCount;
+  
 
   // Initialization des troops
   for (let i = 1; i <= playerCount; i++) {
@@ -419,4 +427,6 @@ document.addEventListener("DOMContentLoaded", function () {
   });
   resizeObserver.observe(document.body);
   window.addEventListener("resize", updatePastillesPosition);
+
+  document.getElementById("cards-img").addEventListener("click", cardHandler);
 });

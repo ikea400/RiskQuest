@@ -84,7 +84,7 @@ class TestPopup extends PopupBase {
 
   show() {
     return super.show(function () {
-      console.log("SHould be there");
+      console.log("Should be there");
     });
   }
 
@@ -253,5 +253,23 @@ class AttackPopup extends PopupBase {
 
     const attackPopupName = document.getElementById("attack-popup-name");
     attackPopupName.textContent = this.current === 0 ? "Blitz" : "Classic";
+  }
+}
+
+class CardPopup extends PopupBase {
+  constructor(params = {}) {
+    super(params);
+    this.init();
+  }
+  init() {
+    super.init();
+    
+    this.popupDiv.innerHTML = `
+    <div id="flex-center-popup-cards">
+      <img src='./assets/images/riskCardInfantry.png' alt='cannon'img>
+      <img src='./assets/images/riskCardCannon.png' alt='cannon'img>
+      <img src='./assets/images/riskCardChevalier.png' alt='cannon'img>
+    </div>`;
+    this.backgroundDiv.classList.add("background-popup-cards");
   }
 }
