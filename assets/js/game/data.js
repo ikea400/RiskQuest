@@ -153,7 +153,7 @@ export const territoiresList = {
       "northernEurope",
       "northAfrica",
     ],
-    pastille: { x: 0.69, y: 0.35  },
+    pastille: { x: 0.69, y: 0.35 },
   },
   northernEurope: {
     continent: "europe",
@@ -324,7 +324,7 @@ export const playersList = [
   },
 ];
 
-const winningOdds = {};
+export const winningOdds = {};
 
 fetch("http://localhost/riskquest/assets/data/odds.json")
   .then(async (response) => {
@@ -336,20 +336,6 @@ fetch("http://localhost/riskquest/assets/data/odds.json")
   .catch((error) => {
     throw Error(`Failed to load odds data from server: ${error}`);
   });
-
-async function loadOdds() {
-  const response = await fetch(
-    "http://localhost/riskquest/assets/data/odds.json"
-  );
-  if (!response.ok) {
-    throw new Error(`loadOdds Response status: ${response.status}`);
-  }
-
-  const json = await response.json();
-  winningOdds.blitz = json.blitz;
-  winningOdds.classic = json.classic;
-  console.log(winningOdds);
-}
 
 /**
  * Retourne le nombre de troupes initial pour chaque joueur en fonction du nombre de joueurs.

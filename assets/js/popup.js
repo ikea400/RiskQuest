@@ -1,3 +1,5 @@
+import { winningOdds } from "./game/data";
+
 class PopupBase {
   #resolveCallback;
   #rejectCallback;
@@ -120,66 +122,66 @@ class CountPopup extends PopupBase {
       </div>
       
     </div>`;
-    
+
     //this.#updateDisplayText();
 
-    const numberTrack = document.getElementById('numberTrack');
+    const numberTrack = document.getElementById("numberTrack");
     for (let i = this.params.min; i <= this.params.max; i++) {
-      this.popupCountNumber = document.createElement('div');
+      this.popupCountNumber = document.createElement("div");
       this.popupCountNumber.id = `popup-count-number-${i}`;
-      this.popupCountNumber.className = 'number';
+      this.popupCountNumber.className = "number";
       this.popupCountNumber.textContent = i;
       numberTrack.appendChild(this.popupCountNumber);
-      numberTrack.style.width = i*45 + "px";
+      numberTrack.style.width = i * 45 + "px";
     }
 
-  const slider = document.getElementById("popup-count-range");
-  
-  this.updateNumber(1);
+    const slider = document.getElementById("popup-count-range");
 
-  slider.addEventListener('input', (event) => {
-    let value = parseInt(event.target.value);
-    this.params.current = value + this.params.min - 1;
-    this.updateNumber(value);
-  }); 
-  
-  const popupCountConfirm = document.getElementById("popup-count-confirm");
+    this.updateNumber(1);
+
+    slider.addEventListener("input", (event) => {
+      let value = parseInt(event.target.value);
+      this.params.current = value + this.params.min - 1;
+      this.updateNumber(value);
+    });
+
+    const popupCountConfirm = document.getElementById("popup-count-confirm");
     popupCountConfirm.addEventListener("click", () => {
       this.resolve({ cancel: false, value: this.params.current });
     });
-}
-
-updateNumber(activeNumber){
-  const numberTrack = document.querySelector(".number-track");
-  const numbers = document.querySelectorAll(".number");
-  const numberWidth = 30;
-  
-  numbers.forEach(element => {
-    element.className = "number hidden";
-  });
-  
-  numbers[activeNumber - 1].className = "number active";
-  
-  if(activeNumber > 1 && numbers[activeNumber - 2]) {
-    numbers[activeNumber - 2].className = "number visible";
-  }
-  if(activeNumber < numbers.length && numbers[activeNumber]) {
-    numbers[activeNumber].className = "number visible";
-  }
-  
-
-  if (numberTrack ) {
-    const containerWidth = numberTrack.offsetWidth;
-    const centerPosition = containerWidth / 2;
-    const activeNumberElement = numbers[activeNumber - 1];
-    const activeNumberPosition = activeNumberElement.offsetLeft + (activeNumberElement.offsetWidth / 2);
-    const translateX = centerPosition - activeNumberPosition;
-    
-    numberTrack.style.transition = "transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)";
-    numberTrack.style.transform = `translateX(${translateX}px)`;
   }
 
-}
+  updateNumber(activeNumber) {
+    const numberTrack = document.querySelector(".number-track");
+    const numbers = document.querySelectorAll(".number");
+    const numberWidth = 30;
+
+    numbers.forEach((element) => {
+      element.className = "number hidden";
+    });
+
+    numbers[activeNumber - 1].className = "number active";
+
+    if (activeNumber > 1 && numbers[activeNumber - 2]) {
+      numbers[activeNumber - 2].className = "number visible";
+    }
+    if (activeNumber < numbers.length && numbers[activeNumber]) {
+      numbers[activeNumber].className = "number visible";
+    }
+
+    if (numberTrack) {
+      const containerWidth = numberTrack.offsetWidth;
+      const centerPosition = containerWidth / 2;
+      const activeNumberElement = numbers[activeNumber - 1];
+      const activeNumberPosition =
+        activeNumberElement.offsetLeft + activeNumberElement.offsetWidth / 2;
+      const translateX = centerPosition - activeNumberPosition;
+
+      numberTrack.style.transition =
+        "transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)";
+      numberTrack.style.transform = `translateX(${translateX}px)`;
+    }
+  }
 
   #applyDefault() {
     this.params.id ??= "count-popup";
@@ -300,16 +302,22 @@ class AttackPopup extends PopupBase {
     this.current = rotate(this.current + offset);
 
     const attackPopupDice = document.getElementById("attack-popup-dice");
-    const attackDice = document.createElement('div');
+    const attackDice = document.createElement("div");
     attackDice.innerHTML = `<img src="./assets/images/perspective-dice-six-faces-one.svg" class="dice" alt="dice">`;
     console.log(this.current);
-    if(this.current === 0 ) {
-      attackPopupDice.innerHTML = '';
-    }else{
-      attackPopupDice.appendChild(attackDice); 
+    if (this.current === 0) {
+      attackPopupDice.innerHTML = "";
+    } else {
+      attackPopupDice.appendChild(attackDice);
     }
-      
+
     const attackPopupName = document.getElementById("attack-popup-name");
     attackPopupName.textContent = this.current === 0 ? "Blitz" : "Classic";
+    if (this.params.defender) {
+      if (this.current === 0 && winningOdds.blitz) {
+        attackPopupName.textContent +=
+          winningOdds[this.params.defender][this.params.max];
+      }
+    }
   }
 }
