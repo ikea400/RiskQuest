@@ -106,7 +106,7 @@ function startDraftPhase(callback) {
   console.log("startDraftPhase");
   updateCurrentPhase(EPhases.DRAFT);
 
-  // Récupère les térritoires possédé par le joueur
+  // Récupère les territoires possédé par le joueur
   const ownedTerritoriesIds = Object.keys(territoiresList).filter(
     (territoireId) =>
       territoiresList[territoireId].playerId === data.currentPlayerId
@@ -123,6 +123,7 @@ function startDraftPhase(callback) {
       min: 1,
       max: playersList[data.currentPlayerId].troops,
     });
+    
     const result = await popup.show();
     if (result.cancel === false && result.value > 0) {
       moveTroopsFromPlayer(this.id, data.currentPlayerId, result.value);
@@ -143,13 +144,16 @@ function startDraftPhase(callback) {
     }
   }
 
-  // Enregistre le territoireHandler sur tous les territoires
-  for (const territoire of ownedTerritoriesIds) {
-    document
-      .getElementById(territoire)
-      .addEventListener("click", territoireHandler);
+  if(playersList[data.currentPlayerId].bot === false){
+    // Enregistre le territoireHandler sur tous les territoires
+    for (const territoire of ownedTerritoriesIds) {
+      document
+        .getElementById(territoire)
+        .addEventListener("click", territoireHandler);
+    }
+  }else{
+    botDraftPhase(callback, ownedTerritoriesIds);
   }
-
   setAttackableTerritoires(ownedTerritoriesIds);
 }
 
@@ -276,8 +280,10 @@ function startAttackPhase(callback) {
     setAttackableTerritoires([]);
   }
 
-  for (const territoireSvg of territoiresSvgs) {
-    territoireSvg.addEventListener("click", territoireHandler);
+  if(playersList[data.currentPlayerId].bot === false){
+    for (const territoireSvg of territoiresSvgs) {
+      territoireSvg.addEventListener("click", territoireHandler);
+    }
   }
 }
 
@@ -383,6 +389,30 @@ function startMainLoop(callback) {
 
   // Demarage de la boucle
   handler();
+}
+
+/**
+ * Logique de draft pour les bots
+ * @param {*} callback 
+ * @param {*} territoires 
+ */
+function botDraftPhase(callback, territoires) {
+  let max = 0;
+  let paysDraft;
+  //Cherche le territoire avec le plus de troupes
+  for(let cleTerritoire in territoires) {
+    if(territoiresList[territoires[cleTerritoire]].troops > max){
+      max = territoiresList[territoires[cleTerritoire]].troops;
+      paysDraft = territoires[cleTerritoire];
+    }
+  }
+  //Attend 5sec puis met toutes ses troupes sur le territoire avec le plus de troupes
+  setTimeout((finGame) => {
+  moveTroopsFromPlayer(paysDraft, data.currentPlayerId, playersList[data.currentPlayerId].troops);
+  addTroopsChangeParticle(paysDraft, data.currentPlayerId, playersList[data.currentPlayerId].troops);
+  setAttackableTerritoires([]);
+  startAttackPhase(callback);
+  },5000);
 }
 
 document.addEventListener("DOMContentLoaded", function () {
