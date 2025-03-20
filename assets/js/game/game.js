@@ -28,6 +28,7 @@ import {
   updateCurrentPhase,
   addTroopsChangeParticle,
 } from "./display.js";
+import { CountPopup, AttackPopup } from "../popup.js";
 
 // window.addEventListener("pageshow", function (event) {
 //   // S'assurer qu'un token et username est disponible sinon redirection vers la page principale
@@ -193,6 +194,7 @@ function startAttackPhase(callback) {
     const popup = new AttackPopup({
       max: Math.min(territoiresList[attackerTerritoireId].troops - 1, 3),
       defender: territoiresList[defenderTerritoireId].troops,
+      attacker: territoiresList[attackerTerritoireId].troops - 1,
     });
 
     const result = await popup.show();

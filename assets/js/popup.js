@@ -1,4 +1,4 @@
-import { winningOdds } from "./game/data";
+import { winningOdds } from "./game/data.js";
 
 class PopupBase {
   #resolveCallback;
@@ -95,7 +95,7 @@ class TestPopup extends PopupBase {
   }
 }
 
-class CountPopup extends PopupBase {
+export class CountPopup extends PopupBase {
   constructor(params = {}) {
     super(params);
     this.init();
@@ -124,15 +124,15 @@ class CountPopup extends PopupBase {
     </div>`;
 
     //this.#updateDisplayText();
-
+    let widthTrack;
     const numberTrack = document.getElementById("numberTrack");
-    for (let i = this.params.min; i <= this.params.max; i++) {
+    for (let i = this.params.max; i >= this.params.min; i--) {
       this.popupCountNumber = document.createElement("div");
       this.popupCountNumber.id = `popup-count-number-${i}`;
       this.popupCountNumber.className = "number";
       this.popupCountNumber.textContent = i;
       numberTrack.appendChild(this.popupCountNumber);
-      numberTrack.style.width = i * 45 + "px";
+      widthTrack += 45;
     }
     numberTrack.style.width = widthTrack;
 
@@ -229,7 +229,7 @@ class CountPopup extends PopupBase {
   }
 }
 
-class AttackPopup extends PopupBase {
+export class AttackPopup extends PopupBase {
   constructor(params = {}) {
     super(params);
     this.init();
@@ -267,6 +267,8 @@ class AttackPopup extends PopupBase {
         </div>
         `;
 
+    this.#updateDisplayText(0);
+
     const attackPopupLeft = document.getElementById("left-button");
     attackPopupLeft.addEventListener("click", () => {
       this.#updateDisplayText(-1);
@@ -301,23 +303,34 @@ class AttackPopup extends PopupBase {
     };
 
     this.current = rotate(this.current + offset);
+    console.log(this.current);
 
     const attackPopupDice = document.getElementById("attack-popup-dice");
-    const attackDice = document.createElement("div");
-    attackDice.innerHTML = `<img src="./assets/images/perspective-dice-six-faces-one.svg" class="dice" alt="dice">`;
-    console.log(this.current);
-    if (this.current === 0) {
-      attackPopupDice.innerHTML = "";
-    } else {
-      attackPopupDice.appendChild(attackDice);
+
+    let dices = "";
+    for (let i = 0; i < this.current; i++) {
+      dices += `<div>
+                  <img src="./assets/images/perspective-dice-six-faces-one.svg" class="dice" alt="dice"/>
+                </div>`;
     }
+
+    attackPopupDice.innerHTML = dices;
 
     const attackPopupName = document.getElementById("attack-popup-name");
     attackPopupName.textContent = this.current === 0 ? "Blitz" : "Classic";
-    if (this.params.defender) {
+
+    if (this.params.defender && this.params.attacker) {
+      let odds;
       if (this.current === 0 && winningOdds.blitz) {
-        attackPopupName.textContent +=
-          winningOdds[this.params.defender][this.params.max];
+        odds = winningOdds.blitz;
+      } else if (this.current > 0 && winningOdds.classic) {
+        odds = winningOdds.classic;
+      }
+
+      if (odds) {
+        attackPopupName.textContent += `(${Math.floor(
+          odds[this.params.attacker][this.params.defender] * 100
+        )}%)`;
       }
     }
   }
