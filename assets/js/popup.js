@@ -122,16 +122,17 @@ class CountPopup extends PopupBase {
     </div>`;
     
     //this.#updateDisplayText();
-
+    let widthTrack;
     const numberTrack = document.getElementById('numberTrack');
-    for (let i = this.params.min; i <= this.params.max; i++) {
+    for (let i = this.params.max; i >= this.params.min; i--) {
       this.popupCountNumber = document.createElement('div');
       this.popupCountNumber.id = `popup-count-number-${i}`;
       this.popupCountNumber.className = 'number';
       this.popupCountNumber.textContent = i;
       numberTrack.appendChild(this.popupCountNumber);
-      numberTrack.style.width = i*45 + "px";
+      widthTrack += 45;
     }
+    numberTrack.style.width = widthTrack;
 
   const slider = document.getElementById("popup-count-range");
   
@@ -188,7 +189,7 @@ updateNumber(activeNumber){
     this.params.cancel ??= true;
     this.params.min ??= 3;
     this.params.max ??= 7;
-    this.params.current ??= this.params.min;
+    this.params.current ??= this.params.max;
   }
 
   #updateDisplayText() {
