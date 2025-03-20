@@ -134,6 +134,7 @@ class CountPopup extends PopupBase {
       numberTrack.appendChild(this.popupCountNumber);
       numberTrack.style.width = i * 45 + "px";
     }
+    numberTrack.style.width = widthTrack;
 
     const slider = document.getElementById("popup-count-range");
 
@@ -190,7 +191,7 @@ class CountPopup extends PopupBase {
     this.params.cancel ??= true;
     this.params.min ??= 3;
     this.params.max ??= 7;
-    this.params.current ??= this.params.min;
+    this.params.current ??= this.params.max;
   }
 
   #updateDisplayText() {
