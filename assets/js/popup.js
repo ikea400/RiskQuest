@@ -283,6 +283,12 @@ class CardPopup extends PopupBase {
       </button>
     </div>
 
+    <footer id="popup-cards-footer">
+      <div id="popup-cards-remaining-cards">
+        <img id='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
+      </div>
+    </footer>
+
     `;
     this.backgroundDiv.classList.add("background-popup-cards");
     this.backgroundDiv.classList.remove("background-popup-center");

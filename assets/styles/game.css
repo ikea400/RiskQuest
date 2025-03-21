@@ -87,7 +87,7 @@ body {
 }
 
 #card-button {
-  perspective: 1000px;
+  perspective: 10px;
 }
 
 #cards-img {
@@ -278,7 +278,7 @@ body {
 #turn-hub-action-troops-count {
   font-weight: bold;
   position: absolute;
-  z-index: 1000;
+  z-index: 2;
   color: black;
 }
 
