@@ -208,6 +208,8 @@ export function updatePhaseHudPlayer(oldPlayerId, playerId) {
   if (element) {
     changeBackgroundPlayer(element, oldPlayerId, playerId);
   }
+
+  updatePhaseTroopsCount(playersList[playerId].troops);
 }
 
 /**
@@ -240,7 +242,7 @@ export function updateCurrentPhase(phase) {
   turnHudPhaseName.innerText = phase.description;
 
   // Gestion spécifique de la phase "DRAFT"
-  if (phase === EPhases.DRAFT) {
+  if (phase === EPhases.DRAFT || phase === EPhases.PLACING) {
     const turnHubActionImg = document.getElementById("turn-hub-action-img");
     turnHubActionImg.src = "./assets/images/person-solid.svg";
     const turnHubActionTroopsCount = document.getElementById(
@@ -249,7 +251,10 @@ export function updateCurrentPhase(phase) {
     turnHubActionTroopsCount.hidden = false;
     turnHubActionTroopsCount.innerText =
       playersList[data.currentPlayerId].troops;
-  } else if (data.currentPhase === EPhases.DRAFT) {
+  } else if (
+    data.currentPhase === EPhases.DRAFT ||
+    data.currentPhase === EPhases.PLACING
+  ) {
     const turnHubActionImg = document.getElementById("turn-hub-action-img");
     turnHubActionImg.src = "./assets/images/chevrons-right-solid.svg";
     const turnHubActionTroopsCount = document.getElementById(

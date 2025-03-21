@@ -44,38 +44,50 @@ import RandomBot from "../bot/randombot.js";
 // });
 
 let gameFinished = false;
-const resizeObserver = new ResizeObserver(updatePastillesPosition);
 
+/**
+ * Démarre la phase de sélection des territoires pour les joueurs.
+ * @param {number} playerCount - Nombre total de joueurs participant au jeu.
+ * @param {Function} callback - Fonction à appeler lorsque tous les territoires ont été sélectionnés.
+ */
 function startTurnTerritoriesSelection(playerCount, callback) {
-  // mise à jour de la phase courante
+  // Mise à jour de la phase courante à l'état de sélection
   updateCurrentPhase(EPhases.PICKING);
 
+  // Obtient tous les éléments HTML représentant des territoires
   const territoires = document.getElementsByClassName("territoire");
 
+  // Identifiant du joueur en cours
   let playerId = data.currentPlayerId;
 
+  /**
+   * Gestionnaire d'événements pour le clic sur un territoire.
+   */
   function handler() {
     const territoireId = this.id;
+
+    // Prend possession du territoire pour le joueur en cours
     takeOverTerritory(territoireId, playerId, 1);
 
-    if (
-      Object.values(territoiresList).some((territoire) => !territoire.playerId)
-    ) {
-      // Some unselected territories remain
+    // Vérifie s'il reste des territoires non sélectionnés
+    if (Object.values(territoiresList).some((territoire) => !territoire.playerId)) {
+      // Passe au joueur suivant
       playerId = utils.getNextPlayerId(playerId, playerCount);
       setCurrentPlayer(playerId);
 
+      // Si le joueur suivant est un bot, sélectionne automatiquement un territoire
       if (playersList[playerId].bot) {
         document
           .getElementById(playersList[playerId].bot.pickTerritory())
           .dispatchEvent(new Event("click"));
       }
     } else {
-      // All territories where selected
+      // Tous les territoires ont été sélectionnés, exécute le callback
       callback();
     }
   }
 
+  // Ajoute un gestionnaire de clic pour chaque territoire disponible
   for (const territoire of territoires) {
     if (territoiresList[territoire.id]) {
       territoire.addEventListener("click", handler, { once: true });
@@ -83,50 +95,71 @@ function startTurnTerritoriesSelection(playerCount, callback) {
   }
 }
 
+
+/**
+ * Démarre la phase de placement des troupes pour les joueurs.
+ * @param {number} playerCount - Nombre total de joueurs participant au jeu.
+ * @param {Function} callback - Fonction à appeler lorsque toutes les troupes ont été placées.
+ */
 function startTurnTroopsPlacement(playerCount, callback) {
-  // mise à jour de la phase courante
+  // Mise à jour de la phase courante à l'état de placement
   updateCurrentPhase(EPhases.PLACING);
 
+  // Obtient tous les éléments HTML représentant des territoires
   const territoires = document.getElementsByClassName("territoire");
 
+  // Identifiant du joueur en cours
   let playerId = data.currentPlayerId;
+
+  /**
+   * Gestionnaire d'événements pour le clic sur un territoire.
+   */
   function handler() {
     const territoireId = this.id;
+
+    // Vérifie si le territoire appartient au joueur en cours
     if (territoiresList[territoireId].playerId !== playerId) return;
 
+    // Déplace une troupe du joueur vers ce territoire
     moveTroopsFromPlayer(territoireId, playerId, 1);
 
+    // Vérifie s'il reste des troupes à placer pour un joueur
     if (
       Object.values(playersList).some(
         (player) => player !== undefined && player.troops > 0
       )
     ) {
+      // Passe au joueur suivant
       playerId = utils.getNextPlayerId(playerId, playerCount);
       setCurrentPlayer(playerId);
 
+      // Si le joueur suivant est un bot, sélectionne automatiquement un territoire
       if (playersList[playerId].bot) {
         document
           .getElementById(playersList[playerId].bot.pickStartTroop())
           .dispatchEvent(new Event("click"));
       }
     } else {
+      // Une fois que toutes les troupes ont été placées, retire les gestionnaires d'événements
       for (const territoire of territoires) {
         if (territoiresList[territoire.id]) {
           territoire.removeEventListener("click", handler);
         }
       }
 
-      // All territories when all troops has been placed
+      // Tous les territoires sont mis à jour après le placement des troupes
       callback();
     }
   }
 
+  // Ajoute un gestionnaire de clic pour chaque territoire disponible
   for (const territoire of territoires) {
     if (territoiresList[territoire.id]) {
       territoire.addEventListener("click", handler);
     }
   }
 
+  // Si le joueur actuel est un bot, déclenche automatiquement l'action de placement
   if (playersList[playerId].bot) {
     document
       .getElementById(playersList[playerId].bot.pickStartTroop())
@@ -134,34 +167,64 @@ function startTurnTroopsPlacement(playerCount, callback) {
   }
 }
 
+
+/**
+ * Répartit aléatoirement les territoires entre les joueurs.
+ * @param {number} playerCount - Nombre total de joueurs participant au jeu.
+ * @param {Function} callback - Fonction à appeler une fois que tous les territoires ont été distribués.
+ */
 function startRandomTerritoryDistribution(playerCount, callback) {
+  // Liste des identifiants de territoires disponibles
   let territoires = Object.keys(territoiresList);
+
+  // Identifiant du joueur en cours
   let playerId = data.currentPlayerId;
+
+  // Boucle jusqu'à ce que tous les territoires soient distribués
   do {
+    // Sélectionne un territoire aléatoire parmi ceux restants
     let territoireIndex = utils.randomInteger(0, territoires.length - 1);
+
+    // Assigne ce territoire au joueur courant
     takeOverTerritory(territoires[territoireIndex], playerId, 1);
+
+    // Retire le territoire sélectionné de la liste
     territoires.splice(territoireIndex, 1);
 
+    // Passe au joueur suivant
     playerId = utils.getNextPlayerId(playerId, playerCount);
   } while (territoires.length > 0);
 
+  // Appelle le callback après avoir distribué tous les territoires
   callback();
 }
 
+/**
+ * Place les troupes aléatoirement sur les territoires des joueurs.
+ * @param {number} playerCount - Nombre total de joueurs participant au jeu.
+ * @param {Function} callback - Fonction à appeler une fois que toutes les troupes ont été placées.
+ */
 function startRandomTroopsPlacement(playerCount, callback) {
+  // Parcourt chaque joueur
   for (let playerId = 1; playerId <= playerCount; playerId++) {
     const player = playersList[playerId];
 
+    // Liste des territoires appartenant au joueur courant
     let territoires = Object.keys(territoiresList).filter(
       (territoireId) => territoiresList[territoireId].playerId == playerId
     );
 
+    // Place toutes les troupes du joueur sur ses territoires
     while (player.troops > 0) {
+      // Sélectionne un territoire aléatoire appartenant au joueur
       let territoireIndex = utils.randomInteger(0, territoires.length - 1);
+
+      // Ajoute une troupe sur ce territoire
       moveTroopsFromPlayer(territoires[territoireIndex], playerId, 1);
     }
   }
 
+  // Appelle le callback après que toutes les troupes ont été placées
   callback();
 }
 
@@ -496,6 +559,7 @@ document.addEventListener("DOMContentLoaded", function () {
       setAttackableTerritoires([]);
     }
   });
-  resizeObserver.observe(document.body);
+
+  new ResizeObserver(updatePastillesPosition).observe(document.body);
   window.addEventListener("resize", updatePastillesPosition);
 });
