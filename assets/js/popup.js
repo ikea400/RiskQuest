@@ -1,3 +1,5 @@
+import { winningOdds } from "./game/data.js";
+
 class PopupBase {
   #resolveCallback;
   #rejectCallback;
@@ -93,7 +95,7 @@ class TestPopup extends PopupBase {
   }
 }
 
-class CountPopup extends PopupBase {
+export class CountPopup extends PopupBase {
   constructor(params = {}) {
     super(params);
     this.init();
@@ -103,38 +105,82 @@ class CountPopup extends PopupBase {
     this.#applyDefault();
     super.init();
 
+    const rangeMax = this.params.max - this.params.min + 1;
     this.popupDiv.innerHTML = `
-        <div id="popup-count-confirm">
-            <img id="popup-count-confirm-img" src="./assets/images/circle-check-solid.svg" alt="next">
+    <div class="popup-count-countainer">
+      <div class="number-display">
+          <div class="center-indicator"></div>
+          <div class="number-track" id="numberTrack">
+          
         </div>
-        <div class="popup-count-overlay"></div>
-        <div class="popup-count-countainer" autofocus>
-          <div id="popup-count-number-1" class="popup-count-number">1</div>
-          <div id="popup-count-number-2" class="popup-count-number">2</div>
-          <div id="popup-count-number-3" class="popup-count-number">3</div>
-          <div id="popup-count-number-4" class="popup-count-number">4</div>
-          <div id="popup-count-number-5" class="popup-count-number">5</div>
-        </div>`;
+      </div>
+      <div class="slider-countainer" autofocus>
+        <input type="range" id="popup-count-range" name="count" min="1" max="${rangeMax}" value="0" class="slider">
+      </div>
+      <div id="popup-count-confirm">
+          <img id="popup-count-confirm-img" src="./assets/images/circle-check-solid.svg" alt="next">
+      </div>
+      
+    </div>`;
 
-    this.#updateDisplayText();
+    //this.#updateDisplayText();
+    let widthTrack;
+    const numberTrack = document.getElementById("numberTrack");
+    for (let i = this.params.max; i >= this.params.min; i--) {
+      this.popupCountNumber = document.createElement("div");
+      this.popupCountNumber.id = `popup-count-number-${i}`;
+      this.popupCountNumber.className = "number";
+      this.popupCountNumber.textContent = i;
+      numberTrack.appendChild(this.popupCountNumber);
+      widthTrack += 45;
+    }
+    numberTrack.style.width = widthTrack;
+
+    const slider = document.getElementById("popup-count-range");
+
+    this.updateNumber(1);
+
+    slider.addEventListener("input", (event) => {
+      let value = parseInt(event.target.value);
+      this.params.current = value + this.params.min - 1;
+      this.updateNumber(value);
+    });
 
     const popupCountConfirm = document.getElementById("popup-count-confirm");
     popupCountConfirm.addEventListener("click", () => {
       this.resolve({ cancel: false, value: this.params.current });
     });
+  }
 
-    document.addEventListener("keydown", (event) => {
-      console.log(event);
+  updateNumber(activeNumber) {
+    const numberTrack = document.querySelector(".number-track");
+    const numbers = document.querySelectorAll(".number");
+    const numberWidth = 30;
+
+    numbers.forEach((element) => {
+      element.className = "number hidden";
     });
 
-    for (let i = 1; i <= 5; i++) {
-      const popupCountNumber = document.getElementById(
-        `popup-count-number-${i}`
-      );
-      popupCountNumber.addEventListener("click", (event) => {
-        this.params.current = parseInt(event.currentTarget.innerText);
-        this.#updateDisplayText();
-      });
+    numbers[activeNumber - 1].className = "number active";
+
+    if (activeNumber > 1 && numbers[activeNumber - 2]) {
+      numbers[activeNumber - 2].className = "number visible";
+    }
+    if (activeNumber < numbers.length && numbers[activeNumber]) {
+      numbers[activeNumber].className = "number visible";
+    }
+
+    if (numberTrack) {
+      const containerWidth = numberTrack.offsetWidth;
+      const centerPosition = containerWidth / 2;
+      const activeNumberElement = numbers[activeNumber - 1];
+      const activeNumberPosition =
+        activeNumberElement.offsetLeft + activeNumberElement.offsetWidth / 2;
+      const translateX = centerPosition - activeNumberPosition;
+
+      numberTrack.style.transition =
+        "transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)";
+      numberTrack.style.transform = `translateX(${translateX}px)`;
     }
   }
 
@@ -183,7 +229,7 @@ class CountPopup extends PopupBase {
   }
 }
 
-class AttackPopup extends PopupBase {
+export class AttackPopup extends PopupBase {
   constructor(params = {}) {
     super(params);
     this.init();
@@ -196,29 +242,39 @@ class AttackPopup extends PopupBase {
     this.current = this.params.current;
 
     this.popupDiv.innerHTML = `
-        <img
-          src="./assets/images/chevron-left-solid.svg"
-          alt="left"
-          id="attack-popup-left-img"
-          class="attack-popup-action-img"
-        />
-        <div id="attack-popup-center">
-          <div id="attack-popup-dice">3</div>
-          <div id="attack-popup-name" class="kanit-900">Blitz</div>
+        <div id="attack-container">
+          <div class="left-right-button" id="left-button">
+            <img
+              src="./assets/images/chevron-left-solid.svg"
+              alt="left"
+              id="attack-popup-left-img"
+              class="attack-popup-action-img"
+            />
+          </div>
+          <div id="attack-popup-center">
+            <div id="attack-popup-dice">
+            </div>
+            <div id="attack-popup-name" class="kanit-900">Blitz</div>
+          </div>
+          <div class="left-right-button" id="right-button">
+            <img
+              src="./assets/images/chevron-right-solid.svg"
+              alt="left"
+              id="attack-popup-right-img"
+              class="attack-popup-action-img"
+            />
+          </div>
         </div>
-        <img
-          src="./assets/images/chevron-right-solid.svg"
-          alt="left"
-          id="attack-popup-right-img"
-          class="attack-popup-action-img"
-        />`;
+        `;
 
-    const attackPopupLeft = document.getElementById("attack-popup-left-img");
+    this.#updateDisplayText(0);
+
+    const attackPopupLeft = document.getElementById("left-button");
     attackPopupLeft.addEventListener("click", () => {
       this.#updateDisplayText(-1);
     });
 
-    const attackPopupRight = document.getElementById("attack-popup-right-img");
+    const attackPopupRight = document.getElementById("right-button");
     attackPopupRight.addEventListener("click", () => {
       this.#updateDisplayText(1);
     });
@@ -247,11 +303,35 @@ class AttackPopup extends PopupBase {
     };
 
     this.current = rotate(this.current + offset);
+    console.log(this.current);
 
     const attackPopupDice = document.getElementById("attack-popup-dice");
-    attackPopupDice.textContent = this.current === 0 ? 3 : this.current;
+
+    let dices = "";
+    for (let i = 0; i < this.current; i++) {
+      dices += `<div>
+                  <img src="./assets/images/perspective-dice-six-faces-one.svg" class="dice" alt="dice"/>
+                </div>`;
+    }
+
+    attackPopupDice.innerHTML = dices;
 
     const attackPopupName = document.getElementById("attack-popup-name");
     attackPopupName.textContent = this.current === 0 ? "Blitz" : "Classic";
+
+    if (this.params.defender && this.params.attacker) {
+      let odds;
+      if (this.current === 0 && winningOdds.blitz) {
+        odds = winningOdds.blitz;
+      } else if (this.current > 0 && winningOdds.classic) {
+        odds = winningOdds.classic;
+      }
+
+      if (odds) {
+        attackPopupName.textContent += `(${Math.floor(
+          odds[this.params.attacker][this.params.defender] * 100
+        )}%)`;
+      }
+    }
   }
 }

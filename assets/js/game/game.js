@@ -28,6 +28,7 @@ import {
   updateCurrentPhase,
   addTroopsChangeParticle,
 } from "./display.js";
+import { CountPopup, AttackPopup } from "../popup.js";
 
 import RandomBot from "../bot/randombot.js";
 
@@ -254,6 +255,8 @@ function startAttackPhase(playerCount, callback) {
 
     const popup = new AttackPopup({
       max: Math.min(territoiresList[attackerTerritoireId].troops - 1, 3),
+      defender: territoiresList[defenderTerritoireId].troops,
+      attacker: territoiresList[attackerTerritoireId].troops - 1,
     });
 
     const result = await popup.show();
