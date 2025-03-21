@@ -113,15 +113,82 @@
 #flex-center-popup-cards {
   display: flex;
   flex-direction: row;
-  gap: 1em;
-  z-index: 10;
+  justify-content: center;
+  gap: 2em;
 }
 .background-popup-cards {
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: rgba(0, 0, 0, 0.5);
   background-blend-mode: darken;
-  z-index: 9;
+  flex-direction: column;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
 }
 #image-card {
-  width: wrap;
-  height: wrap;
+  width: 150px;
+  height: auto;
+}
+#popup-cards-title {
+  color: white;
+  margin: 0;
+  font-size: 65px;
+}
+#popup-cards-header {
+  text-align: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.6);
+  background-blend-mode: darken;
+  border-radius: 10px;
+  width: 60em;
+}
+#popup-cards-button-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 3em;
+}
+#popup-cards-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; 
+  background: linear-gradient(to bottom, #6ede6e, #4caf50); 
+  border-radius: 50px;
+  color: white;
+  width: 53%;
+  padding: 0.5em 1em;
+  position: relative;
+  border: 3px solid #2e7d32; 
+  box-shadow: 1px 5px 1px 1px rgb(53, 53, 53)
+}
+#popup-cards-button::before {
+  content: '';
+  position: absolute;
+  top: 8%;
+  left: 2px;
+  right: 2px;
+  bottom: 8%;
+  border-radius: 50px;
+  background-color: rgba(0, 0, 0, 0.1);
+  z-index: 1;
+}
+
+#trade-text {
+  -webkit-text-stroke: 1px black;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%); /* garder le texte centré dans le boutton */
+  font-size: 2em;
+  font-weight: bold;
+  text-align: center;
+}
+#extra-troops {
+  -webkit-text-stroke: 1px black;
+  margin-left: auto; 
+  font-weight: bold;
+  font-size: 2em;
+  position: relative;
+}
+#trade-text, #extra-troops {
+  position: relative;
+  z-index: 2;
 }
