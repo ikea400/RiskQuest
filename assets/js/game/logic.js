@@ -13,12 +13,12 @@ import * as utils from "./utils.js";
 /**
  * Récupère les territoires voisins attaquables d'un territoire donné.
  *
- * @param {string} territoire - L'ID du territoire pour lequel trouver les voisins attaquables.
+ * @param {string} territoireId - L'ID du territoire pour lequel trouver les voisins attaquables.
  * @returns {Array<string>} Une liste des IDs des territoires voisins attaquables.
  */
-export function getAttackableNeighbour(territoire) {
-  let playerId = territoiresList[territoire].playerId;
-  let voisins = territoiresList[territoire].connection;
+export function getAttackableNeighbour(territoireId) {
+  let playerId = territoiresList[territoireId].playerId;
+  let voisins = territoiresList[territoireId].connection;
   let territoiresAttackables = [];
   for (const voisin of voisins) {
     if (territoiresList[voisin].playerId != playerId) {
