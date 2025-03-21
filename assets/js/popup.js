@@ -266,9 +266,9 @@ class CardPopup extends PopupBase {
     
     this.popupDiv.innerHTML = `
     <div id="flex-center-popup-cards">
-      <img src='./assets/images/riskCardInfantry.png' alt='cannon'img>
-      <img src='./assets/images/riskCardCannon.png' alt='cannon'img>
-      <img src='./assets/images/riskCardChevalier.png' alt='cannon'img>
+      <img id='image-card' src='./assets/images/riskCardInfantry.png' alt='infantry'img>
+      <img id='image-card' src='./assets/images/riskCardCannon.png' alt='cannon'img>
+      <img id='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
     </div>`;
     this.backgroundDiv.classList.add("background-popup-cards");
   }
