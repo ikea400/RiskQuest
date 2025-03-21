@@ -29,6 +29,8 @@ import {
   addTroopsChangeParticle,
 } from "./display.js";
 
+import RandomBot from "../bot/randombot.js";
+
 // window.addEventListener("pageshow", function (event) {
 //   // S'assurer qu'un token et username est disponible sinon redirection vers la page principale
 //   if (
@@ -40,7 +42,6 @@ import {
 //   }
 // });
 
-let currentPlayerCount = undefined;
 let gameFinished = false;
 const resizeObserver = new ResizeObserver(updatePastillesPosition);
 
@@ -62,6 +63,12 @@ function startTurnTerritoriesSelection(playerCount, callback) {
       // Some unselected territories remain
       playerId = utils.getNextPlayerId(playerId, playerCount);
       setCurrentPlayer(playerId);
+
+      if (playersList[playerId].bot) {
+        document
+          .getElementById(playersList[playerId].bot.pickTerritory())
+          .dispatchEvent(new Event("click"));
+      }
     } else {
       // All territories where selected
       callback();
@@ -75,7 +82,58 @@ function startTurnTerritoriesSelection(playerCount, callback) {
   }
 }
 
-function startRandomTerritoryDistribution(playerCount) {
+function startTurnTroopsPlacement(playerCount, callback) {
+  // mise à jour de la phase courante
+  updateCurrentPhase(EPhases.PLACING);
+
+  const territoires = document.getElementsByClassName("territoire");
+
+  let playerId = data.currentPlayerId;
+  function handler() {
+    const territoireId = this.id;
+    if (territoiresList[territoireId].playerId !== playerId) return;
+
+    moveTroopsFromPlayer(territoireId, playerId, 1);
+
+    if (
+      Object.values(playersList).some(
+        (player) => player !== undefined && player.troops > 0
+      )
+    ) {
+      playerId = utils.getNextPlayerId(playerId, playerCount);
+      setCurrentPlayer(playerId);
+
+      if (playersList[playerId].bot) {
+        document
+          .getElementById(playersList[playerId].bot.pickStartTroop())
+          .dispatchEvent(new Event("click"));
+      }
+    } else {
+      for (const territoire of territoires) {
+        if (territoiresList[territoire.id]) {
+          territoire.removeEventListener("click", handler);
+        }
+      }
+
+      // All territories when all troops has been placed
+      callback();
+    }
+  }
+
+  for (const territoire of territoires) {
+    if (territoiresList[territoire.id]) {
+      territoire.addEventListener("click", handler);
+    }
+  }
+
+  if (playersList[playerId].bot) {
+    document
+      .getElementById(playersList[playerId].bot.pickStartTroop())
+      .dispatchEvent(new Event("click"));
+  }
+}
+
+function startRandomTerritoryDistribution(playerCount, callback) {
   let territoires = Object.keys(territoiresList);
   let playerId = data.currentPlayerId;
   do {
@@ -85,9 +143,11 @@ function startRandomTerritoryDistribution(playerCount) {
 
     playerId = utils.getNextPlayerId(playerId, playerCount);
   } while (territoires.length > 0);
+
+  callback();
 }
 
-function startRandomTroopsPlacement(playerCount) {
+function startRandomTroopsPlacement(playerCount, callback) {
   for (let playerId = 1; playerId <= playerCount; playerId++) {
     const player = playersList[playerId];
 
@@ -100,9 +160,11 @@ function startRandomTroopsPlacement(playerCount) {
       moveTroopsFromPlayer(territoires[territoireIndex], playerId, 1);
     }
   }
+
+  callback();
 }
 
-function startDraftPhase(callback) {
+function startDraftPhase(playerCount, callback) {
   console.log("startDraftPhase");
   updateCurrentPhase(EPhases.DRAFT);
 
@@ -138,7 +200,7 @@ function startDraftPhase(callback) {
         }
 
         setAttackableTerritoires([]);
-        startAttackPhase(callback);
+        startAttackPhase(playerCount, callback);
       }
     }
   }
@@ -153,7 +215,7 @@ function startDraftPhase(callback) {
   setAttackableTerritoires(ownedTerritoriesIds);
 }
 
-function startAttackPhase(callback) {
+function startAttackPhase(playerCount, callback) {
   console.log("startAttackPhase");
   updateCurrentPhase(EPhases.ATTACK);
 
@@ -169,7 +231,7 @@ function startAttackPhase(callback) {
     for (const territoireSvg of territoiresSvgs) {
       territoireSvg.removeEventListener("click", territoireHandler);
     }
-    startFortifyPhase(callback);
+    startFortifyPhase(playerCount, callback);
   }
   turnHudAction.addEventListener("click", nextHandler, { once: true });
 
@@ -281,7 +343,7 @@ function startAttackPhase(callback) {
   }
 }
 
-function startFortifyPhase(callback) {
+function startFortifyPhase(playerCount, callback) {
   console.log("startFortifyPhase");
   updateCurrentPhase(EPhases.FORTIFY);
 
@@ -348,12 +410,12 @@ function startFortifyPhase(callback) {
   }
 }
 
-function startOneRound(callback) {
-  startDraftPhase(() => {
+function startOneRound(playerCount, callback) {
+  startDraftPhase(playerCount, () => {
     if (!gameFinished) {
       let nextPlayerId = data.currentPlayerId;
       do {
-        nextPlayerId = utils.getNextPlayerId(nextPlayerId, currentPlayerCount);
+        nextPlayerId = utils.getNextPlayerId(nextPlayerId, playerCount);
         console.log(nextPlayerId, playersList[nextPlayerId]);
       } while (
         playersList[nextPlayerId].dead &&
@@ -370,7 +432,7 @@ function startOneRound(callback) {
   });
 }
 
-function startMainLoop(callback) {
+function startMainLoop(playerCount, callback) {
   let handler = () => {
     if (gameFinished) {
       callback();
@@ -378,7 +440,7 @@ function startMainLoop(callback) {
     }
 
     // Commence un rounde
-    startOneRound(handler);
+    startOneRound(playerCount, handler);
   };
 
   // Demarage de la boucle
@@ -386,28 +448,42 @@ function startMainLoop(callback) {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
+  const autoPlacement = false;
   const playerCount = 6;
-  currentPlayerCount = playerCount;
+  // Where does the bots start if there is any. Else set to 0
+  const botPlayerStart = 2;
 
   // Initialization des troops
-  for (let i = 1; i <= playerCount; i++) {
-    playersList[i].troops = getStartingTroops(playerCount);
+  for (let playerId = 1; playerId <= playerCount; playerId++) {
+    playersList[playerId].troops = getStartingTroops(playerCount);
+    if (botPlayerStart && playerId >= botPlayerStart) {
+      playersList[playerId].bot = new RandomBot({ playerId: playerId });
+    }
   }
 
   // Création dynamiques du side player hud
   initializePlayersHud(playerCount);
 
-  setCurrentPlayer(utils.getRandomStartingPlayer(playerCount));
+  setCurrentPlayer(
+    utils.getRandomStartingPlayer(
+      botPlayerStart > 0 ? botPlayerStart - 1 : playerCount
+    )
+  );
 
-  startRandomTerritoryDistribution(playerCount);
+  const [distributionFn, placementFn] = autoPlacement
+    ? [startRandomTerritoryDistribution, startRandomTroopsPlacement]
+    : [startTurnTerritoriesSelection, startTurnTroopsPlacement];
 
-  console.log("Selection is done");
+  distributionFn(playerCount, () => {
+    console.log("Selection is done");
 
-  startRandomTroopsPlacement(playerCount);
+    placementFn(playerCount, () => {
+      console.log("Distribution is done");
 
-  console.log("Distribution is done");
-  startMainLoop(() => {
-    console.log("Main game loop is done");
+      startMainLoop(playerCount, () => {
+        console.log("Main game loop is done");
+      });
+    });
   });
 
   let containerPays = document.getElementById("pays-background");
