@@ -297,16 +297,16 @@ function startDraftPhase(playerCount, callback) {
           setAttackableTerritoires([]);
           startAttackPhase(playerCount, callback);
   
-        //send the draft move data to the api
-        console.log(Move);
-        saveMove({
-          players: playersList,
-          territories: territoiresList,
-          move: Move
-        }).catch((error) => {
-          console.log("Error at api.php when saving draft move: " + error);
-        });
-      }
+          //send the draft move data to the api
+          console.log(Move);
+          saveMove({
+            players: playersList,
+            territories: territoiresList,
+            move: Move
+          }).catch((error) => {
+            console.log("Error at api.php when saving draft move: " + error);
+          });
+        }
       }
     }
 
@@ -408,7 +408,7 @@ function startAttackPhase(playerCount, callback) {
     const territoiresSvgs = territoriesIds.map((territoireId) =>
       document.getElementById(territoireId)
     );
-
+  
     const turnHudAction = document.getElementById("turn-hud-action");
     function nextHandler() {
       setSelectedTerritoire(null);
@@ -547,8 +547,9 @@ function startAttackPhase(playerCount, callback) {
       setAttackableTerritoires([]);
     }
 
-  for (const territoireSvg of territoiresSvgs) {
-    territoireSvg.addEventListener("click", territoireHandler);
+    for (const territoireSvg of territoiresSvgs) {
+      territoireSvg.addEventListener("click", territoireHandler);
+    }
   }
 }
 
@@ -710,24 +711,23 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log("Selection is done");
 
     placementFn(playerCount, () => {
- //create game with player info 
- 
-  initializeGame({
-    players: playersList,
-    playerCount: currentPlayerCount
-  }).catch((error) => {
-    console.log("Error at api.php when initializing game: " + error);
-  });
 
+      //create game with player info 
+      initializeGame({
+        players: playersList,
+        playerCount: playerCount
+      }).catch((error) => {
+        console.log("Error at api.php when initializing game: " + error);
+      });
 
-  //make inital move to save inital territory and troop distribution
-  saveMove({
-    players: playersList,
-    territories: territoiresList,
-    move: {}
-  }).catch((error) => {
-    console.log("Error at api.php when making inital move: " + error);
-  });
+      //make inital move to save inital territory and troop distribution
+      saveMove({
+        players: playersList,
+        territories: territoiresList,
+        move: {}
+      }).catch((error) => {
+        console.log("Error at api.php when making inital move: " + error);
+      });
 
       console.log("Distribution is done");
 
