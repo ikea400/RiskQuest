@@ -158,6 +158,62 @@ $router->post("/guest", function (): JsonResponse {
     ]);
 });
 
+$router->post("/saveMove", function ($bodyArray): JsonResponse {
+    if(empty($bodyArray)){
+        JsonResponse::badRequest();
+    }
+
+    $pdo = new DatabaseConnection();
+
+    
+
+});
+
+$router->post("/initializeGame", function ($bodyArray): JsonResponse {
+
+    if(empty($bodyArray)){
+        JsonResponse::badRequest();
+    }
+
+    $pdo = new DatabaseConnection();
+
+    $pdo->beginTransaction();
+
+    if(!$pdo->safeQuery(
+        "INSERT INTO Game (player_count, start_date) VALUES (:player_count, NOW());",
+        ['player_count' => $bodyArray["playerCount"]]
+        )){
+        $pdo->rollBack();
+        return JsonResponse::internalServerError();
+        
+    }
+
+    $game_id = $pdo->lastInsertId();
+
+    foreach( $bodyArray["players"] as $index => $player){
+        $playerName = $player["name"];
+        if(!$pdo->safeQuery(
+            "INSERT INTO User_Game (game_id, player_name, player_id) 
+             VALUES (:game_id, :player_name, :player_id);",
+            [
+                'game_id'     => $game_id,
+                'player_name' => $playerName,
+                'player_id'   => $index + 1
+            ]
+
+        )){
+            $pdo->rollBack();
+            return JsonResponse::internalServerError();
+          
+        } 
+    }
+
+    $pdo->commit();
+    return JsonResponse::success();
+    
+});
+
+
 $router->get("/user/{userId}", function ($userId): JsonResponse {
     // Instancier la connexion
     $pdo = new DatabaseConnection();

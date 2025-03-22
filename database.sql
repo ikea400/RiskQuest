@@ -31,8 +31,10 @@ CREATE OR REPLACE TABLE Move
 CREATE OR REPLACE TABLE User_Game
 (
     game_id   BIGINT NOT NULL REFERENCES Game (id),
-    user_id   BIGINT NOT NULL REFERENCES User (id),
-    player_id INT1   NOT NULL CHECK (player_id >= 1 AND player_id <= 6)
+    user_id   BIGINT NULL REFERENCES User (id),
+    player_name VARCHAR(30) NOT NULL,
+    player_id INT1  NOT NULL CHECK (player_id >= 1 AND player_id <= 6),
+    PRIMARY KEY (game_id, player_id)
 );
 
 

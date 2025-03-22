@@ -28,6 +28,10 @@ import {
   updateCurrentPhase,
   addTroopsChangeParticle,
 } from "./display.js";
+import {
+  initializeGame,
+  saveMove
+} from "../api/gameDataService.js";
 
 // window.addEventListener("pageshow", function (event) {
 //   // S'assurer qu'un token et username est disponible sinon redirection vers la page principale
@@ -103,6 +107,12 @@ function startRandomTroopsPlacement(playerCount) {
 }
 
 function startDraftPhase(callback) {
+  //the move value defines the players actions during this draft phase
+  const Move = {
+    player: data.currentPlayerId,
+    draft: {}
+  };
+
   console.log("startDraftPhase");
   updateCurrentPhase(EPhases.DRAFT);
 
@@ -127,7 +137,9 @@ function startDraftPhase(callback) {
     if (result.cancel === false && result.value > 0) {
       moveTroopsFromPlayer(this.id, data.currentPlayerId, result.value);
       addTroopsChangeParticle(this.id, data.currentPlayerId, result.value);
-
+      //the drafted troops are add to move data  
+      Move.draft[this.id] = result.value;
+      
       // Tous les pieces ont été placé
       if (playersList[data.currentPlayerId].troops <= 0) {
         // Enlever tous les listener sur les territoires
@@ -136,9 +148,18 @@ function startDraftPhase(callback) {
             .getElementById(territoire)
             .removeEventListener("click", territoireHandler);
         }
-
         setAttackableTerritoires([]);
         startAttackPhase(callback);
+
+        //send the draft move data to the api
+        console.log(Move);
+        saveMove({
+          players: playersList,
+          territories: territoiresList,
+          move: Move
+        }).catch((error) => {
+          console.log("Error at api.php when saving draft move: " + error);
+        });
       }
     }
   }
@@ -151,9 +172,17 @@ function startDraftPhase(callback) {
   }
 
   setAttackableTerritoires(ownedTerritoriesIds);
+
 }
 
 function startAttackPhase(callback) {
+
+  const Move = {
+    player: data.currentPlayerId,
+    attacks: {},
+    
+  };
+
   console.log("startAttackPhase");
   updateCurrentPhase(EPhases.ATTACK);
 
@@ -169,6 +198,17 @@ function startAttackPhase(callback) {
     for (const territoireSvg of territoiresSvgs) {
       territoireSvg.removeEventListener("click", territoireHandler);
     }
+
+    //send the attack move data to the api
+    console.log(Move);
+    saveMove({
+      players: playersList,
+      territories: territoiresList,
+      move: Move
+    }).catch((error) => {
+      console.log("Error at api.php when saving attack move: " + error);
+    });
+
     startFortifyPhase(callback);
   }
   turnHudAction.addEventListener("click", nextHandler, { once: true });
@@ -213,6 +253,14 @@ function startAttackPhase(callback) {
         result.value
       );
     }
+
+    // Add attacks result to the Move object,
+    //each attack has a attackerTerritoireId-defenderTerritoireId key
+    Move.attacks[`${attackerTerritoireId}-${defenderTerritoireId}`] = {
+      defenderLostTroops: defenderLostTroops,
+      attackerLostTroops: attackerLostTroops
+    };
+
 
     console.log(defenderLostTroops, attackerLostTroops);
     // Enlever les troops
@@ -269,19 +317,30 @@ function startAttackPhase(callback) {
           data.currentPlayerId,
           count
         );
+
+        //add the troops displacement after the attack to the move data
+        Move.attacks[`${attackerTerritoireId}-${defenderTerritoireId}`].movedTroops = count;
       }
     }
 
     setSelectedTerritoire(null);
     setAttackableTerritoires([]);
+    
   }
 
   for (const territoireSvg of territoiresSvgs) {
     territoireSvg.addEventListener("click", territoireHandler);
   }
+  
 }
 
 function startFortifyPhase(callback) {
+
+  const Move = {
+    player: data.currentPlayerId,
+    fortifyDraft: {}
+  };
+
   console.log("startFortifyPhase");
   updateCurrentPhase(EPhases.FORTIFY);
 
@@ -305,6 +364,16 @@ function startFortifyPhase(callback) {
     for (const territoireSvg of territoiresSvgs) {
       territoireSvg.removeEventListener("click", territoireHandler);
     }
+
+    //send the fortify move data to the api
+    console.log(Move);
+    saveMove({
+      players: playersList,
+      territories: territoiresList,
+      move: Move
+    }).catch((error) => {
+      console.log("Error at api.php when saving fortify move: " + error);
+    });
 
     callback();
   }
@@ -334,6 +403,8 @@ function startFortifyPhase(callback) {
           result.value
         );
 
+        //the drafted troops are saved in move data
+        Move.fortifyDraft[this.id] = result.value;
         nextHandler();
       }
     } else {
@@ -385,6 +456,7 @@ function startMainLoop(callback) {
   handler();
 }
 
+
 document.addEventListener("DOMContentLoaded", function () {
   const playerCount = 6;
   currentPlayerCount = playerCount;
@@ -404,6 +476,25 @@ document.addEventListener("DOMContentLoaded", function () {
   console.log("Selection is done");
 
   startRandomTroopsPlacement(playerCount);
+
+ //create game with player info 
+ 
+  initializeGame({
+    players: playersList,
+    playerCount: currentPlayerCount
+  }).catch((error) => {
+    console.log("Error at api.php when initializing game: " + error);
+  });
+
+
+  //make inital move to save inital territory and troop distribution
+  saveMove({
+    players: playersList,
+    territories: territoiresList,
+    move: {}
+  }).catch((error) => {
+    console.log("Error at api.php when making inital move: " + error);
+  });
 
   console.log("Distribution is done");
   startMainLoop(() => {
