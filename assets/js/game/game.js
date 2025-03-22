@@ -123,7 +123,7 @@ function startDraftPhase(callback) {
       min: 1,
       max: playersList[data.currentPlayerId].troops,
     });
-    
+
     const result = await popup.show();
     if (result.cancel === false && result.value > 0) {
       moveTroopsFromPlayer(this.id, data.currentPlayerId, result.value);
@@ -144,15 +144,11 @@ function startDraftPhase(callback) {
     }
   }
 
-  if(playersList[data.currentPlayerId].bot === false){
-    // Enregistre le territoireHandler sur tous les territoires
-    for (const territoire of ownedTerritoriesIds) {
-      document
-        .getElementById(territoire)
-        .addEventListener("click", territoireHandler);
-    }
-  }else{
-    botDraftPhase(callback, ownedTerritoriesIds);
+  // Enregistre le territoireHandler sur tous les territoires
+  for (const territoire of ownedTerritoriesIds) {
+    document
+      .getElementById(territoire)
+      .addEventListener("click", territoireHandler);
   }
   setAttackableTerritoires(ownedTerritoriesIds);
 }
@@ -280,10 +276,8 @@ function startAttackPhase(callback) {
     setAttackableTerritoires([]);
   }
 
-  if(playersList[data.currentPlayerId].bot === false){
-    for (const territoireSvg of territoiresSvgs) {
-      territoireSvg.addEventListener("click", territoireHandler);
-    }
+  for (const territoireSvg of territoiresSvgs) {
+    territoireSvg.addEventListener("click", territoireHandler);
   }
 }
 
@@ -389,30 +383,6 @@ function startMainLoop(callback) {
 
   // Demarage de la boucle
   handler();
-}
-
-/**
- * Logique de draft pour les bots
- * @param {*} callback 
- * @param {*} territoires 
- */
-function botDraftPhase(callback, territoires) {
-  let max = 0;
-  let paysDraft;
-  //Cherche le territoire avec le plus de troupes
-  for(let cleTerritoire in territoires) {
-    if(territoiresList[territoires[cleTerritoire]].troops > max){
-      max = territoiresList[territoires[cleTerritoire]].troops;
-      paysDraft = territoires[cleTerritoire];
-    }
-  }
-  //Attend 5sec puis met toutes ses troupes sur le territoire avec le plus de troupes
-  setTimeout((finGame) => {
-  moveTroopsFromPlayer(paysDraft, data.currentPlayerId, playersList[data.currentPlayerId].troops);
-  addTroopsChangeParticle(paysDraft, data.currentPlayerId, playersList[data.currentPlayerId].troops);
-  setAttackableTerritoires([]);
-  startAttackPhase(callback);
-  },5000);
 }
 
 document.addEventListener("DOMContentLoaded", function () {
