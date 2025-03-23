@@ -142,7 +142,7 @@ export class CountPopup extends PopupBase {
 
     slider.addEventListener("input", (event) => {
       let value = parseInt(event.target.value);
-      this.params.current = value + this.params.min - 1;
+      this.params.current = this.params.max - value + 1;
       this.updateNumber(value);
     });
 
