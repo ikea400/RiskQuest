@@ -286,6 +286,13 @@ class CardPopup extends PopupBase {
     <footer id="popup-cards-footer">
       <div id="popup-cards-remaining-cards">
         <img id='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
+        <img id='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
+        <img id='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
+        <img id='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
+        <img id='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
+        <img id='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
+        <img id='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
+        <img id='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
       </div>
     </footer>
 
