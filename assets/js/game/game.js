@@ -524,18 +524,9 @@ function startAttackPhase(playerCount, callback) {
             min: 2,
             max: territoiresList[attackerTerritoireId].troops - 1,
             cancel: false,
-            tempCallback: (value) => {
-              updatePastilleFakeTroops(defenderTerritoireId, value);
-              updatePastilleFakeTroops(attackerTerritoireId, -value);
-            },
           });
 
           const result = await popup.show();
-
-          // S'assurer que les fake troops ne reste pas afficher
-          updatePastilleFakeTroops(defenderTerritoireId, 0);
-          updatePastilleFakeTroops(attackerTerritoireId, 0);
-
           if (result.cancel === true) {
             count = 0;
           } else if (result.value > 1) {
