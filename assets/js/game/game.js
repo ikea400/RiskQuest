@@ -360,6 +360,11 @@ function startAttackPhase(playerCount, callback) {
       }
 
       if (territoiresList[defenderTerritoireId].troops <= 0) {
+
+        document.getElementById('canon-sound').load();
+        document.getElementById('canon-sound').play();
+        console.log('AAAAAATTTAACK')
+
         const defenderPlayerId = territoiresList[defenderTerritoireId].playerId;
         takeOverTerritoryFromTerritory(
           attackerTerritoireId,
@@ -390,6 +395,12 @@ function startAttackPhase(playerCount, callback) {
           data.currentPlayerId,
           count
         );
+      } else {
+        document.getElementById('protect-sound').load();
+        document.getElementById('protect-sound').play();
+
+
+        console.log('DDDDEEEEEFFFFEEENNCCEEE')
       }
     }
 
