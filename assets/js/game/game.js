@@ -28,10 +28,7 @@ import {
   updateCurrentPhase,
   addTroopsChangeParticle,
 } from "./display.js";
-import {
-  initializeGame,
-  saveMove
-} from "../api/gameDataService.js";
+import { initializeGame, saveMove } from "../api/gameDataService.js";
 import { CountPopup, AttackPopup } from "../popup.js";
 
 import RandomBot from "../bot/randombot.js";
@@ -236,7 +233,7 @@ function startDraftPhase(playerCount, callback) {
   //the move value defines the players actions during this draft phase
   const Move = {
     player: data.currentPlayerId,
-    draft: {}
+    draft: {},
   };
 
   console.log("startDraftPhase");
@@ -282,9 +279,9 @@ function startDraftPhase(playerCount, callback) {
       if (result.cancel === false && result.value > 0) {
         moveTroopsFromPlayer(this.id, data.currentPlayerId, result.value);
         addTroopsChangeParticle(this.id, data.currentPlayerId, result.value);
-      //the drafted troops are add to move data  
-      Move.draft[this.id] = result.value;
-      
+        //the drafted troops are add to move data
+        Move.draft[this.id] = result.value;
+
         // Tous les pieces ont été placé
         if (playersList[data.currentPlayerId].troops <= 0) {
           // Enlever tous les listener sur les territoires
@@ -295,13 +292,13 @@ function startDraftPhase(playerCount, callback) {
           }
           setAttackableTerritoires([]);
           startAttackPhase(playerCount, callback);
-  
+
           //send the draft move data to the api
           console.log(Move);
           saveMove({
             players: playersList,
             territories: territoiresList,
-            move: Move
+            move: Move,
           }).catch((error) => {
             console.log("Error at api.php when saving draft move: " + error);
           });
@@ -321,11 +318,9 @@ function startDraftPhase(playerCount, callback) {
 }
 
 function startAttackPhase(playerCount, callback) {
-
   const Move = {
     player: data.currentPlayerId,
     attacks: {},
-    
   };
 
   console.log("startAttackPhase");
@@ -346,56 +341,22 @@ function startAttackPhase(playerCount, callback) {
       );
       console.log(defenderLostTroops, attackerLostTroops);
 
-    console.log(defenderLostTroops, attackerLostTroops);
-    // Enlever les troops
-    if (defenderLostTroops > 0) {
-      removeTroopsFromTerritory(defenderTerritoireId, defenderLostTroops);
-      addTroopsChangeParticle(
-        defenderTerritoireId,
-        territoiresList[defenderTerritoireId].playerId,
-        -defenderLostTroops
-      );
-    }
-    if (attackerLostTroops > 0) {
-      removeTroopsFromTerritory(attackerTerritoireId, attackerLostTroops);
-      addTroopsChangeParticle(
-        attackerTerritoireId,
-        data.currentPlayerId,
-        -attackerLostTroops
-      );
-    }
-
-    if (territoiresList[defenderTerritoireId].troops <= 0) {
-
-      document.getElementById('canon-sound').load();
-      document.getElementById('canon-sound').play();
-      
-      const defenderPlayerId = territoiresList[defenderTerritoireId].playerId;
-      takeOverTerritoryFromTerritory(
-        attackerTerritoireId,
-        defenderTerritoireId,
-        data.currentPlayerId,
-        1
-      );
-
-      updatePlayerDeadState(
-        defenderPlayerId,
-        checkPlayerDeadState(defenderPlayerId)
-      );
-
-      let count = territoiresList[attackerTerritoireId].troops - 1;
-      if (territoiresList[attackerTerritoireId].troops > 3) {
-        const popup = new CountPopup({
-          min: 2,
-          max: territoiresList[attackerTerritoireId].troops - 1,
-          cancel: false,
-        });
-        const result = await popup.show();
-        if (result.cancel === true) {
-          count = 0;
-        } else if (result.value > 1) {
-          count = result.value;
-        }
+      // Enlever les troops
+      if (defenderLostTroops > 0) {
+        removeTroopsFromTerritory(defenderTerritoireId, defenderLostTroops);
+        addTroopsChangeParticle(
+          defenderTerritoireId,
+          territoiresList[defenderTerritoireId].playerId,
+          -defenderLostTroops
+        );
+      }
+      if (attackerLostTroops > 0) {
+        removeTroopsFromTerritory(attackerTerritoireId, attackerLostTroops);
+        addTroopsChangeParticle(
+          attackerTerritoireId,
+          data.currentPlayerId,
+          -attackerLostTroops
+        );
       }
 
       if (territoiresList[defenderTerritoireId].troops <= 0) {
@@ -419,8 +380,7 @@ function startAttackPhase(playerCount, callback) {
             defenderTerritoireId,
             2
           );
-        }
-        else {
+        } else {
           count = territoiresList[attackerTerritoireId].troops - 1;
         }
 
@@ -431,20 +391,17 @@ function startAttackPhase(playerCount, callback) {
           count
         );
       }
-    } else {
-      document.getElementById('protect-sound').load();
-      document.getElementById('protect-sound').play();
     }
 
     setTimeout(() => {
       startFortifyPhase(playerCount, callback);
     }, 1000);
   } else {
-      const territoriesIds = Object.keys(territoiresList);
-      const territoiresSvgs = territoriesIds.map((territoireId) =>
+    const territoriesIds = Object.keys(territoiresList);
+    const territoiresSvgs = territoriesIds.map((territoireId) =>
       document.getElementById(territoireId)
-      );
-  
+    );
+
     const turnHudAction = document.getElementById("turn-hud-action");
     function nextHandler() {
       setSelectedTerritoire(null);
@@ -453,15 +410,15 @@ function startAttackPhase(playerCount, callback) {
         territoireSvg.removeEventListener("click", territoireHandler);
       }
 
-    //send the attack move data to the api
-    console.log(Move);
-    saveMove({
-      players: playersList,
-      territories: territoiresList,
-      move: Move
-    }).catch((error) => {
-      console.log("Error at api.php when saving attack move: " + error);
-    });
+      //send the attack move data to the api
+      console.log(Move);
+      saveMove({
+        players: playersList,
+        territories: territoiresList,
+        move: Move,
+      }).catch((error) => {
+        console.log("Error at api.php when saving attack move: " + error);
+      });
 
       startFortifyPhase(playerCount, callback);
     }
@@ -510,13 +467,12 @@ function startAttackPhase(playerCount, callback) {
         );
       }
 
-    // Add attacks result to the Move object,
-    //each attack has a attackerTerritoireId-defenderTerritoireId key
-    Move.attacks[`${attackerTerritoireId}-${defenderTerritoireId}`] = {
-      defenderLostTroops: defenderLostTroops,
-      attackerLostTroops: attackerLostTroops
-    };
-
+      // Add attacks result to the Move object,
+      //each attack has a attackerTerritoireId-defenderTerritoireId key
+      Move.attacks[`${attackerTerritoireId}-${defenderTerritoireId}`] = {
+        defenderLostTroops: defenderLostTroops,
+        attackerLostTroops: attackerLostTroops,
+      };
 
       console.log(defenderLostTroops, attackerLostTroops);
       // Enlever les troops
@@ -557,8 +513,18 @@ function startAttackPhase(playerCount, callback) {
             min: 2,
             max: territoiresList[attackerTerritoireId].troops - 1,
             cancel: false,
+            tempCallback: (value) => {
+              updatePastilleFakeTroops(defenderTerritoireId, value);
+              updatePastilleFakeTroops(attackerTerritoireId, -value);
+            },
           });
+
           const result = await popup.show();
+
+          // S'assurer que les fake troops ne reste pas afficher
+          updatePastilleFakeTroops(defenderTerritoireId, 0);
+          updatePastilleFakeTroops(attackerTerritoireId, 0);
+
           if (result.cancel === true) {
             count = 0;
           } else if (result.value > 1) {
@@ -574,8 +540,10 @@ function startAttackPhase(playerCount, callback) {
             count
           );
 
-        //add the troops displacement after the attack to the move data
-        Move.attacks[`${attackerTerritoireId}-${defenderTerritoireId}`].movedTroops = count;
+          //add the troops displacement after the attack to the move data
+          Move.attacks[
+            `${attackerTerritoireId}-${defenderTerritoireId}`
+          ].movedTroops = count;
         }
       }
 
@@ -590,10 +558,9 @@ function startAttackPhase(playerCount, callback) {
 }
 
 function startFortifyPhase(playerCount, callback) {
-
   const Move = {
     player: data.currentPlayerId,
-    fortifyDraft: {}
+    fortifyDraft: {},
   };
 
   console.log("startFortifyPhase");
@@ -623,15 +590,15 @@ function startFortifyPhase(playerCount, callback) {
         territoireSvg.removeEventListener("click", territoireHandler);
       }
 
-    //send the fortify move data to the api
-    console.log(Move);
-    saveMove({
-      players: playersList,
-      territories: territoiresList,
-      move: Move
-    }).catch((error) => {
-      console.log("Error at api.php when saving fortify move: " + error);
-    });
+      //send the fortify move data to the api
+      console.log(Move);
+      saveMove({
+        players: playersList,
+        territories: territoiresList,
+        move: Move,
+      }).catch((error) => {
+        console.log("Error at api.php when saving fortify move: " + error);
+      });
 
       callback();
     }
@@ -661,8 +628,8 @@ function startFortifyPhase(playerCount, callback) {
             result.value
           );
 
-        //the drafted troops are saved in move data
-        Move.fortifyDraft[this.id] = result.value;
+          //the drafted troops are saved in move data
+          Move.fortifyDraft[this.id] = result.value;
           nextHandler();
         }
       } else {
@@ -715,7 +682,6 @@ function startMainLoop(playerCount, callback) {
   handler();
 }
 
-
 document.addEventListener("DOMContentLoaded", function () {
   const autoPlacement = true;
   const playerCount = 6;
@@ -747,28 +713,26 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log("Selection is done");
 
     placementFn(playerCount, () => {
-
-      //create game with player info 
+      //create game with player info
       initializeGame({
         players: playersList,
-        playerCount: playerCount
-        }).then((value) => {
-          playersList.push({game_id: value['game_id']}); 
+        playerCount: playerCount,
+      })
+        .then((value) => {
+          playersList.push({ game_id: value["game_id"] });
           //nesting saveMove beacause it is dependent on playersList, save the move only after receiving game_id
           //make inital move to save inital territory and troop distribution
           saveMove({
             players: playersList,
             territories: territoiresList,
-            move: {}
+            move: {},
           }).catch((error) => {
             console.log("Error at api.php when making inital move: " + error);
           });
-          
-        }).catch((error) => {
+        })
+        .catch((error) => {
           console.log("Error at api.php when initializing game: " + error);
         });
-
-      
 
       console.log("Distribution is done");
 
@@ -780,7 +744,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let containerPays = document.getElementById("pays-background");
   containerPays.addEventListener("click", function () {
-    document.getElementById('sea-music').play();
+    document.getElementById("sea-music").play();
     if (data.currentPhase != EPhases.DRAFT) {
       setSelectedTerritoire(null);
       setAttackableTerritoires([]);
