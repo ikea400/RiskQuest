@@ -1,6 +1,6 @@
 import { data, territoiresList, playersList, continentsList } from "./data.js";
 import {
-  updateTerritoryOwer,
+  updateTerritoryOwer as updateTerritoryOwner,
   updatePlayersHudTerritoireCount,
   updatePlayerHudTroopsCount,
   updatePastilleTroopsCount,
@@ -111,7 +111,7 @@ export function takeOverTerritory(territoryId, playerId, troopsCount) {
   }
 
   let oldOwnerId = territoire.playerId;
-  updateTerritoryOwer(territoryId, playerId);
+  updateTerritoryOwner(territoryId, playerId);
 
   if (oldOwnerId) updatePlayersHudTerritoireCount(oldOwnerId);
   updatePlayersHudTerritoireCount(playerId);
@@ -265,11 +265,11 @@ export function takeOverTerritoryFromTerritory(
   }
 
   let oldOwnerId = territoire.playerId;
-  updateTerritoryOwer(territoryId, playerId);
+  
+  updateTerritoryOwner(territoryId, playerId);
 
   if (oldOwnerId) updatePlayersHudTerritoireCount(oldOwnerId);
   updatePlayersHudTerritoireCount(playerId);
-
   moveTroopsFromTerritory(fromTerritoireId, territoryId, playerId, troopsCount);
 }
 

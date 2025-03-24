@@ -239,7 +239,6 @@ function startDraftPhase(playerCount, callback) {
 
   console.log("startDraftPhase");
   updateCurrentPhase(EPhases.DRAFT);
-
   // Récupère les térritoires possédé par le joueur
   const ownedTerritoriesIds = Object.keys(territoiresList).filter(
     (territoireId) =>
@@ -734,18 +733,22 @@ document.addEventListener("DOMContentLoaded", function () {
       initializeGame({
         players: playersList,
         playerCount: playerCount,
-      }).catch((error) => {
-        console.log("Error at api.php when initializing game: " + error);
-      });
-
-      //make inital move to save inital territory and troop distribution
-      saveMove({
-        players: playersList,
-        territories: territoiresList,
-        move: {},
-      }).catch((error) => {
-        console.log("Error at api.php when making inital move: " + error);
-      });
+      })
+        .then((value) => {
+          playersList.push({ game_id: value["game_id"] });
+          //nesting saveMove beacause it is dependent on playersList, save the move only after receiving game_id
+          //make inital move to save inital territory and troop distribution
+          saveMove({
+            players: playersList,
+            territories: territoiresList,
+            move: {},
+          }).catch((error) => {
+            console.log("Error at api.php when making inital move: " + error);
+          });
+        })
+        .catch((error) => {
+          console.log("Error at api.php when initializing game: " + error);
+        });
 
       console.log("Distribution is done");
 
@@ -757,6 +760,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let containerPays = document.getElementById("pays-background");
   containerPays.addEventListener("click", function () {
+    document.getElementById("sea-music").play();
     if (data.currentPhase != EPhases.DRAFT) {
       setSelectedTerritoire(null);
       setAttackableTerritoires([]);

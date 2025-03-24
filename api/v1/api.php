@@ -158,21 +158,36 @@ $router->post("/guest", function (): JsonResponse {
     ]);
 });
 
-$router->post("/saveMove", function ($bodyArray): JsonResponse {
+//
+$router->post("/saveMove", function ( $tokenPayload, $bodyArray): JsonResponse {
+
     if(empty($bodyArray)){
-        JsonResponse::badRequest();
+       return JsonResponse::badRequest();
     }
 
     $pdo = new DatabaseConnection();
+    //retrieve game id to identify the move 
+    $playerList = $bodyArray["players"];
+    $game_id = $playerList["game_id"];
+    $moveJson = json_encode($bodyArray, true);
+    if(!$pdo->safeQuery(
+        "INSERT INTO Move (game_id, move_data) VALUES (:game_id, :move_data);",
+        ["game_id" => $game_id,
+            "move_data" => $moveJson]
+    )){
+        return JsonResponse::badRequest();
+    }
 
-    
+    return JsonResponse::success();
 
-});
+}, $authMiddleware, $jsonMiddleware );
 
-$router->post("/initializeGame", function ($bodyArray): JsonResponse {
+
+
+$router->post("/initializegame", function ($tokenPayload, $bodyArray): JsonResponse {
 
     if(empty($bodyArray)){
-        JsonResponse::badRequest();
+       return JsonResponse::badRequest();
     }
 
     $pdo = new DatabaseConnection();
@@ -209,9 +224,10 @@ $router->post("/initializeGame", function ($bodyArray): JsonResponse {
     }
 
     $pdo->commit();
-    return JsonResponse::success();
+    //need the game_id to add it to game data, and to save move
+    return JsonResponse::success(['gameId' => $game_id]);
     
-});
+},$authMiddleware, $jsonMiddleware);
 
 
 $router->get("/user/{userId}", function ($userId): JsonResponse {
