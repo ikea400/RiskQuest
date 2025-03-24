@@ -1,4 +1,4 @@
-import { data, EPhases, territoiresList, playersList } from "./data.js";
+import { data, EPhases, territoiresList, playersList, playImmersiveSounds} from "./data.js";
 import { countPlayerTerritoires, countPlayerTroops } from "./logic.js";
 import * as utils from "./utils.js";
 
@@ -260,6 +260,8 @@ export function updateCurrentPhase(phase) {
 
   // Met à jour la phase actuelle
   data.currentPhase = phase;
+  //on joue un son immersif
+  playImmersiveSounds(data.currentPhase);
 }
 
 /**

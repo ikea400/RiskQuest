@@ -1,3 +1,5 @@
+import { randomInteger } from "./utils.js";
+
 export const EPhases = Object.freeze({
   NONE: Symbol("NONE"),
   PICKING: Symbol("PICKING"),
@@ -347,4 +349,50 @@ export function getStartingTroops(playerCount) {
 
   const troopsList = [35, 30, 25, 20];
   return troopsList[playerCount - data.MIN_PLAYER_COUNT];
+}
+
+
+export function playImmersiveSounds(newPhase){
+  
+  switch(newPhase){
+    case EPhases.ATTACK:
+      switch(randomInteger(1,6)){
+        case 1:
+        document.getElementById('charge1-sound').play();
+        break;
+        case 2:
+        document.getElementById('charge2-sound').play();
+        break;
+        case 3:
+        document.getElementById('advance-sound').play();
+        break;
+        case 4:
+        document.getElementById('killThemAll-sound').play();
+        break;
+        case 5:
+        document.getElementById('forward-sound').play();
+        break;
+        case 6:
+        document.getElementById('goGoGo-sound').play();
+        break;
+      }
+      break;
+    case EPhases.FORTIFY:
+    case EPhases.DRAFT:
+      switch(randomInteger(1,4)){
+        case 1:
+          document.getElementById('reinforcements-sound').play();
+        break;
+        case 2:
+        document.getElementById('standFirm-sound').play();
+        break;
+        case 3:
+        document.getElementById('formRanks-sound').play();
+        break;
+        case 4:
+        document.getElementById('frontlines-sound').play();
+        break;
+      }
+      break;
+  }
 }

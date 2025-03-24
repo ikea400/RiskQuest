@@ -105,7 +105,6 @@ function startRandomTroopsPlacement(playerCount) {
 function startDraftPhase(callback) {
   console.log("startDraftPhase");
   updateCurrentPhase(EPhases.DRAFT);
-
   // Récupère les térritoires possédé par le joueur
   const ownedTerritoriesIds = Object.keys(territoiresList).filter(
     (territoireId) =>
@@ -234,6 +233,10 @@ function startAttackPhase(callback) {
     }
 
     if (territoiresList[defenderTerritoireId].troops <= 0) {
+
+      document.getElementById('canon-sound').load();
+      document.getElementById('canon-sound').play();
+      
       const defenderPlayerId = territoiresList[defenderTerritoireId].playerId;
       takeOverTerritoryFromTerritory(
         attackerTerritoireId,
@@ -270,6 +273,9 @@ function startAttackPhase(callback) {
           count
         );
       }
+    } else {
+      document.getElementById('protect-sound').load();
+      document.getElementById('protect-sound').play();
     }
 
     setSelectedTerritoire(null);
@@ -386,7 +392,7 @@ function startMainLoop(callback) {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-  const playerCount = 6;
+  const playerCount = 6;  
   currentPlayerCount = playerCount;
   
   // Initialization des troops
@@ -412,6 +418,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let containerPays = document.getElementById("pays-background");
   containerPays.addEventListener("click", function () {
+    document.getElementById('sea-music').play();
     if (data.currentPhase != EPhases.DRAFT) {
       setSelectedTerritoire(null);
       setAttackableTerritoires([]);
