@@ -30,7 +30,7 @@ class JsonResponse
         return self::error(500, $error, $jsonArray);
     }
 
-    public static function forbiden($jsonArray = [], $error = "403 forbidden"): JsonResponse
+    public static function forbidden($jsonArray = [], $error = "403 forbidden"): JsonResponse
     {
         return self::error(403, $error, $jsonArray);
     }

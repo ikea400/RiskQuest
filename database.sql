@@ -6,7 +6,7 @@ CREATE OR REPLACE TABLE User
     id            BIGINT              NOT NULL UNIQUE PRIMARY KEY CHECK ( id > 0 ),
     name          VARCHAR(30) UNIQUE  NOT NULL,
     password      VARCHAR(255) UNIQUE,
-    join_date DATETIME            NOT NULL DEFAULT NOW(),
+    join_date DATETIME            NOT NULL DEFAULT CURRENT_TIMESTAMP,
     guest         BOOLEAN             NOT NULL DEFAULT FALSE,
     CHECK (guest = TRUE OR password IS NOT NULL)
 );
@@ -14,27 +14,31 @@ CREATE OR REPLACE TABLE User
 CREATE OR REPLACE TABLE Game
 (
     id           BIGINT UNIQUE PRIMARY KEY,
-    player_count INT1 CHECK (player_count >= 1 AND player_count <= 6),
-    start_date   DATETIME NOT NULL DEFAULT NOW(),
-    played_time  TIME     NOT NULL DEFAULT 0,
+    player_count TINYINT CHECK (player_count >= 1 AND player_count <= 6),
+    start_date   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    played_time  TIME     NOT NULL DEFAULT '00:00:00',
     finished     BOOLEAN  NOT NULL DEFAULT FALSE
 );
 
 CREATE OR REPLACE TABLE Move
 (
-    game_id   BIGINT NOT NULL REFERENCES Game (id),
+    game_id   BIGINT NOT NULL,
     number    INT    NOT NULL,
-    data      JSON   NOT NULL CHECK ( JSON_VALID(data) ),
-    player_id INT1   NOT NULL
+    move_data JSON   NOT NULL CHECK ( JSON_VALID(move_data)),
+    player TINYINT   NOT NULL,
+    PRIMARY KEY (game_id, number),
+    FOREIGN KEY (game_id) REFERENCES Game (id) ON DELETE CASCADE
 );
 
 CREATE OR REPLACE TABLE User_Game
 (
-    game_id   BIGINT NOT NULL REFERENCES Game (id),
-    user_id   BIGINT NULL REFERENCES User (id),
+    game_id   BIGINT NOT NULL,
+    user_id   BIGINT NULL,
     player_name VARCHAR(30) NOT NULL,
-    player_id INT1  NOT NULL CHECK (player_id >= 1 AND player_id <= 6),
-    PRIMARY KEY (game_id, player_id)
+    player_id TINYINT  NOT NULL CHECK (player_id >= 1 AND player_id <= 6),
+    PRIMARY KEY (game_id, player_id),
+    FOREIGN KEY (game_id) REFERENCES Game (id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES User (id) ON DELETE CASCADE
 );
 
 

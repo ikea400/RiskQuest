@@ -716,18 +716,23 @@ document.addEventListener("DOMContentLoaded", function () {
       initializeGame({
         players: playersList,
         playerCount: playerCount
-      }).catch((error) => {
-        console.log("Error at api.php when initializing game: " + error);
-      });
+        }).then((value) => {
+          playersList.push({game_id: value['game_id']}); 
+          //nesting saveMove beacause it is dependent on playersList, save the move only after receiving game_id
+          //make inital move to save inital territory and troop distribution
+          saveMove({
+            players: playersList,
+            territories: territoiresList,
+            move: {}
+          }).catch((error) => {
+            console.log("Error at api.php when making inital move: " + error);
+          });
+          
+        }).catch((error) => {
+          console.log("Error at api.php when initializing game: " + error);
+        });
 
-      //make inital move to save inital territory and troop distribution
-      saveMove({
-        players: playersList,
-        territories: territoiresList,
-        move: {}
-      }).catch((error) => {
-        console.log("Error at api.php when making inital move: " + error);
-      });
+      
 
       console.log("Distribution is done");
 
