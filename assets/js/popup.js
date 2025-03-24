@@ -105,96 +105,119 @@ export class CountPopup extends PopupBase {
     this.#applyDefault();
     super.init();
 
-    const rangeMax = this.params.max - this.params.min + 1;
+    this.isDragging = false;
+    this.moved = false;
+    this.startingOffset = 0;
+    this.currentOffset = null;
+    this.lastOffsets = 0;
+    this.lastValue = null;
+
     this.popupDiv.innerHTML = `
-    <div class="popup-count-countainer">
-      <div class="number-display">
-          <div class="center-indicator"></div>
-          <div class="number-track" id="numberTrack">
-          
+        <div id="popup-count-cancel">
+          <img
+            id="popup-count-cancel-img"
+            src="./assets/images/circle-x.svg"
+            alt="next"
+          />
         </div>
-      </div>
-      <div class="slider-countainer" autofocus>
-        <input type="range" id="popup-count-range" name="count" min="1" max="${rangeMax}" value="0" class="slider">
-      </div>
-      <div id="popup-count-confirm">
-          <img id="popup-count-confirm-img" src="./assets/images/circle-check-solid.svg" alt="next">
-      </div>
-      
-    </div>`;
+        <div id="popup-count-confirm">
+          <img
+            id="popup-count-confirm-img"
+            src="./assets/images/circle-check-solid.svg"
+            alt="next"
+          />
+        </div>
+        <div class="popup-count-overlay"></div>
+        <div id="popup-count-countainer" autofocus>
+          <div id="popup-count-number-1" class="popup-count-number">1</div>
+          <div id="popup-count-number-2" class="popup-count-number">2</div>
+          <div id="popup-count-number-3" class="popup-count-number">3</div>
+          <div id="popup-count-number-4" class="popup-count-number">4</div>
+          <div id="popup-count-number-5" class="popup-count-number">5</div>
+        </div>`;
 
-    //this.#updateDisplayText();
-    let widthTrack;
-    const numberTrack = document.getElementById("numberTrack");
-    for (let i = this.params.max; i >= this.params.min; i--) {
-      this.popupCountNumber = document.createElement("div");
-      this.popupCountNumber.id = `popup-count-number-${i}`;
-      this.popupCountNumber.className = "number";
-      this.popupCountNumber.textContent = i;
-      numberTrack.appendChild(this.popupCountNumber);
-      widthTrack += 45;
-    }
-    numberTrack.style.width = widthTrack;
+    this.#updateNumbers();
 
-    const slider = document.getElementById("popup-count-range");
+    const container = document.getElementById("popup-count-countainer");
+    container.focus();
 
-    this.updateNumber(1);
+    container.addEventListener("mousedown", (event) => {
+      this.isDragging = true;
+      this.startingOffset = event.clientX;
+      this.moved = false;
+    });
 
-    slider.addEventListener("input", (event) => {
-      let value = parseInt(event.target.value);
-      this.params.current = this.params.max - value + 1;
-      this.updateNumber(value);
+    container.addEventListener("mouseleave", () => {
+      this.isDragging = false;
+      this.#updateNumbers();
+    });
+
+    container.addEventListener("mouseup", (event) => {
+      this.isDragging = false;
+      if (!this.moved) {
+        const rect = container.getBoundingClientRect();
+        this.currentOffset -= event.clientX - (rect.right + rect.left) * 0.5;
+        this.startingOffset = event.clientX;
+      }
+      this.#updateNumbers();
+    });
+
+    container.addEventListener("mousemove", (event) => {
+      if (this.isDragging) {
+        this.moved = true;
+
+        this.currentOffset += event.clientX - this.startingOffset;
+        this.startingOffset = event.clientX;
+        this.#updateNumbers();
+      }
+    });
+
+    container.addEventListener("wheel", (event) => {
+      const rect = document
+        .querySelector(".popup-count-number")
+        .getBoundingClientRect();
+      this.currentOffset += rect.width * Math.sign(event.deltaY);
+      this.#updateNumbers();
+    }, {passive: true});
+
+    document.addEventListener("keyup", (event) => {
+      switch (event.key) {
+        case "Enter":
+          this.resolve({ cancel: false, value: this.value });
+          break;
+        case "Escape":
+          this.resolve({ cancel: true });
+          break;
+      }
     });
 
     const popupCountConfirm = document.getElementById("popup-count-confirm");
     popupCountConfirm.addEventListener("click", () => {
-      this.resolve({ cancel: false, value: this.params.current });
-    });
-  }
-
-  updateNumber(activeNumber) {
-    const numberTrack = document.querySelector(".number-track");
-    const numbers = document.querySelectorAll(".number");
-    const numberWidth = 30;
-
-    numbers.forEach((element) => {
-      element.className = "number hidden";
+      this.resolve({ cancel: false, value: this.value });
     });
 
-    numbers[activeNumber - 1].className = "number active";
-
-    if (activeNumber > 1 && numbers[activeNumber - 2]) {
-      numbers[activeNumber - 2].className = "number visible";
-    }
-    if (activeNumber < numbers.length && numbers[activeNumber]) {
-      numbers[activeNumber].className = "number visible";
-    }
-
-    if (numberTrack) {
-      const containerWidth = numberTrack.offsetWidth;
-      const centerPosition = containerWidth / 2;
-      const activeNumberElement = numbers[activeNumber - 1];
-      const activeNumberPosition =
-        activeNumberElement.offsetLeft + activeNumberElement.offsetWidth / 2;
-      const translateX = centerPosition - activeNumberPosition;
-
-      numberTrack.style.transition =
-        "transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)";
-      numberTrack.style.transform = `translateX(${translateX}px)`;
+    const popupCountCancel = document.getElementById("popup-count-cancel");
+    if (this.params.cancel === true) {
+      popupCountCancel.addEventListener("click", () => {
+        this.resolve({ cancel: true });
+      });
+    } else {
+      popupCountCancel.hidden = true;
+      popupCountCancel.style.opacity = 0;
+      popupCountCancel.style.pointerEvents = "none";
     }
   }
 
   #applyDefault() {
     this.params.id ??= "count-popup";
-    this.params.classList ??= [];
     this.params.bottom ??= true;
     this.params.cancel ??= true;
-    this.params.min ??= 3;
-    this.params.max ??= 7;
     this.params.current ??= this.params.max;
+    this.params.tempCallback ??= () => {};
+    this.params.speed ??= 5;
   }
 
-  #updateDisplayText() {
+  #updateNumbers() {
     const rotate = (num) => {
       const range = this.params.max - this.params.min + 1; // Calculate the range
       return (
@@ -202,23 +225,49 @@ export class CountPopup extends PopupBase {
       );
     };
 
-    function clamp(value, min, max) {
-      return Math.min(Math.max(value, min), max);
+    const numbersDiv = document.getElementsByClassName("popup-count-number");
+
+    const rect = numbersDiv[0].getBoundingClientRect();
+
+    if (this.currentOffset == null) {
+      this.currentOffset =
+        rect.width *
+        (this.params.max - this.params.current + (3 - this.params.min + 1));
     }
 
-    this.params.current = clamp(
-      this.params.current,
-      this.params.min,
-      this.params.max
-    );
+    if (!this.isDragging) {
+      this.currentOffset =
+        Math.round(this.currentOffset / rect.width) * rect.width;
+    }
+
+    let current = 3 - Math.round(this.currentOffset / rect.width);
+
+    const duration =
+      Math.abs(this.currentOffset - this.lastOffsets) /
+      (rect.width * this.params.speed); // Time = Distance / Speed
+    for (const number of numbersDiv) {
+      number.style.transition = this.isDragging
+        ? ""
+        : `transform ${duration}s linear`;
+      number.style.transform = `translateX(${
+        this.currentOffset - (3 - current) * rect.width
+      }px)`;
+    }
+    this.lastOffsets = this.currentOffset;
 
     const numbers = [
-      rotate(this.params.current - 2),
-      rotate(this.params.current - 1),
-      rotate(this.params.current),
-      rotate(this.params.current + 1),
-      rotate(this.params.current + 2),
+      rotate(current - 2),
+      rotate(current - 1),
+      rotate(current),
+      rotate(current + 1),
+      rotate(current + 2),
     ];
+
+    this.value = numbers[2];
+    if (this.lastValue !== this.value) {
+      this.params.tempCallback(this.value);
+      this.lastValue = this.value;
+    }
 
     for (let i = 0; i < numbers.length; i++) {
       const popupCountNumber = document.getElementById(
