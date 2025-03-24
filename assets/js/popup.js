@@ -113,6 +113,7 @@ export class CountPopup extends PopupBase {
     this.lastValue = null;
 
     this.popupDiv.innerHTML = `
+        <div id="popup-count-cancel-back"></div>
         <div id="popup-count-cancel">
           <img
             id="popup-count-cancel-img"
@@ -120,6 +121,7 @@ export class CountPopup extends PopupBase {
             alt="next"
           />
         </div>
+        <div id="popup-count-confirm-back"></div>
         <div id="popup-count-confirm">
           <img
             id="popup-count-confirm-img"
@@ -127,7 +129,8 @@ export class CountPopup extends PopupBase {
             alt="next"
           />
         </div>
-        <div class="popup-count-overlay"></div>
+        <div id="popup-count-overlay"></div>
+        <div id="popup-count-overlay-back"></div>
         <div id="popup-count-countainer" autofocus>
           <div id="popup-count-number-1" class="popup-count-number">1</div>
           <div id="popup-count-number-2" class="popup-count-number">2</div>
@@ -205,6 +208,7 @@ export class CountPopup extends PopupBase {
       popupCountCancel.hidden = true;
       popupCountCancel.style.opacity = 0;
       popupCountCancel.style.pointerEvents = "none";
+      document.getElementById("popup-count-cancel-back").hidden = true;
     }
   }
 
