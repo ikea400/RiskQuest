@@ -43,7 +43,8 @@
         background-color: rgba(0, 0, 0, 0.5);
         font: 1.2rem "Fira Sans", sans-serif;
         border-radius: 15%;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Adds shadow */
+        -webkit-box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         width: 29em;
         user-select: none;
         overflow: hidden;
@@ -66,39 +67,72 @@
         color: white;
       }
 
-      .popup-count-overlay {
+      #popup-count-number-1,
+      #popup-count-number-5 {
+        opacity: 50%;
+      }
+
+      #popup-count-number-2,
+      #popup-count-number-4 {
+        opacity: 80%;
+      }
+
+      #popup-count-overlay {
+        box-sizing: border-box;
         position: absolute;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
         pointer-events: none;
-        height: 7em;
-        width: 7em;
-        border: 1em solid #d73f40;
+        height: 9em;
+        width: 9em;
+        z-index: 2;
+        border: 0.2em solid #942121;
         border-radius: 100%;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Adds shadow */
+        background: radial-gradient(
+          circle,
+          transparent 49%,
+          #942121 50%,
+          #942121 52%,
+          #d73f40 53%
+        );
+      }
+
+      #popup-count-overlay-back {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -45%);
         pointer-events: none;
+        height: 9em;
+        width: 9em;
+        z-index: 1;
+        background: radial-gradient(circle, transparent 47%, #691010 48%);
+        border-radius: 50%;
       }
 
       #popup-count-confirm {
+        box-sizing: border-box;
         position: absolute;
         top: 50%;
         left: 100%;
         transform: translate(-50%, -50%);
-        height: 6em;
-        width: 6em;
+        height: 6.2em;
+        width: 6.2em;
         display: flex;
         justify-content: center;
         align-items: center;
         background: radial-gradient(circle, white 50%, transparent 51%);
-        border-radius: 50%;
-        border-width: 0px;
-        cursor: pointer;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Adds shadow */
         z-index: 2;
+        border-radius: 50%;
+        border: 0.2em solid #304919;
+        cursor: pointer;
+        /* -webkit-box-shadow: 0px 0.3em 1px rgba(13, 17, 15, 0.9);
+        box-shadow: 0px 0.4em 1px rgba(13, 17, 15, 0.9); */
       }
 
       #popup-count-cancel {
+        box-sizing: border-box;
         position: absolute;
         top: 50%;
         left: 0%;
@@ -110,9 +144,12 @@
         align-items: center;
         background: radial-gradient(circle, white 50%, transparent 51%);
         cursor: pointer;
-        border-radius: 50%;
-        border-width: 0;
         z-index: 2;
+        border-radius: 50%;
+        border: 0.22em solid #6f1c12;
+        cursor: pointer;
+        /* -webkit-box-shadow: 0px 0.3em 1px rgba(13, 17, 15, 0.9);
+        box-shadow: 0px 0.4em 1px rgba(13, 17, 15, 0.9); */
       }
 
       #popup-count-confirm-img {
@@ -123,6 +160,29 @@
       #popup-count-cancel-img {
         filter: invert(32%) sepia(62%) saturate(5359%) hue-rotate(343deg)
           brightness(93%) contrast(79%);
+        scale: 1.01;
+      }
+
+      #popup-count-confirm-back {
+        left: 100%;
+        background-color: #1f2c0f;
+      }
+
+      #popup-count-cancel-back {
+        left: 0%;
+        background-color: black;
+      }
+
+      #popup-count-confirm-back,
+      #popup-count-cancel-back {
+        top: 50%;
+        content: "assfss";
+        position: absolute;
+        transform: translate(-50%, -45%);
+        height: 6.2em;
+        width: 6.2em;
+        border-radius: 50%;
+        z-index: 1;
       }
     </style>
     <script>
@@ -240,6 +300,7 @@
   <body>
     <div id="background-popup">
       <div class="popup-count">
+        <div id="popup-count-cancel-back"></div>
         <div id="popup-count-cancel">
           <img
             id="popup-count-cancel-img"
@@ -247,6 +308,7 @@
             alt="next"
           />
         </div>
+        <div id="popup-count-confirm-back"></div>
         <div id="popup-count-confirm">
           <img
             id="popup-count-confirm-img"
@@ -254,7 +316,8 @@
             alt="next"
           />
         </div>
-        <div class="popup-count-overlay"></div>
+        <div id="popup-count-overlay"></div>
+        <div id="popup-count-overlay-back"></div>
         <div id="popup-count-countainer" autofocus>
           <div id="popup-count-number-1" class="popup-count-number">1</div>
           <div id="popup-count-number-2" class="popup-count-number">2</div>
