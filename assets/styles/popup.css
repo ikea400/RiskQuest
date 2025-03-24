@@ -159,7 +159,7 @@
   background: linear-gradient(to bottom, #6ede6e, #4caf50); 
   border-radius: 50px;
   color: white;
-  width: 53%;
+  width: 35%;
   padding: 0.5em 1em;
   position: relative;
   border: 3px solid #2e7d32; 
@@ -239,4 +239,8 @@
 }
 #popup-cards-remaining-cards img:hover, #flex-center-popup-cards img:hover {
   transform: scale(1.1);
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
