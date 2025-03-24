@@ -21,7 +21,8 @@ export async function saveMove(Move, GameData){
     body: JSON.stringify({GameData}),
     headers: {
         'Accept': 'application/json', 
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${sessionStorage.getItem("token")}`, 
       },
     });
   return await resultat.json();
