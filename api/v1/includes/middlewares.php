@@ -40,7 +40,7 @@ class AuthMiddleware implements Middleware
         $token = getBearerToken();
         $tokenPayload = null;
         if (!$token || !($tokenPayload = JWTToken::decode($token))) {
-            return JsonResponse::forbiden();
+            return JsonResponse::forbidden();
         }
 
         $args[] = $tokenPayload;

@@ -13,12 +13,12 @@ import * as utils from "./utils.js";
 /**
  * Récupère les territoires voisins attaquables d'un territoire donné.
  *
- * @param {string} territoire - L'ID du territoire pour lequel trouver les voisins attaquables.
+ * @param {string} territoireId - L'ID du territoire pour lequel trouver les voisins attaquables.
  * @returns {Array<string>} Une liste des IDs des territoires voisins attaquables.
  */
-export function getAttackableNeighbour(territoire) {
-  let playerId = territoiresList[territoire].playerId;
-  let voisins = territoiresList[territoire].connection;
+export function getAttackableNeighbour(territoireId) {
+  let playerId = territoiresList[territoireId].playerId;
+  let voisins = territoiresList[territoireId].connection;
   let territoiresAttackables = [];
   for (const voisin of voisins) {
     if (territoiresList[voisin].playerId != playerId) {
@@ -57,7 +57,7 @@ export function getReachableTerritories(territoire) {
 /**
  * Compte le nombre de territoires appartenant à un joueur donné.
  *
- * @param {string} playerId - L'ID du joueur pour lequel compter les territoires.
+ * @param {number} playerId - L'ID du joueur pour lequel compter les territoires.
  * @returns {number} Le nombre de territoires appartenant au joueur.
  */
 export function countPlayerTerritoires(playerId) {
@@ -73,7 +73,7 @@ export function countPlayerTerritoires(playerId) {
 /**
  * Compte le nombre total de troupes appartenant à un joueur donné, en incluant les troupes du joueur et celles des territoires qu'il possède.
  *
- * @param {string} playerId - L'ID du joueur pour lequel compter les troupes.
+ * @param {number} playerId - L'ID du joueur pour lequel compter les troupes.
  * @returns {number} Le nombre total de troupes appartenant au joueur.
  */
 export function countPlayerTroops(playerId) {
@@ -90,7 +90,7 @@ export function countPlayerTroops(playerId) {
  * Prend le contrôle d'un territoire pour un joueur donné et met à jour les troupes.
  *
  * @param {string} territoryId - L'ID du territoire à conquérir.
- * @param {string} playerId - L'ID du joueur qui prend le contrôle du territoire.
+ * @param {number} playerId - L'ID du joueur qui prend le contrôle du territoire.
  * @param {number} troopsCount - Le nombre de troupes utilisées pour conquérir le territoire.
  * @throws {Error} Si le joueur n'a pas assez de troupes ou s'il possède déjà le territoire.
  */
@@ -135,7 +135,7 @@ function addTroopsToTerritory(territoireId, troopsCount) {
  * Déplace des troupes d'un joueur vers un territoire spécifique.
  *
  * @param {string} territoireId - L'ID du territoire vers lequel déplacer les troupes.
- * @param {string} playerId - L'ID du joueur qui déplace les troupes.
+ * @param {number} playerId - L'ID du joueur qui déplace les troupes.
  * @param {number} troopsCount - Le nombre de troupes à déplacer.
  * @throws {Error} Si le joueur ne possède pas le territoire ou s'il n'a pas assez de troupes.
  */
@@ -186,7 +186,7 @@ export function removeTroopsFromTerritory(territoireId, troopsCount) {
  *
  * @param {string} fromTerritoireId - L'ID du territoire source.
  * @param {string} territoireId - L'ID du territoire cible.
- * @param {string} playerId - L'ID du joueur effectuant le déplacement.
+ * @param {number} playerId - L'ID du joueur effectuant le déplacement.
  * @param {number} troopsCount - Le nombre de troupes à déplacer.
  * @throws {Error} Si le joueur ne contrôle pas l'un des territoires ou si le territoire source n'a pas assez de troupes.
  */
@@ -231,7 +231,7 @@ export function moveTroopsFromTerritory(
  *
  * @param {string} fromTerritoireId - L'ID du territoire d'origine.
  * @param {string} territoryId - L'ID du territoire à conquérir.
- * @param {string} playerId - L'ID du joueur qui prend le contrôle du territoire.
+ * @param {number} playerId - L'ID du joueur qui prend le contrôle du territoire.
  * @param {number} troopsCount - Le nombre de troupes utilisées pour conquérir le territoire.
  * @throws {Error} Si le joueur ne possède pas le territoire d'origine, ou s'il n'a pas assez de troupes, ou s'il possède déjà le territoire.
  */
@@ -276,7 +276,7 @@ export function takeOverTerritoryFromTerritory(
 /**
  * Vérifie si un joueur est éliminé (ne possède plus aucun territoire).
  *
- * @param {string} playerId - L'ID du joueur à vérifier.
+ * @param {number} playerId - L'ID du joueur à vérifier.
  * @returns {boolean} `true` si le joueur ne possède plus aucun territoire, `false` sinon.
  */
 export function checkPlayerDeadState(playerId) {

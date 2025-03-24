@@ -1,3 +1,5 @@
+import { winningOdds } from "./game/data.js";
+
 class PopupBase {
   #resolveCallback;
   #rejectCallback;
@@ -93,7 +95,7 @@ class TestPopup extends PopupBase {
   }
 }
 
-class CountPopup extends PopupBase {
+export class CountPopup extends PopupBase {
   constructor(params = {}) {
     super(params);
     this.init();
@@ -120,66 +122,67 @@ class CountPopup extends PopupBase {
       </div>
       
     </div>`;
-    
-    //this.#updateDisplayText();
 
-    const numberTrack = document.getElementById('numberTrack');
-    for (let i = this.params.min; i <= this.params.max; i++) {
-      this.popupCountNumber = document.createElement('div');
+    //this.#updateDisplayText();
+    let widthTrack;
+    const numberTrack = document.getElementById("numberTrack");
+    for (let i = this.params.max; i >= this.params.min; i--) {
+      this.popupCountNumber = document.createElement("div");
       this.popupCountNumber.id = `popup-count-number-${i}`;
-      this.popupCountNumber.className = 'number';
+      this.popupCountNumber.className = "number";
       this.popupCountNumber.textContent = i;
       numberTrack.appendChild(this.popupCountNumber);
-      numberTrack.style.width = i*45 + "px";
+      widthTrack += 45;
     }
+    numberTrack.style.width = widthTrack;
 
-  const slider = document.getElementById("popup-count-range");
-  
-  this.updateNumber(1);
+    const slider = document.getElementById("popup-count-range");
 
-  slider.addEventListener('input', (event) => {
-    let value = parseInt(event.target.value);
-    this.params.current = value + this.params.min - 1;
-    this.updateNumber(value);
-  }); 
-  
-  const popupCountConfirm = document.getElementById("popup-count-confirm");
+    this.updateNumber(1);
+
+    slider.addEventListener("input", (event) => {
+      let value = parseInt(event.target.value);
+      this.params.current = this.params.max - value + 1;
+      this.updateNumber(value);
+    });
+
+    const popupCountConfirm = document.getElementById("popup-count-confirm");
     popupCountConfirm.addEventListener("click", () => {
       this.resolve({ cancel: false, value: this.params.current });
     });
-}
-
-updateNumber(activeNumber){
-  const numberTrack = document.querySelector(".number-track");
-  const numbers = document.querySelectorAll(".number");
-  const numberWidth = 30;
-  
-  numbers.forEach(element => {
-    element.className = "number hidden";
-  });
-  
-  numbers[activeNumber - 1].className = "number active";
-  
-  if(activeNumber > 1 && numbers[activeNumber - 2]) {
-    numbers[activeNumber - 2].className = "number visible";
-  }
-  if(activeNumber < numbers.length && numbers[activeNumber]) {
-    numbers[activeNumber].className = "number visible";
-  }
-  
-
-  if (numberTrack ) {
-    const containerWidth = numberTrack.offsetWidth;
-    const centerPosition = containerWidth / 2;
-    const activeNumberElement = numbers[activeNumber - 1];
-    const activeNumberPosition = activeNumberElement.offsetLeft + (activeNumberElement.offsetWidth / 2);
-    const translateX = centerPosition - activeNumberPosition;
-    
-    numberTrack.style.transition = "transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)";
-    numberTrack.style.transform = `translateX(${translateX}px)`;
   }
 
-}
+  updateNumber(activeNumber) {
+    const numberTrack = document.querySelector(".number-track");
+    const numbers = document.querySelectorAll(".number");
+    const numberWidth = 30;
+
+    numbers.forEach((element) => {
+      element.className = "number hidden";
+    });
+
+    numbers[activeNumber - 1].className = "number active";
+
+    if (activeNumber > 1 && numbers[activeNumber - 2]) {
+      numbers[activeNumber - 2].className = "number visible";
+    }
+    if (activeNumber < numbers.length && numbers[activeNumber]) {
+      numbers[activeNumber].className = "number visible";
+    }
+
+    if (numberTrack) {
+      const containerWidth = numberTrack.offsetWidth;
+      const centerPosition = containerWidth / 2;
+      const activeNumberElement = numbers[activeNumber - 1];
+      const activeNumberPosition =
+        activeNumberElement.offsetLeft + activeNumberElement.offsetWidth / 2;
+      const translateX = centerPosition - activeNumberPosition;
+
+      numberTrack.style.transition =
+        "transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)";
+      numberTrack.style.transform = `translateX(${translateX}px)`;
+    }
+  }
 
   #applyDefault() {
     this.params.id ??= "count-popup";
@@ -188,7 +191,7 @@ updateNumber(activeNumber){
     this.params.cancel ??= true;
     this.params.min ??= 3;
     this.params.max ??= 7;
-    this.params.current ??= this.params.min;
+    this.params.current ??= this.params.max;
   }
 
   #updateDisplayText() {
@@ -226,7 +229,7 @@ updateNumber(activeNumber){
   }
 }
 
-class AttackPopup extends PopupBase {
+export class AttackPopup extends PopupBase {
   constructor(params = {}) {
     super(params);
     this.init();
@@ -264,6 +267,8 @@ class AttackPopup extends PopupBase {
         </div>
         `;
 
+    this.#updateDisplayText(0);
+
     const attackPopupLeft = document.getElementById("left-button");
     attackPopupLeft.addEventListener("click", () => {
       this.#updateDisplayText(-1);
@@ -298,18 +303,35 @@ class AttackPopup extends PopupBase {
     };
 
     this.current = rotate(this.current + offset);
+    console.log(this.current);
 
     const attackPopupDice = document.getElementById("attack-popup-dice");
-    const attackDice = document.createElement('div');
-    attackDice.innerHTML = `<img src="./assets/images/perspective-dice-six-faces-one.svg" class="dice" alt="dice">`;
-    console.log(this.current);
-    if(this.current === 0 ) {
-      attackPopupDice.innerHTML = '';
-    }else{
-      attackPopupDice.appendChild(attackDice); 
+
+    let dices = "";
+    for (let i = 0; i < this.current; i++) {
+      dices += `<div>
+                  <img src="./assets/images/perspective-dice-six-faces-one.svg" class="dice" alt="dice"/>
+                </div>`;
     }
-      
+
+    attackPopupDice.innerHTML = dices;
+
     const attackPopupName = document.getElementById("attack-popup-name");
     attackPopupName.textContent = this.current === 0 ? "Blitz" : "Classic";
+
+    if (this.params.defender && this.params.attacker) {
+      let odds;
+      if (this.current === 0 && winningOdds.blitz) {
+        odds = winningOdds.blitz;
+      } else if (this.current > 0 && winningOdds.classic) {
+        odds = winningOdds.classic;
+      }
+
+      if (odds) {
+        attackPopupName.textContent += `(${Math.floor(
+          odds[this.params.attacker][this.params.defender] * 100
+        )}%)`;
+      }
+    }
   }
 }
