@@ -111,6 +111,7 @@ export class CountPopup extends PopupBase {
     this.currentOffset = null;
     this.lastOffsets = 0;
     this.lastValue = null;
+    this.wheelAccumulatedDelta = 0;
 
     this.popupDiv.innerHTML = `
         <div id="popup-count-cancel-back"></div>
@@ -148,11 +149,13 @@ export class CountPopup extends PopupBase {
       this.isDragging = true;
       this.startingOffset = event.clientX;
       this.moved = false;
+      this.wheelAccumulatedDelta = 0;
     });
 
     container.addEventListener("mouseleave", () => {
       this.isDragging = false;
       this.#updateNumbers();
+      this.wheelAccumulatedDelta = 0;
     });
 
     container.addEventListener("mouseup", (event) => {
@@ -163,6 +166,7 @@ export class CountPopup extends PopupBase {
         this.startingOffset = event.clientX;
       }
       this.#updateNumbers();
+      this.wheelAccumulatedDelta = 0;
     });
 
     container.addEventListener("mousemove", (event) => {
@@ -178,11 +182,29 @@ export class CountPopup extends PopupBase {
     container.addEventListener(
       "wheel",
       (event) => {
-        const rect = document
-          .querySelector(".popup-count-number")
-          .getBoundingClientRect();
-        this.currentOffset += rect.width * Math.sign(event.deltaY);
-        this.#updateNumbers();
+        const DOM_DELTA_PIXEL = 0;
+        // Valeur arbritraire qui peux etre changer pour
+        // changer la vitesse avec les tracpad et certaines souris
+        const MIN_PIXEL_DELTA = 60;
+
+        if (Math.abs(event.deltaY) > 0) {
+          if (
+            Math.sign(this.wheelAccumulatedDelta) != Math.sign(event.deltaY)
+          ) {
+            this.wheelAccumulatedDelta = 0;
+          }
+          this.wheelAccumulatedDelta +=
+            event.deltaMode == DOM_DELTA_PIXEL ? event.deltaY : MIN_PIXEL_DELTA;
+          if (Math.abs(this.wheelAccumulatedDelta) >= MIN_PIXEL_DELTA) {
+            const rect = document
+              .querySelector(".popup-count-number")
+              .getBoundingClientRect();
+            this.currentOffset +=
+              rect.width * Math.sign(this.wheelAccumulatedDelta);
+            this.#updateNumbers();
+            this.wheelAccumulatedDelta = 0;
+          }
+        }
       },
       { passive: true }
     );
@@ -360,7 +382,6 @@ export class AttackPopup extends PopupBase {
     };
 
     this.current = rotate(this.current + offset);
-    console.log(this.current);
 
     const attackPopupDice = document.getElementById("attack-popup-dice");
 
@@ -402,8 +423,6 @@ export class SettingsPopup extends PopupBase {
   init() {
     this.#applyDefault();
     super.init();
-
-
   }
 
   #applyDefault() {
