@@ -4,18 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-
     <style>
-      @import url("https://fonts.googleapis.com/css2?family=Noto+Emoji:wght@300..700&family=Tilt+Warp&display=swap");
-      @import url("https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+      @import url("https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Noto+Emoji:wght@700&family=Tilt+Warp&display=swap");
 
       .noto-emoji-1000 {
         font-family: "Noto Emoji", sans-serif;
         font-optical-sizing: auto;
         font-weight: 1000;
+        font-style: normal;
       }
 
-      .kanit {
+      .kanit-900 {
         font-family: "Kanit", sans-serif;
         font-weight: 900;
         font-style: normal;
@@ -24,57 +23,125 @@
       #background-popup {
         display: flex;
         justify-content: center;
-        align-items: center;
+        align-items: end;
         position: absolute;
         top: 0;
         bottom: 0;
         right: 0;
         left: 0;
+        background-color: aqua;
       }
 
-      #add-button {
-        font-size: 3em;
-        color: white;
-        -webkit-text-stroke: 1.5px black;
+      #popup-settings-container {
+        box-sizing: border-box;
+        height: 30em;
+        background-color: #363636;
+        width: 100vw;
+        border: 0.2em solid #141b1d;
+        border-radius: 1em 1em 0 0;
+        padding: 1em;
+        font-family: "Kanit", sans-serif;
+        font-weight: 900;
+        font-style: normal;
       }
 
-      .change-particule {
-        position: absolute;
-        transition: transform 1s ease-out, font-size 1s 0.5s;
-        transform: translate(-50%, -50%);
+      #popup-settings-top {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #popup-settings-title {
         font-size: 3em;
         color: white;
-        -webkit-text-stroke: 1.5px black;
+        -webkit-text-stroke: 0.07em black;
+      }
+
+      .popup-settings-line {
+        border-top: 0.15em solid #2a2a2a;
+        border-bottom: 0.15em solid #4b4b4b;
+        height: 0;
+        margin-block: 0.5em;
+      }
+
+      .popup-settings-category {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1em;
+        font-size: 1.5em;
+        color: white;
+        -webkit-text-stroke: 0.1em black;
+      }
+
+      .popup-settings-slider {
+        -webkit-appearance: none;
+        -webkit-transition: 0.2s;
+        transition: opacity 0.2s;
+        border-radius: 5px;
+        background: #d3d3d3;
+        height: 0.5em;
+      }
+
+      .popup-settings-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 23px;
+        height: 24px;
+        border: 1px solid black;
+        background: url("../images/music-solid.svg");
+        cursor: pointer;
+        filter: invert(92%) sepia(8%) saturate(707%) hue-rotate(175deg)
+          brightness(101%) contrast(94%);
+      }
+
+      .popup-settings-slider::-moz-range-thumb {
+        width: 23px;
+        height: 24px;
+        border: 0;
+        background: url("../images/music-solid.svg");
+        cursor: pointer;
       }
     </style>
-    <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        const addButton = document.getElementById("add-button");
-        addButton.addEventListener("click", (event) => {
-          const particule = document.createElement("div");
-          particule.textContent = "+3";
-          particule.className = "change-particule noto-emoji-1000";
-          particule.style.left = `${event.clientX}px`; // Position the particule
-          particule.style.top = `${event.clientY - 20}px`;
-
-          requestAnimationFrame(() => {
-            particule.style.transform =
-              "translate(-50%, -50%) translateY(-50px)"; // Move upwards
-            particule.style.fontSize = 0; // Fade out
-          });
-
-          setTimeout(() => {
-            particule.remove();
-          }, 1000);
-
-          document.body.appendChild(particule);
-        });
-      });
-    </script>
+    <script></script>
   </head>
   <body>
     <div id="background-popup">
-      <button id="add-button" class="kanit">Add content</button>
+      <div id="popup-settings">
+        <div id="popup-settings-container">
+          <div id="popup-settings-top">
+            <div id="popup-settings-title">Settings</div>
+          </div>
+          <div class="popup-settings-line"></div>
+          <div id="popup-settings-categories">
+            <div
+              id="popup-settings-category-sound"
+              class="popup-settings-category"
+            >
+              <label for="music">Volume</label>
+              <input
+                type="range"
+                id="popup-settings-music"
+                class="popup-settings-slider"
+                name="music"
+                min="0"
+                max="100"
+              />
+              <label for="sfx">SFX</label>
+              <input
+                type="range"
+                id="popup-settings-sfx"
+                class="popup-settings-slider"
+                name="sfx"
+                min="0"
+                max="100"
+              />
+            </div>
+            <div class="popup-settings-line"></div>
+            <div id="popup-settings-category-ui">Scale</div>
+          </div>
+        </div>
+      </div>
     </div>
   </body>
 </html>

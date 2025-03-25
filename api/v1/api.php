@@ -184,7 +184,7 @@ $router->post("/saveMove", function ( $tokenPayload, $bodyArray): JsonResponse {
 
 
 
-$router->post("/initializeGame", function ($tokenPayload, $bodyArray): JsonResponse {
+$router->post("/initializegame", function ($tokenPayload, $bodyArray): JsonResponse {
 
     if(empty($bodyArray)){
        return JsonResponse::badRequest();

@@ -27,6 +27,7 @@ import {
   initializePlayersHud,
   updateCurrentPhase,
   addTroopsChangeParticle,
+  updatePastilleFakeTroops,
 } from "./display.js";
 import { initializeGame, saveMove } from "../api/gameDataService.js";
 import { CountPopup, AttackPopup } from "../popup.js";
@@ -274,8 +275,15 @@ function startDraftPhase(playerCount, callback) {
       const popup = new CountPopup({
         min: 1,
         max: playersList[data.currentPlayerId].troops,
+        tempCallback: (value) => {
+          updatePastilleFakeTroops(this.id, value);
+        },
       });
       const result = await popup.show();
+
+      // S'assurer que les fake troops ne reste pas afficher
+      updatePastilleFakeTroops(this.id, 0);
+
       if (result.cancel === false && result.value > 0) {
         moveTroopsFromPlayer(this.id, data.currentPlayerId, result.value);
         addTroopsChangeParticle(this.id, data.currentPlayerId, result.value);
@@ -524,9 +532,18 @@ function startAttackPhase(playerCount, callback) {
             min: 2,
             max: territoiresList[attackerTerritoireId].troops - 1,
             cancel: false,
+            tempCallback: (value) => {
+              updatePastilleFakeTroops(defenderTerritoireId, value);
+              updatePastilleFakeTroops(attackerTerritoireId, -value);
+            },
           });
 
           const result = await popup.show();
+
+          // S'assurer que les fake troops ne reste pas afficher
+          updatePastilleFakeTroops(defenderTerritoireId, 0);
+          updatePastilleFakeTroops(attackerTerritoireId, 0);
+
           if (result.cancel === true) {
             count = 0;
           } else if (result.value > 1) {
@@ -618,9 +635,17 @@ function startFortifyPhase(playerCount, callback) {
         const popup = new CountPopup({
           min: 1,
           max: territoiresList[data.selectedTerritoire].troops - 1,
+          tempCallback: (value) => {
+            updatePastilleFakeTroops(this.id, value);
+            updatePastilleFakeTroops(data.selectedTerritoire, -value);
+          },
         });
 
         const result = await popup.show();
+
+        // S'assurer que les fake troops ne reste pas afficher
+        updatePastilleFakeTroops(this.id, 0);
+        updatePastilleFakeTroops(data.selectedTerritoire, 0);
 
         if (result.cancel === false && result.value > 0) {
           moveTroopsFromTerritory(

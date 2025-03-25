@@ -141,6 +141,20 @@ export function updatePastilleTroopsCount(territoireId) {
 }
 
 /**
+ * Met à jour l'affichage des troupes pour un territoire spécifique.
+ * 
+ * Cette fonction met à jour l'élément HTML correspondant au territoire donné 
+ * en ajoutant un certain nombre de troupes au compteur actuel.
+ * 
+ * @param {string} territoireId - L'identifiant du territoire dont l'affichage des troupes doit être mis à jour.
+ * @param {number} count - Le nombre de troupes à ajouter (peut être négatif pour réduire les troupes).
+ */
+export function updatePastilleFakeTroops(territoireId, count) {
+  const element = document.getElementById(`pastille-${territoireId}`);
+  element.innerText = (territoiresList[territoireId].troops || 0) + count;
+}
+
+/**
  * Met à jour l'affichage du nombre de troupes dans l'interface utilisateur pour la phase actuelle.
  *
  * @param {number} troopsCount - Le nombre de troupes à afficher.
