@@ -175,13 +175,17 @@ export class CountPopup extends PopupBase {
       }
     });
 
-    container.addEventListener("wheel", (event) => {
-      const rect = document
-        .querySelector(".popup-count-number")
-        .getBoundingClientRect();
-      this.currentOffset += rect.width * Math.sign(event.deltaY);
-      this.#updateNumbers();
-    }, {passive: true});
+    container.addEventListener(
+      "wheel",
+      (event) => {
+        const rect = document
+          .querySelector(".popup-count-number")
+          .getBoundingClientRect();
+        this.currentOffset += rect.width * Math.sign(event.deltaY);
+        this.#updateNumbers();
+      },
+      { passive: true }
+    );
 
     document.addEventListener("keyup", (event) => {
       switch (event.key) {
@@ -386,5 +390,23 @@ export class AttackPopup extends PopupBase {
         )}%)`;
       }
     }
+  }
+}
+
+export class SettingsPopup extends PopupBase {
+  constructor(params = {}) {
+    super(params);
+    this.init();
+  }
+
+  init() {
+    this.#applyDefault();
+    super.init();
+
+
+  }
+
+  #applyDefault() {
+    this.params.id ??= "popup-settings";
   }
 }

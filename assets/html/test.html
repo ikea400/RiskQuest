@@ -23,7 +23,7 @@
       #background-popup {
         display: flex;
         justify-content: center;
-        align-items: center;
+        align-items: end;
         position: absolute;
         top: 0;
         bottom: 0;
@@ -32,294 +32,114 @@
         background-color: aqua;
       }
 
-      .popup-count {
-        position: relative;
-      }
-
-      #popup-count-countainer {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: rgba(0, 0, 0, 0.5);
-        font: 1.2rem "Fira Sans", sans-serif;
-        border-radius: 15%;
-        -webkit-box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-        width: 29em;
-        user-select: none;
-        overflow: hidden;
-        cursor: pointer;
-      }
-
-      .popup-count-number {
+      #popup-settings-container {
+        box-sizing: border-box;
+        height: 30em;
+        background-color: #363636;
+        width: 100vw;
+        border: 0.2em solid #141b1d;
+        border-radius: 1em 1em 0 0;
+        padding: 1em;
         font-family: "Kanit", sans-serif;
         font-weight: 900;
         font-style: normal;
+      }
+
+      #popup-settings-top {
         display: flex;
         justify-content: center;
         align-items: center;
-        font-size: 3.5rem;
-        width: 2em;
-        height: 2em;
-        padding: 0;
-        margin: 0;
-        -webkit-text-stroke: 0.07em black;
+      }
+
+      #popup-settings-title {
+        font-size: 3em;
         color: white;
+        -webkit-text-stroke: 0.07em black;
       }
 
-      #popup-count-number-1,
-      #popup-count-number-5 {
-        opacity: 50%;
+      .popup-settings-line {
+        border-top: 0.15em solid #2a2a2a;
+        border-bottom: 0.15em solid #4b4b4b;
+        height: 0;
+        margin-block: 0.5em;
       }
 
-      #popup-count-number-2,
-      #popup-count-number-4 {
-        opacity: 80%;
-      }
-
-      #popup-count-overlay {
-        box-sizing: border-box;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        pointer-events: none;
-        height: 9em;
-        width: 9em;
-        z-index: 2;
-        border: 0.2em solid #942121;
-        border-radius: 100%;
-        background: radial-gradient(
-          circle,
-          transparent 49%,
-          #942121 50%,
-          #942121 52%,
-          #d73f40 53%
-        );
-      }
-
-      #popup-count-overlay-back {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -45%);
-        pointer-events: none;
-        height: 9em;
-        width: 9em;
-        z-index: 1;
-        background: radial-gradient(circle, transparent 47%, #691010 48%);
-        border-radius: 50%;
-      }
-
-      #popup-count-confirm {
-        box-sizing: border-box;
-        position: absolute;
-        top: 50%;
-        left: 100%;
-        transform: translate(-50%, -50%);
-        height: 6.2em;
-        width: 6.2em;
+      .popup-settings-category {
         display: flex;
         justify-content: center;
         align-items: center;
-        background: radial-gradient(circle, white 50%, transparent 51%);
-        z-index: 2;
-        border-radius: 50%;
-        border: 0.2em solid #304919;
+        gap: 1em;
+        font-size: 1.5em;
+        color: white;
+        -webkit-text-stroke: 0.1em black;
+      }
+
+      .popup-settings-slider {
+        -webkit-appearance: none;
+        -webkit-transition: 0.2s;
+        transition: opacity 0.2s;
+        border-radius: 5px;
+        background: #d3d3d3;
+        height: 0.5em;
+      }
+
+      .popup-settings-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 23px;
+        height: 24px;
+        border: 1px solid black;
+        background: url("../images/music-solid.svg");
         cursor: pointer;
+        filter: invert(92%) sepia(8%) saturate(707%) hue-rotate(175deg)
+          brightness(101%) contrast(94%);
       }
 
-      #popup-count-cancel {
-        box-sizing: border-box;
-        position: absolute;
-        top: 50%;
-        left: 0%;
-        transform: translate(-50%, -50%);
-        height: 6.2em;
-        width: 6.2em;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background: radial-gradient(circle, white 50%, transparent 51%);
+      .popup-settings-slider::-moz-range-thumb {
+        width: 23px;
+        height: 24px;
+        border: 0;
+        background: url("../images/music-solid.svg");
         cursor: pointer;
-        z-index: 2;
-        border-radius: 50%;
-        border: 0.22em solid #6f1c12;
-        cursor: pointer;
-      }
-
-      #popup-count-confirm-img {
-        filter: invert(72%) sepia(21%) saturate(944%) hue-rotate(45deg)
-          brightness(93%) contrast(87%);
-      }
-
-      #popup-count-cancel-img {
-        filter: invert(32%) sepia(62%) saturate(5359%) hue-rotate(343deg)
-          brightness(93%) contrast(79%);
-        scale: 1.01;
-      }
-
-      #popup-count-confirm-back {
-        left: 100%;
-        background-color: #1f2c0f;
-      }
-
-      #popup-count-cancel-back {
-        left: 0%;
-        background-color: #42130d;
-      }
-
-      #popup-count-confirm-back,
-      #popup-count-cancel-back {
-        top: 50%;
-        content: "assfss";
-        position: absolute;
-        transform: translate(-50%, -45%);
-        height: 6.2em;
-        width: 6.2em;
-        border-radius: 50%;
-        z-index: 1;
       }
     </style>
-    <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        // Simulate params for popup
-        const max = 100;
-        const min = 3;
-
-        let isDragging = false;
-        let moved = false;
-        let startingOffset = 0;
-        let currentOffset;
-        let lastOffsets = 0;
-
-        const container = document.getElementById("popup-count-countainer");
-
-        updateNumbers();
-
-        console.log(container.getBoundingClientRect());
-        console.log(
-          document
-            .getElementsByClassName("popup-count-number")[0]
-            .getBoundingClientRect()
-        );
-
-        container.addEventListener("mousedown", (event) => {
-          isDragging = true;
-          startingOffset = event.clientX;
-          moved = false;
-        });
-
-        container.addEventListener("mouseleave", () => {
-          isDragging = false;
-          updateNumbers();
-        });
-
-        container.addEventListener("mouseup", (event) => {
-          isDragging = false;
-          if (!moved) {
-            const rect = container.getBoundingClientRect();
-            currentOffset -= event.clientX - (rect.right + rect.left) * 0.5;
-            startingOffset = event.clientX;
-          }
-          updateNumbers();
-        });
-
-        container.addEventListener("mousemove", (event) => {
-          if (isDragging) {
-            moved = true;
-            const rect = container.getBoundingClientRect();
-
-            console.log(event.clientX, startingOffset, currentOffset);
-
-            currentOffset += event.clientX - startingOffset;
-            startingOffset = event.clientX;
-            updateNumbers();
-          }
-        });
-
-        function updateNumbers() {
-          const rotate = (num) => {
-            const range = max - min + 1; // Calculate the range
-            return ((((num - min) % range) + range) % range) + min;
-          };
-
-          function clamp(value, min, max) {
-            return Math.min(Math.max(value, min), max);
-          }
-
-          const numbersDiv =
-            document.getElementsByClassName("popup-count-number");
-
-          const rect = numbersDiv[0].getBoundingClientRect();
-
-          if (currentOffset == null) {
-            currentOffset = rect.width * 2;
-          }
-
-          if (!isDragging) {
-            currentOffset = Math.round(currentOffset / rect.width) * rect.width;
-          }
-
-          let current = 3 - Math.round(currentOffset / rect.width);
-          console.log(current, currentOffset);
-
-          const duration = Math.abs(currentOffset - lastOffsets) / 1000; // Time = Distance / Speed
-          for (const number of numbersDiv) {
-            number.style.transition = isDragging
-              ? ""
-              : `transform ${duration}s linear`; // Apply constant speed
-            number.style.transform = `translateX(${
-              currentOffset - (3 - current) * rect.width
-            }px)`;
-          }
-          lastOffsets = currentOffset;
-
-          const numbers = [
-            rotate(current - 2),
-            rotate(current - 1),
-            rotate(current),
-            rotate(current + 1),
-            rotate(current + 2),
-          ];
-
-          for (let i = 0; i < numbers.length; i++) {
-            const popupCountNumber = document.getElementById(
-              `popup-count-number-${i + 1}`
-            );
-            popupCountNumber.innerText = numbers[i];
-          }
-        }
-      });
-    </script>
+    <script></script>
   </head>
   <body>
     <div id="background-popup">
-      <div class="popup-count">
-        <div id="popup-count-cancel-back"></div>
-        <div id="popup-count-cancel">
-          <img
-            id="popup-count-cancel-img"
-            src="../images/circle-x.svg"
-            alt="next"
-          />
-        </div>
-        <div id="popup-count-confirm-back"></div>
-        <div id="popup-count-confirm">
-          <img
-            id="popup-count-confirm-img"
-            src="../images/circle-check-solid.svg"
-            alt="next"
-          />
-        </div>
-        <div id="popup-count-overlay"></div>
-        <div id="popup-count-overlay-back"></div>
-        <div id="popup-count-countainer" autofocus>
-          <div id="popup-count-number-1" class="popup-count-number">1</div>
-          <div id="popup-count-number-2" class="popup-count-number">2</div>
-          <div id="popup-count-number-3" class="popup-count-number">3</div>
-          <div id="popup-count-number-4" class="popup-count-number">4</div>
-          <div id="popup-count-number-5" class="popup-count-number">5</div>
+      <div id="popup-settings">
+        <div id="popup-settings-container">
+          <div id="popup-settings-top">
+            <div id="popup-settings-title">Settings</div>
+          </div>
+          <div class="popup-settings-line"></div>
+          <div id="popup-settings-categories">
+            <div
+              id="popup-settings-category-sound"
+              class="popup-settings-category"
+            >
+              <label for="music">Volume</label>
+              <input
+                type="range"
+                id="popup-settings-music"
+                class="popup-settings-slider"
+                name="music"
+                min="0"
+                max="100"
+              />
+              <label for="sfx">SFX</label>
+              <input
+                type="range"
+                id="popup-settings-sfx"
+                class="popup-settings-slider"
+                name="sfx"
+                min="0"
+                max="100"
+              />
+            </div>
+            <div class="popup-settings-line"></div>
+            <div id="popup-settings-category-ui">Scale</div>
+          </div>
         </div>
       </div>
     </div>
