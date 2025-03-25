@@ -158,6 +158,78 @@ $router->post("/guest", function (): JsonResponse {
     ]);
 });
 
+//
+$router->post("/saveMove", function ( $tokenPayload, $bodyArray): JsonResponse {
+
+    if(empty($bodyArray)){
+       return JsonResponse::badRequest();
+    }
+
+    $pdo = new DatabaseConnection();
+    //retrieve game id to identify the move 
+    $playerList = $bodyArray["players"];
+    $game_id = $playerList["game_id"];
+    $moveJson = json_encode($bodyArray, true);
+    if(!$pdo->safeQuery(
+        "INSERT INTO Move (game_id, move_data) VALUES (:game_id, :move_data);",
+        ["game_id" => $game_id,
+            "move_data" => $moveJson]
+    )){
+        return JsonResponse::badRequest();
+    }
+
+    return JsonResponse::success();
+
+}, $authMiddleware, $jsonMiddleware );
+
+
+
+$router->post("/initializegame", function ($tokenPayload, $bodyArray): JsonResponse {
+
+    if(empty($bodyArray)){
+       return JsonResponse::badRequest();
+    }
+
+    $pdo = new DatabaseConnection();
+
+    $pdo->beginTransaction();
+
+    if(!$pdo->safeQuery(
+        "INSERT INTO Game (player_count, start_date) VALUES (:player_count, NOW());",
+        ['player_count' => $bodyArray["playerCount"]]
+        )){
+        $pdo->rollBack();
+        return JsonResponse::internalServerError();
+        
+    }
+
+    $game_id = $pdo->lastInsertId();
+
+    foreach( $bodyArray["players"] as $index => $player){
+        $playerName = $player["name"];
+        if(!$pdo->safeQuery(
+            "INSERT INTO User_Game (game_id, player_name, player_id) 
+             VALUES (:game_id, :player_name, :player_id);",
+            [
+                'game_id'     => $game_id,
+                'player_name' => $playerName,
+                'player_id'   => $index + 1
+            ]
+
+        )){
+            $pdo->rollBack();
+            return JsonResponse::internalServerError();
+          
+        } 
+    }
+
+    $pdo->commit();
+    //need the game_id to add it to game data, and to save move
+    return JsonResponse::success(['gameId' => $game_id]);
+    
+},$authMiddleware, $jsonMiddleware);
+
+
 $router->get("/user/{userId}", function ($userId): JsonResponse {
     // Instancier la connexion
     $pdo = new DatabaseConnection();

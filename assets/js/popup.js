@@ -1,3 +1,5 @@
+import { winningOdds } from "./game/data.js";
+
 class PopupBase {
   #resolveCallback;
   #rejectCallback;
@@ -93,7 +95,7 @@ class TestPopup extends PopupBase {
   }
 }
 
-class CountPopup extends PopupBase {
+export class CountPopup extends PopupBase {
   constructor(params = {}) {
     super(params);
     this.init();
@@ -103,12 +105,33 @@ class CountPopup extends PopupBase {
     this.#applyDefault();
     super.init();
 
+    this.isDragging = false;
+    this.moved = false;
+    this.startingOffset = 0;
+    this.currentOffset = null;
+    this.lastOffsets = 0;
+    this.lastValue = null;
+
     this.popupDiv.innerHTML = `
-        <div id="popup-count-confirm">
-            <img id="popup-count-confirm-img" src="./assets/images/circle-check-solid.svg" alt="next">
+        <div id="popup-count-cancel-back"></div>
+        <div id="popup-count-cancel">
+          <img
+            id="popup-count-cancel-img"
+            src="./assets/images/circle-x.svg"
+            alt="next"
+          />
         </div>
-        <div class="popup-count-overlay"></div>
-        <div class="popup-count-countainer" autofocus>
+        <div id="popup-count-confirm-back"></div>
+        <div id="popup-count-confirm">
+          <img
+            id="popup-count-confirm-img"
+            src="./assets/images/circle-check-solid.svg"
+            alt="next"
+          />
+        </div>
+        <div id="popup-count-overlay"></div>
+        <div id="popup-count-overlay-back"></div>
+        <div id="popup-count-countainer" autofocus>
           <div id="popup-count-number-1" class="popup-count-number">1</div>
           <div id="popup-count-number-2" class="popup-count-number">2</div>
           <div id="popup-count-number-3" class="popup-count-number">3</div>
@@ -116,39 +139,89 @@ class CountPopup extends PopupBase {
           <div id="popup-count-number-5" class="popup-count-number">5</div>
         </div>`;
 
-    this.#updateDisplayText();
+    this.#updateNumbers();
+
+    const container = document.getElementById("popup-count-countainer");
+    container.focus();
+
+    container.addEventListener("mousedown", (event) => {
+      this.isDragging = true;
+      this.startingOffset = event.clientX;
+      this.moved = false;
+    });
+
+    container.addEventListener("mouseleave", () => {
+      this.isDragging = false;
+      this.#updateNumbers();
+    });
+
+    container.addEventListener("mouseup", (event) => {
+      this.isDragging = false;
+      if (!this.moved) {
+        const rect = container.getBoundingClientRect();
+        this.currentOffset -= event.clientX - (rect.right + rect.left) * 0.5;
+        this.startingOffset = event.clientX;
+      }
+      this.#updateNumbers();
+    });
+
+    container.addEventListener("mousemove", (event) => {
+      if (this.isDragging) {
+        this.moved = true;
+
+        this.currentOffset += event.clientX - this.startingOffset;
+        this.startingOffset = event.clientX;
+        this.#updateNumbers();
+      }
+    });
+
+    container.addEventListener("wheel", (event) => {
+      const rect = document
+        .querySelector(".popup-count-number")
+        .getBoundingClientRect();
+      this.currentOffset += rect.width * Math.sign(event.deltaY);
+      this.#updateNumbers();
+    }, {passive: true});
+
+    document.addEventListener("keyup", (event) => {
+      switch (event.key) {
+        case "Enter":
+          this.resolve({ cancel: false, value: this.value });
+          break;
+        case "Escape":
+          this.resolve({ cancel: true });
+          break;
+      }
+    });
 
     const popupCountConfirm = document.getElementById("popup-count-confirm");
     popupCountConfirm.addEventListener("click", () => {
-      this.resolve({ cancel: false, value: this.params.current });
+      this.resolve({ cancel: false, value: this.value });
     });
 
-    document.addEventListener("keydown", (event) => {
-      console.log(event);
-    });
-
-    for (let i = 1; i <= 5; i++) {
-      const popupCountNumber = document.getElementById(
-        `popup-count-number-${i}`
-      );
-      popupCountNumber.addEventListener("click", (event) => {
-        this.params.current = parseInt(event.currentTarget.innerText);
-        this.#updateDisplayText();
+    const popupCountCancel = document.getElementById("popup-count-cancel");
+    if (this.params.cancel === true) {
+      popupCountCancel.addEventListener("click", () => {
+        this.resolve({ cancel: true });
       });
+    } else {
+      popupCountCancel.hidden = true;
+      popupCountCancel.style.opacity = 0;
+      popupCountCancel.style.pointerEvents = "none";
+      document.getElementById("popup-count-cancel-back").hidden = true;
     }
   }
 
   #applyDefault() {
     this.params.id ??= "count-popup";
-    this.params.classList ??= [];
     this.params.bottom ??= true;
     this.params.cancel ??= true;
-    this.params.min ??= 3;
-    this.params.max ??= 7;
     this.params.current ??= this.params.max;
+    this.params.tempCallback ??= () => {};
+    this.params.speed ??= 5;
   }
 
-  #updateDisplayText() {
+  #updateNumbers() {
     const rotate = (num) => {
       const range = this.params.max - this.params.min + 1; // Calculate the range
       return (
@@ -156,23 +229,49 @@ class CountPopup extends PopupBase {
       );
     };
 
-    function clamp(value, min, max) {
-      return Math.min(Math.max(value, min), max);
+    const numbersDiv = document.getElementsByClassName("popup-count-number");
+
+    const rect = numbersDiv[0].getBoundingClientRect();
+
+    if (this.currentOffset == null) {
+      this.currentOffset =
+        rect.width *
+        (this.params.max - this.params.current + (3 - this.params.min + 1));
     }
 
-    this.params.current = clamp(
-      this.params.current,
-      this.params.min,
-      this.params.max
-    );
+    if (!this.isDragging) {
+      this.currentOffset =
+        Math.round(this.currentOffset / rect.width) * rect.width;
+    }
+
+    let current = 3 - Math.round(this.currentOffset / rect.width);
+
+    const duration =
+      Math.abs(this.currentOffset - this.lastOffsets) /
+      (rect.width * this.params.speed); // Time = Distance / Speed
+    for (const number of numbersDiv) {
+      number.style.transition = this.isDragging
+        ? ""
+        : `transform ${duration}s linear`;
+      number.style.transform = `translateX(${
+        this.currentOffset - (3 - current) * rect.width
+      }px)`;
+    }
+    this.lastOffsets = this.currentOffset;
 
     const numbers = [
-      rotate(this.params.current - 2),
-      rotate(this.params.current - 1),
-      rotate(this.params.current),
-      rotate(this.params.current + 1),
-      rotate(this.params.current + 2),
+      rotate(current - 2),
+      rotate(current - 1),
+      rotate(current),
+      rotate(current + 1),
+      rotate(current + 2),
     ];
+
+    this.value = numbers[2];
+    if (this.lastValue !== this.value) {
+      this.params.tempCallback(this.value);
+      this.lastValue = this.value;
+    }
 
     for (let i = 0; i < numbers.length; i++) {
       const popupCountNumber = document.getElementById(
@@ -183,7 +282,7 @@ class CountPopup extends PopupBase {
   }
 }
 
-class AttackPopup extends PopupBase {
+export class AttackPopup extends PopupBase {
   constructor(params = {}) {
     super(params);
     this.init();
@@ -196,29 +295,39 @@ class AttackPopup extends PopupBase {
     this.current = this.params.current;
 
     this.popupDiv.innerHTML = `
-        <img
-          src="./assets/images/chevron-left-solid.svg"
-          alt="left"
-          id="attack-popup-left-img"
-          class="attack-popup-action-img"
-        />
-        <div id="attack-popup-center">
-          <div id="attack-popup-dice">3</div>
-          <div id="attack-popup-name" class="kanit-900">Blitz</div>
+        <div id="attack-container">
+          <div class="left-right-button" id="left-button">
+            <img
+              src="./assets/images/chevron-left-solid.svg"
+              alt="left"
+              id="attack-popup-left-img"
+              class="attack-popup-action-img"
+            />
+          </div>
+          <div id="attack-popup-center">
+            <div id="attack-popup-dice">
+            </div>
+            <div id="attack-popup-name" class="kanit-900">Blitz</div>
+          </div>
+          <div class="left-right-button" id="right-button">
+            <img
+              src="./assets/images/chevron-right-solid.svg"
+              alt="left"
+              id="attack-popup-right-img"
+              class="attack-popup-action-img"
+            />
+          </div>
         </div>
-        <img
-          src="./assets/images/chevron-right-solid.svg"
-          alt="left"
-          id="attack-popup-right-img"
-          class="attack-popup-action-img"
-        />`;
+        `;
 
-    const attackPopupLeft = document.getElementById("attack-popup-left-img");
+    this.#updateDisplayText(0);
+
+    const attackPopupLeft = document.getElementById("left-button");
     attackPopupLeft.addEventListener("click", () => {
       this.#updateDisplayText(-1);
     });
 
-    const attackPopupRight = document.getElementById("attack-popup-right-img");
+    const attackPopupRight = document.getElementById("right-button");
     attackPopupRight.addEventListener("click", () => {
       this.#updateDisplayText(1);
     });
@@ -247,11 +356,35 @@ class AttackPopup extends PopupBase {
     };
 
     this.current = rotate(this.current + offset);
+    console.log(this.current);
 
     const attackPopupDice = document.getElementById("attack-popup-dice");
-    attackPopupDice.textContent = this.current === 0 ? 3 : this.current;
+
+    let dices = "";
+    for (let i = 0; i < this.current; i++) {
+      dices += `<div>
+                  <img src="./assets/images/perspective-dice-six-faces-one.svg" class="dice" alt="dice"/>
+                </div>`;
+    }
+
+    attackPopupDice.innerHTML = dices;
 
     const attackPopupName = document.getElementById("attack-popup-name");
     attackPopupName.textContent = this.current === 0 ? "Blitz" : "Classic";
+
+    if (this.params.defender && this.params.attacker) {
+      let odds;
+      if (this.current === 0 && winningOdds.blitz) {
+        odds = winningOdds.blitz;
+      } else if (this.current > 0 && winningOdds.classic) {
+        odds = winningOdds.classic;
+      }
+
+      if (odds) {
+        attackPopupName.textContent += `(${Math.floor(
+          odds[this.params.attacker][this.params.defender] * 100
+        )}%)`;
+      }
+    }
   }
 }
