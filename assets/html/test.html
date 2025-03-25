@@ -34,7 +34,7 @@
 
       #popup-settings-container {
         box-sizing: border-box;
-        height: 30em;
+        height: 70vh;
         background-color: #363636;
         width: 100vw;
         border: 0.2em solid #141b1d;
@@ -47,7 +47,7 @@
 
       #popup-settings-top {
         display: flex;
-        justify-content: center;
+        justify-content: space-between;
         align-items: center;
       }
 
@@ -75,42 +75,147 @@
       }
 
       .popup-settings-slider {
-        -webkit-appearance: none;
-        -webkit-transition: 0.2s;
-        transition: opacity 0.2s;
-        border-radius: 5px;
-        background: #d3d3d3;
+        appearance: none;
+        accent-color: #78cff1;
+        background: linear-gradient(
+          to right,
+          #78cff1 0%,
+          #78cff1 50%,
+          #151515 51%,
+          #151515 100%
+        );
+        border: 2px solid #4b4b4b;
+        border-radius: 1em;
         height: 0.5em;
       }
 
-      .popup-settings-slider::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        appearance: none;
-        width: 23px;
-        height: 24px;
-        border: 1px solid black;
-        background: url("../images/music-solid.svg");
-        cursor: pointer;
-        filter: invert(92%) sepia(8%) saturate(707%) hue-rotate(175deg)
-          brightness(101%) contrast(94%);
+      .popup-settings-top-img {
+        width: 5em;
       }
 
-      .popup-settings-slider::-moz-range-thumb {
-        width: 23px;
-        height: 24px;
-        border: 0;
-        background: url("../images/music-solid.svg");
-        cursor: pointer;
+      #popup-settings-stop-svg {
+        height: 60%;
+        width: 60%;
+      }
+
+      #popup-settings-stop {
+        box-sizing: border-box;
+        position: relative;
+        background: #87b159;
+        height: 4em;
+        width: 4em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 0.2em solid #46642e;
+        border-radius: 50%;
+        z-index: 1;
+      }
+
+      #popup-settings-stop-back {
+        position: absolute;
+        background-color: #1f2c0f;
+        width: 4em;
+        height: 4em;
+        border-radius: 50%;
+        transform: translateY(8%);
+        z-index: 0;
+      }
+
+      #popup-settings-stop-path {
+        fill: #c9d1c0;
+        stroke: #46642e;
+        stroke-width: 40;
+        stroke-linejoin: round;
+      }
+
+      #popup-settings-close-svg {
+        height: 60%;
+        width: 60%;
+      }
+
+      #popup-settings-close {
+        box-sizing: border-box;
+        position: relative;
+        background: #ca443e;
+        height: 4em;
+        width: 4em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 0.2em solid #883038;
+        border-radius: 50%;
+        z-index: 1;
+      }
+
+      #popup-settings-close-back {
+        position: absolute;
+        background-color: #1f2c0f;
+        width: 4em;
+        height: 4em;
+        border-radius: 50%;
+        transform: translateY(8%);
+        z-index: 0;
+      }
+
+      #popup-settings-close-path {
+        fill: #d6bbbe;
+        stroke: #883038;
+        stroke-width: 40;
+        stroke-linejoin: round;
       }
     </style>
-    <script></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const sliders = document.getElementsByClassName(
+          "popup-settings-slider"
+        );
+        for (const slider of sliders) {
+          slider.addEventListener("input", function () {
+            this.style.background = `linear-gradient(to right, #78cff1 0%, #78cff1 ${
+              ((this.value - this.min) / (this.max - this.min)) * 100
+            }%, #151515 ${
+              ((this.value - this.min) / (this.max - this.min)) * 100
+            }%, #151515 100%)`;
+          });
+        }
+      });
+    </script>
   </head>
   <body>
     <div id="background-popup">
       <div id="popup-settings">
         <div id="popup-settings-container">
           <div id="popup-settings-top">
+            <div id="popup-settings-stop-back"></div>
+            <div id="popup-settings-stop">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 320 512"
+                id="popup-settings-stop-svg"
+              >
+                <!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.-->
+                <path
+                  id="popup-settings-stop-path"
+                  d="M48 64C21.5 64 0 85.5 0 112L0 400c0 26.5 21.5 48 48 48l32 0c26.5 0 48-21.5 48-48l0-288c0-26.5-21.5-48-48-48L48 64zm192 0c-26.5 0-48 21.5-48 48l0 288c0 26.5 21.5 48 48 48l32 0c26.5 0 48-21.5 48-48l0-288c0-26.5-21.5-48-48-48l-32 0z"
+                />
+              </svg>
+            </div>
             <div id="popup-settings-title">Settings</div>
+            <div id="popup-settings-close-back"></div>
+            <div id="popup-settings-close">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 352 512"
+                id="popup-settings-close-svg"
+              >
+                <!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.-->
+                <path
+                  id="popup-settings-close-path"
+                  d="M242.7 256l100.1-100.1c12.3-12.3 12.3-32.2 0-44.5l-22.2-22.2c-12.3-12.3-32.2-12.3-44.5 0L176 189.3 75.9 89.2c-12.3-12.3-32.2-12.3-44.5 0L9.2 111.5c-12.3 12.3-12.3 32.2 0 44.5L109.3 256 9.2 356.1c-12.3 12.3-12.3 32.2 0 44.5l22.2 22.2c12.3 12.3 32.2 12.3 44.5 0L176 322.7l100.1 100.1c12.3 12.3 32.2 12.3 44.5 0l22.2-22.2c12.3-12.3 12.3-32.2 0-44.5L242.7 256z"
+                />
+              </svg>
+            </div>
           </div>
           <div class="popup-settings-line"></div>
           <div id="popup-settings-categories">
@@ -138,7 +243,21 @@
               />
             </div>
             <div class="popup-settings-line"></div>
-            <div id="popup-settings-category-ui">Scale</div>
+            <div
+              id="popup-settings-category-ui"
+              class="popup-settings-category"
+            >
+              <label for="scale">UI Scale</label>
+              <input
+                type="range"
+                id="popup-settings-scale"
+                class="popup-settings-slider"
+                name="scale"
+                min="0"
+                max="100"
+              />
+            </div>
+            <div class="popup-settings-line"></div>
           </div>
         </div>
       </div>
