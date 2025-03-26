@@ -32,7 +32,7 @@ import {
 import { initializeGame, saveMove } from "../api/gameDataService.js";
 import { CountPopup, AttackPopup } from "../popup.js";
 
-import RandomBot from "../bot/randombot.js";
+import RandomBot from "../bot/bot.js";
 
 // window.addEventListener("pageshow", function (event) {
 //   // S'assurer qu'un token et username est disponible sinon redirection vers la page principale
@@ -269,7 +269,7 @@ function startDraftPhase(playerCount, callback) {
     // Attendre un peu avant de passer au prochain stage pour laisser l'utilisateur voir les choix
     setTimeout(() => {
       startAttackPhase(playerCount, callback);
-    }, 1000);
+    }, 10000);
   } else {
     async function territoireHandler() {
       const popup = new CountPopup({
@@ -403,7 +403,7 @@ function startAttackPhase(playerCount, callback) {
 
     setTimeout(() => {
       startFortifyPhase(playerCount, callback);
-    }, 1000);
+    }, 10000);
   } else {
     const territoriesIds = Object.keys(territoiresList);
     const territoiresSvgs = territoriesIds.map((territoireId) =>
@@ -575,6 +575,18 @@ function startFortifyPhase(playerCount, callback) {
   updateCurrentPhase(EPhases.FORTIFY);
 
   if (playersList[data.currentPlayerId].bot) {
+    const bot = playersList[data.currentPlayerId].bot;
+    const fortify = bot.pickFortify();
+
+    if (fortify) {
+      moveTroopsFromTerritory(
+        fortify.from,
+        fortify.to,
+        data.currentPlayerId,
+        fortify.troops
+      );
+      Move.fortifyDraft[fortify.to] = fortify.troops;
+    }
     callback();
   } else {
     const ownedTerritoriesIds = Object.keys(territoiresList).filter(
@@ -607,7 +619,6 @@ function startFortifyPhase(playerCount, callback) {
       }).catch((error) => {
         console.log("Error at api.php when saving fortify move: " + error);
       });
-
       callback();
     }
 
