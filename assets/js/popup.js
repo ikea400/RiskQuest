@@ -423,9 +423,136 @@ export class SettingsPopup extends PopupBase {
   init() {
     this.#applyDefault();
     super.init();
+
+    this.popupDiv.innerHTML = `<div id="popup-settings-top">
+          <div id="popup-settings-top-play-stop">
+            <div class="popup-settings-top-button">
+              <div
+                id="popup-settings-stop-back"
+                class="popup-settings-top-back"
+              ></div>
+              <div id="popup-settings-stop" class="popup-settings-img">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 320 512"
+                  id="popup-settings-stop-svg"
+                >
+                  <!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.-->
+                  <path
+                    id="popup-settings-stop-path"
+                    d="M48 64C21.5 64 0 85.5 0 112L0 400c0 26.5 21.5 48 48 48l32 0c26.5 0 48-21.5 48-48l0-288c0-26.5-21.5-48-48-48L48 64zm192 0c-26.5 0-48 21.5-48 48l0 288c0 26.5 21.5 48 48 48l32 0c26.5 0 48-21.5 48-48l0-288c0-26.5-21.5-48-48-48l-32 0z"
+                  />
+                </svg>
+              </div>
+            </div>
+            <div class="popup-settings-top-button">
+              <div
+                id="popup-settings-play-back"
+                class="popup-settings-top-back"
+              ></div>
+              <div id="popup-settings-play" class="popup-settings-img">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 384 512"
+                  id="popup-settings-play-svg"
+                >
+                  <!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.-->
+                  <path
+                    id="popup-settings-play-path"
+                    d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80L0 432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div id="popup-settings-title" class="kanit-900">Settings</div>
+          <div id="popup-settings-top-close" class="popup-settings-top-button">
+            <div
+              id="popup-settings-close-back"
+              class="popup-settings-top-back"
+            ></div>
+            <div id="popup-settings-close" class="popup-settings-img">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 352 512"
+                id="popup-settings-close-svg"
+              >
+                <!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.-->
+                <path
+                  id="popup-settings-close-path"
+                  d="M242.7 256l100.1-100.1c12.3-12.3 12.3-32.2 0-44.5l-22.2-22.2c-12.3-12.3-32.2-12.3-44.5 0L176 189.3 75.9 89.2c-12.3-12.3-32.2-12.3-44.5 0L9.2 111.5c-12.3 12.3-12.3 32.2 0 44.5L109.3 256 9.2 356.1c-12.3 12.3-12.3 32.2 0 44.5l22.2 22.2c12.3 12.3 32.2 12.3 44.5 0L176 322.7l100.1 100.1c12.3 12.3 32.2 12.3 44.5 0l22.2-22.2c12.3-12.3 12.3-32.2 0-44.5L242.7 256z"
+                />
+              </svg>
+            </div>
+          </div>
+        </div>
+        <div class="popup-settings-line"></div>
+        <div id="popup-settings-categories">
+          <div
+            id="popup-settings-category-sound"
+            class="popup-settings-category"
+          >
+            <label for="music" class="kanit-900">Volume</label>
+            <input
+              type="range"
+              id="popup-settings-music"
+              class="popup-settings-slider"
+              name="music"
+              min="0"
+              max="100"
+            />
+            <label for="sfx" class="kanit-900">SFX</label>
+            <input
+              type="range"
+              id="popup-settings-sfx"
+              class="popup-settings-slider"
+              name="sfx"
+              min="0"
+              max="100"
+            />
+          </div>
+          <div class="popup-settings-line"></div>
+          <div id="popup-settings-category-ui" class="popup-settings-category">
+            <label for="scale" class="kanit-900">UI Scale</label>
+            <input
+              type="range"
+              id="popup-settings-scale"
+              class="popup-settings-slider"
+              name="scale"
+              min="0"
+              max="100"
+            />
+          </div>
+          <div class="popup-settings-line"></div>
+        </div>`;
+
+    const sliders = document.getElementsByClassName("popup-settings-slider");
+    const updateSliderGradiant = (slider) => {
+      slider.style.background = `linear-gradient(to right, #78cff1 0%, #78cff1 ${
+        ((slider.value - slider.min) / (slider.max - slider.min)) * 100
+      }%, #151515 ${
+        ((slider.value - slider.min) / (slider.max - slider.min)) * 100
+      }%, #151515 100%)`;
+    };
+    for (const slider of sliders) {
+      updateSliderGradiant(slider);
+
+      slider.addEventListener("input", (event) => {
+        updateSliderGradiant(event.currentTarget);
+      });
+    }
+
+    const popupSettingsTopClose = document.getElementById(
+      "popup-settings-top-close"
+    );
+    popupSettingsTopClose.addEventListener("click", () => {
+      this.resolve({ cancel: false });
+    });
   }
 
   #applyDefault() {
     this.params.id ??= "popup-settings";
+    this.params.bottom ??= true;
+    this.params.cancel ??= true;
   }
 }

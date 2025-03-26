@@ -281,7 +281,7 @@ body {
 #turn-hub-action-troops-count {
   font-weight: bold;
   position: absolute;
-  z-index: 1000;
+  z-index: 2;
   color: black;
 }
 
@@ -385,6 +385,7 @@ body {
   justify-content: center;
   align-items: center;
   z-index: 1;
+  user-select: none;
 }
 
 .top-button {
@@ -399,6 +400,7 @@ body {
   background-color: #3838385d;
   transition: scale 0.1s;
   cursor: pointer;
+  pointer-events: all;
 }
 
 .top-button-img {
@@ -406,12 +408,9 @@ body {
   height: 1.5em;
   filter: invert(92%) sepia(8%) saturate(707%) hue-rotate(175deg)
     brightness(101%) contrast(94%);
+  pointer-events: none;
 }
 
 .top-button:hover {
   scale: 1.1;
-}
-
-.top-button:active {
-  scale: 0.5;
 }
