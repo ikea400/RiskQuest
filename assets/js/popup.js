@@ -286,10 +286,10 @@ class CardPopup extends PopupBase {
 
       <button id="popup-cards-button">
         <span id="trade-text">Trade cards</span>
-        <span id="extra-troops">+10</span>
+        <span id="extra-troops-count">+10</span>
       </button>
     </div>
-
+    
     <footer id="popup-cards-footer">
       <div id="popup-cards-remaining-cards">
         <img id='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>

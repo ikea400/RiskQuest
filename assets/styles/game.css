@@ -115,26 +115,7 @@ body {
     0 1px 2px rgba(255, 255, 255, 0.2);
 }
 
-.card-layout {
-  position: absolute;
-  top: 50%;
-  left: 100%;
-  margin: 1em;
-  transform: translateY(-50%);
-  display: flex;
-  flex-direction: column;
-  background: rgba(26, 34, 53, 0.8);
-  padding: 15px;
-  border-radius: 12px;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease;
-}
-
-.cards-container:hover .card-layout {
+.cards-container:hover {
   opacity: 1;
   visibility: visible;
 }

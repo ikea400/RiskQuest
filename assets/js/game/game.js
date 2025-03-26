@@ -427,6 +427,6 @@ document.addEventListener("DOMContentLoaded", function () {
   });
   resizeObserver.observe(document.body);
   window.addEventListener("resize", updatePastillesPosition);
-
+  // etablir le popup des cartes quand on clique sur l'image des cartes
   document.getElementById("cards-img").addEventListener("click", cardHandler);
 });

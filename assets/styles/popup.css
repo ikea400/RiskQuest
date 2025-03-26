@@ -155,7 +155,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-start; 
-  background: linear-gradient(to bottom, #6ede6e, #4caf50); 
+  background: linear-gradient(to bottom, rgb(116, 217, 98), #4caf50); 
   border-radius: 50px;
   color: white;
   width: 34.5%;
@@ -176,6 +176,18 @@
   background-color: rgba(0, 0, 0, 0.1);
   z-index: 1;
 }
+#popup-cards-button:active {
+  transform: translate3d(1px,4px,0px);
+  background: rgb(26, 93, 15);
+}
+#popup-cards-button:not(:active):hover {
+  animation: trade-button-hover 2s infinite;
+}
+@keyframes trade-button-hover {
+  0% {background: rgb(116, 217, 98);}
+  50% {background: rgb(130, 236, 9);}
+  100% {background: rgb(116, 217, 98);}
+}
 
 #trade-text {
   -webkit-text-stroke: 1px black;
@@ -186,7 +198,7 @@
   font-weight: bold;
   text-align: center;
 }
-#extra-troops {
+#extra-troops-count {
   -webkit-text-stroke: 1px black;
   margin-left: auto; 
   font-weight: bold;
@@ -255,11 +267,25 @@
   width: 6em;
   height: 6em;
   border-radius: 50%;
-  top: 15%;
-  left: 15%;
+  top: 13%;
+  left: 14.5%;
   right: 0%;
   bottom: 0%;
-  background-color: lightcoral;
+  background-color: rgb(203, 62, 62);
+  border: 3px solid rgb(75, 64, 64);
+  box-shadow: 1px 5px 1px 1px rgb(30, 30, 30);
+}
+#popup-cards-button-close:active {
+  background-color: rgb(223, 128, 128);
+  transform: translate3d(1px,2px,0);
+}
+#popup-cards-button-close:not(:active):hover {
+  animation: close-button-hover 2s infinite;
+}
+@keyframes close-button-hover {
+  0% {background-color:rgb(202, 84, 84);}
+  50% {background-color:rgb(255, 0, 0);}
+  100% {background-color:rgb(202, 84, 84);}
 }
 #card-cancel-button-background {
   width: 7em;
