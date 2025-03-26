@@ -30,7 +30,7 @@ import {
   updatePastilleFakeTroops,
 } from "./display.js";
 import { initializeGame, saveMove } from "../api/gameDataService.js";
-import { CountPopup, AttackPopup } from "../popup.js";
+import { CountPopup, AttackPopup, SettingsPopup } from "../popup.js";
 
 import RandomBot from "../bot/bot.js";
 
@@ -776,6 +776,12 @@ document.addEventListener("DOMContentLoaded", function () {
       setSelectedTerritoire(null);
       setAttackableTerritoires([]);
     }
+  });
+
+  let settingsButton = document.getElementById("settings-button");
+  settingsButton.addEventListener("click", async () => {
+    const popup = new SettingsPopup();
+    await popup.show();
   });
 
   new ResizeObserver(updatePastillesPosition).observe(document.body);
