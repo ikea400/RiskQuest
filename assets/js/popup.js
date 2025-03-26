@@ -277,6 +277,13 @@ class CardPopup extends PopupBase {
     </div>
 
     <div id="popup-cards-button-container">
+      <div id="popup-background-image-button-close">
+        <img id="card-cancel-button-background" src="./assets/images/riskCancelButton.png" alt="close">
+        <button id="popup-cards-button-close">
+          <img id="popup-image-close" src="./assets/images/riskXImage.png" alt="close">
+        </button>
+      </div>
+
       <button id="popup-cards-button">
         <span id="trade-text">Trade cards</span>
         <span id="extra-troops">+10</span>
@@ -297,7 +304,13 @@ class CardPopup extends PopupBase {
     </footer>
 
     `;
+
+    document.getElementById("popup-cards-button-close").addEventListener("click", function () {
+      document.getElementById("popup-cards-container").remove();
+    });
+
     this.backgroundDiv.classList.add("background-popup-cards");
     this.backgroundDiv.classList.remove("background-popup-center");
+    this.backgroundDiv.id = "popup-cards-container";
   }
 }

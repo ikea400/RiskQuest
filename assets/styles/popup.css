@@ -148,9 +148,8 @@
 }
 #popup-cards-button-container {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 3em;
+  justify-content: space-between;
+  align-items: flex-end;
 }
 #popup-cards-button {
   display: flex;
@@ -159,11 +158,12 @@
   background: linear-gradient(to bottom, #6ede6e, #4caf50); 
   border-radius: 50px;
   color: white;
-  width: 35%;
+  width: 34.5%;
   padding: 0.5em 1em;
   position: relative;
   border: 3px solid #2e7d32; 
-  box-shadow: 1px 5px 1px 1px rgb(53, 53, 53)
+  box-shadow: 1px 5px 1px 1px rgb(53, 53, 53);
+  margin-right: auto;
 }
 #popup-cards-button::before {
   content: '';
@@ -243,4 +243,29 @@
   -webkit-user-select: none;
   -ms-user-select: none;
   user-select: none;
+}
+#popup-background-image-button-close {
+  position: relative;
+  justify-self: flex-start;
+  margin-right: 23.5%;
+  margin-left: 2em;
+}
+#popup-cards-button-close {
+  position: absolute;
+  width: 6em;
+  height: 6em;
+  border-radius: 50%;
+  top: 15%;
+  left: 15%;
+  right: 0%;
+  bottom: 0%;
+  background-color: lightcoral;
+}
+#card-cancel-button-background {
+  width: 7em;
+  height: 7em;
+}
+#popup-image-close {
+  width: 4em;
+  height: 4em;
 }
