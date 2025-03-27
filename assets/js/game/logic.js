@@ -349,6 +349,7 @@ export function countNewTroops(ownedTerritoriesIds, playerId) {
 
     if (!continent.territoires.some(territoireNotOwnedByPlayer)) {
       newTroops += continent.bonus;
+      console.log(`+ ${continent.bonus}(${newTroops}) troups to ${playerId} for owning ${continentId}`);
     }
   }
 
@@ -363,7 +364,9 @@ export function countNewTroops(ownedTerritoriesIds, playerId) {
  * @throws {Error} - Génère une erreur si le nombre de troupes à ajouter est inférieur ou égal à zéro.
  */
 export function addTroops(playerId, troopsCount) {
+
   console.log(`addTroops(${playerId}, ${troopsCount})`);
+  
   if (troopsCount <= 0) {
     throw new Error(`player${playerId} tried to add ${troopsCount} troops`);
   }

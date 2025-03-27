@@ -30,9 +30,9 @@ import {
   updatePastilleFakeTroops,
 } from "./display.js";
 import { initializeGame, saveMove } from "../api/gameDataService.js";
-import { CountPopup, AttackPopup } from "../popup.js";
+import { CountPopup, AttackPopup, SettingsPopup, CardPopup } from "../popup.js";
 
-import RandomBot from "../bot/randombot.js";
+import RandomBot from "../bot/bot.js";
 
 // window.addEventListener("pageshow", function (event) {
 //   // S'assurer qu'un token et username est disponible sinon redirection vers la page principale
@@ -586,7 +586,19 @@ function startFortifyPhase(playerCount, callback) {
   updateCurrentPhase(EPhases.FORTIFY);
 
   if (playersList[data.currentPlayerId].bot) {
-    callback();
+    const bot = playersList[data.currentPlayerId].bot;
+    const fortify = bot.pickFortify();
+
+    if (fortify) {
+      moveTroopsFromTerritory(
+        fortify.from,
+        fortify.to,
+        data.currentPlayerId,
+        fortify.troops
+      );
+      Move.fortifyDraft[fortify.to] = fortify.troops;
+    }
+    setTimeout(callback, 1000);
   } else {
     const ownedTerritoriesIds = Object.keys(territoiresList).filter(
       (territoireId) =>
@@ -618,7 +630,6 @@ function startFortifyPhase(playerCount, callback) {
       }).catch((error) => {
         console.log("Error at api.php when saving fortify move: " + error);
       });
-
       callback();
     }
 
@@ -709,6 +720,29 @@ function startMainLoop(playerCount, callback) {
   handler();
 }
 
+function cardHandler() {
+  if (document.getElementById("popup-cards-container") == null) {
+    const popup = new CardPopup({});
+    popup.show();
+
+    let card = document.getElementsByClassName("card-wrapper");
+
+    let country = document.getElementById("alaska").cloneNode(false);
+    country.id = "territory-card";
+    country.classList.remove("territoire");
+    country.classList.remove("attackable-territory");
+
+    let svgWrapper = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svgWrapper.classList.add("svg-card");
+    const bbox = country.getBBox();
+    svgWrapper.setAttribute("viewBox", "0 60 150 50");
+    svgWrapper.setAttribute("preserveAspectRatio", "xMidYMid meet");
+    svgWrapper.appendChild(country);
+
+    card[0].appendChild(svgWrapper);
+  }
+}
+
 document.addEventListener("DOMContentLoaded", function () {
   const autoPlacement = true;
   const playerCount = 6;
@@ -728,7 +762,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   setCurrentPlayer(
     utils.getRandomStartingPlayer(
-      botPlayerStart > 0 ? botPlayerStart - 1 : playerCount
+      botPlayerStart > 1 ? botPlayerStart - 1 : playerCount
     )
   );
 
@@ -778,6 +812,14 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
+  let settingsButton = document.getElementById("settings-button");
+  settingsButton.addEventListener("click", async () => {
+    const popup = new SettingsPopup();
+    await popup.show();
+  });
+
   new ResizeObserver(updatePastillesPosition).observe(document.body);
   window.addEventListener("resize", updatePastillesPosition);
+  // etablir le popup des cartes quand on clique sur l'image des cartes
+  document.getElementById("cards-img").addEventListener("click", cardHandler);
 });
