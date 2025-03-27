@@ -532,7 +532,10 @@
 .popup-settings-img:active {
   transform: translateY(8%);
 }
-
+/* change all p to em 
+-
+-
+*/
 #flex-center-popup-cards {
   display: flex;
   flex-direction: row;
@@ -551,13 +554,13 @@
   z-index: 15;
 }
 .image-card {
-  width: 150px;
+  width: 9.5em;
   height: auto;
 }
 #popup-cards-title {
   color: white;
   margin: 0;
-  font-size: 65px;
+  font-size: 4em;
 }
 #popup-cards-header {
   text-align: center;
@@ -667,7 +670,7 @@
   display: flex;
   justify-content: center;
   position: relative;
-  bottom: 2em;
+  bottom: 1em;
   width: calc(100% - 4em);
   left: 2em;
   gap: 1em;
@@ -719,12 +722,6 @@
   height: 4em;
 }
 #territory-card {
-  width: 200px;
-  height: 200px;
-  left: 0%;
-  right: 0%;
-  top: 0%;
-  bottom: 0%;
   z-index: 10;
 }
 .card-wrapper {
@@ -734,10 +731,10 @@
 }
 .svg-card {
   position: absolute;
-  width: 200px;
-  height: 200px;
+  width: fit-content;
+  height: fit-content;
   left: 0px;
-  top: 20%;
+  top: 0%;
   right: 0px;
   bottom: 0px;
   overflow: visible;
