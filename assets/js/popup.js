@@ -534,6 +534,11 @@ export class SettingsPopup extends PopupBase {
         ((slider.value - slider.min) / (slider.max - slider.min)) * 100
       }%, #151515 100%)`;
     };
+
+    document.getElementById("popup-settings-music").value =
+      this.params.volumeMusic * 100;
+    document.getElementById("popup-settings-sfx").value =
+      this.params.volumeSFX * 100;
     for (const slider of sliders) {
       updateSliderGradiant(slider);
 
@@ -565,7 +570,10 @@ export class SettingsPopup extends PopupBase {
     this.params.music ??= () => {};
     this.params.sfx ??= () => {};
     this.params.ui ??= () => {};
-    
+    this.params.volumeMusic ??= 0.5;
+    this.params.volumeSFX ??= 0.5;
+
+    console.log(this.params.volumeMusic);
   }
 }
 
@@ -614,7 +622,6 @@ export class CardPopup extends PopupBase {
         <img class='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
       </div>
     </footer>
-
     `;
 
     document
