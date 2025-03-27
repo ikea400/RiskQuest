@@ -420,3 +420,19 @@ export function playImmersiveSounds(newPhase) {
       break;
   }
 }
+
+export function setVolumeMusic(volume){
+  
+  document.getElementById("sea-music").volume = volume;
+}
+export function setSFXMusic(volume){
+  const listID = ['canon-sound','protect-sound','charge1-sound'
+  ,'charge2-sound','advance-sound','formRanks-sound','killThemAll-sound'
+  ,'standFirm-sound','reinforcements-sound','frontlines-sound'
+  ,'forward-sound','goGoGo-sound'];
+  
+  for(const element of listID){
+    document.getElementById(element).volume = volume;
+  }
+}
+
