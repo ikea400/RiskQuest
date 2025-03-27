@@ -1,6 +1,6 @@
 import { data, territoiresList, playersList, continentsList } from "./data.js";
 import {
-  updateTerritoryOwer,
+  updateTerritoryOwer as updateTerritoryOwner,
   updatePlayersHudTerritoireCount,
   updatePlayerHudTroopsCount,
   updatePastilleTroopsCount,
@@ -111,7 +111,7 @@ export function takeOverTerritory(territoryId, playerId, troopsCount) {
   }
 
   let oldOwnerId = territoire.playerId;
-  updateTerritoryOwer(territoryId, playerId);
+  updateTerritoryOwner(territoryId, playerId);
 
   if (oldOwnerId) updatePlayersHudTerritoireCount(oldOwnerId);
   updatePlayersHudTerritoireCount(playerId);
@@ -265,11 +265,11 @@ export function takeOverTerritoryFromTerritory(
   }
 
   let oldOwnerId = territoire.playerId;
-  updateTerritoryOwer(territoryId, playerId);
+  
+  updateTerritoryOwner(territoryId, playerId);
 
   if (oldOwnerId) updatePlayersHudTerritoireCount(oldOwnerId);
   updatePlayersHudTerritoireCount(playerId);
-
   moveTroopsFromTerritory(fromTerritoireId, territoryId, playerId, troopsCount);
 }
 
@@ -349,6 +349,7 @@ export function countNewTroops(ownedTerritoriesIds, playerId) {
 
     if (!continent.territoires.some(territoireNotOwnedByPlayer)) {
       newTroops += continent.bonus;
+      console.log(`+ ${continent.bonus}(${newTroops}) troups to ${playerId} for owning ${continentId}`);
     }
   }
 
@@ -363,7 +364,9 @@ export function countNewTroops(ownedTerritoriesIds, playerId) {
  * @throws {Error} - Génère une erreur si le nombre de troupes à ajouter est inférieur ou égal à zéro.
  */
 export function addTroops(playerId, troopsCount) {
+
   console.log(`addTroops(${playerId}, ${troopsCount})`);
+  
   if (troopsCount <= 0) {
     throw new Error(`player${playerId} tried to add ${troopsCount} troops`);
   }

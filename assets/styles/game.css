@@ -1,5 +1,9 @@
 * {
   font-family: Verdana, Geneva, Tahoma, sans-serif;
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 body {
@@ -88,7 +92,7 @@ body {
 }
 
 #card-button {
-  perspective: 1000px;
+  perspective: 10px;
 }
 
 #cards-img {
@@ -112,26 +116,7 @@ body {
     0 1px 2px rgba(255, 255, 255, 0.2);
 }
 
-.card-layout {
-  position: absolute;
-  top: 50%;
-  left: 100%;
-  margin: 1em;
-  transform: translateY(-50%);
-  display: flex;
-  flex-direction: column;
-  background: rgba(26, 34, 53, 0.8);
-  padding: 15px;
-  border-radius: 12px;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease;
-}
-
-.cards-container:hover .card-layout {
+.cards-container:hover {
   opacity: 1;
   visibility: visible;
 }
@@ -156,7 +141,7 @@ body {
 #hud-side {
   position: fixed;
   background-color: transparent;
-  z-index: 100;
+  z-index: 0;
   pointer-events: none;
   right: 0;
 }
@@ -281,7 +266,7 @@ body {
 #turn-hub-action-troops-count {
   font-weight: bold;
   position: absolute;
-  z-index: 1000;
+  z-index: 2;
   color: black;
 }
 
@@ -376,4 +361,41 @@ body {
   font-size: 3em;
   -webkit-text-stroke: 3px black;
   user-select: none;
+}
+
+#top-buttons-container {
+  position: absolute;
+  margin: 1em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+  user-select: none;
+}
+
+.top-button {
+  box-sizing: border-box;
+  width: 3em;
+  height: 3em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 0.2em solid #daeef8;
+  border-radius: 50%;
+  background-color: #3838385d;
+  transition: scale 0.1s;
+  cursor: pointer;
+  pointer-events: all;
+}
+
+.top-button-img {
+  width: 1.5em;
+  height: 1.5em;
+  filter: invert(92%) sepia(8%) saturate(707%) hue-rotate(175deg)
+    brightness(101%) contrast(94%);
+  pointer-events: none;
+}
+
+.top-button:hover {
+  scale: 1.1;
 }

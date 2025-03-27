@@ -86,7 +86,7 @@ class TestPopup extends PopupBase {
 
   show() {
     return super.show(function () {
-      console.log("SHould be there");
+      console.log("Should be there");
     });
   }
 
@@ -105,96 +105,149 @@ export class CountPopup extends PopupBase {
     this.#applyDefault();
     super.init();
 
-    const rangeMax = this.params.max - this.params.min + 1;
+    this.isDragging = false;
+    this.moved = false;
+    this.startingOffset = 0;
+    this.currentOffset = null;
+    this.lastOffsets = 0;
+    this.lastValue = null;
+    this.wheelAccumulatedDelta = 0;
+
     this.popupDiv.innerHTML = `
-    <div class="popup-count-countainer">
-      <div class="number-display">
-          <div class="center-indicator"></div>
-          <div class="number-track" id="numberTrack">
-          
+        <div id="popup-count-cancel-back"></div>
+        <div id="popup-count-cancel">
+          <img
+            id="popup-count-cancel-img"
+            src="./assets/images/circle-x.svg"
+            alt="next"
+          />
         </div>
-      </div>
-      <div class="slider-countainer" autofocus>
-        <input type="range" id="popup-count-range" name="count" min="1" max="${rangeMax}" value="0" class="slider">
-      </div>
-      <div id="popup-count-confirm">
-          <img id="popup-count-confirm-img" src="./assets/images/circle-check-solid.svg" alt="next">
-      </div>
-      
-    </div>`;
+        <div id="popup-count-confirm-back"></div>
+        <div id="popup-count-confirm">
+          <img
+            id="popup-count-confirm-img"
+            src="./assets/images/circle-check-solid.svg"
+            alt="next"
+          />
+        </div>
+        <div id="popup-count-overlay"></div>
+        <div id="popup-count-overlay-back"></div>
+        <div id="popup-count-countainer" autofocus>
+          <div id="popup-count-number-1" class="popup-count-number">1</div>
+          <div id="popup-count-number-2" class="popup-count-number">2</div>
+          <div id="popup-count-number-3" class="popup-count-number">3</div>
+          <div id="popup-count-number-4" class="popup-count-number">4</div>
+          <div id="popup-count-number-5" class="popup-count-number">5</div>
+        </div>`;
 
-    //this.#updateDisplayText();
-    let widthTrack;
-    const numberTrack = document.getElementById("numberTrack");
-    for (let i = this.params.max; i >= this.params.min; i--) {
-      this.popupCountNumber = document.createElement("div");
-      this.popupCountNumber.id = `popup-count-number-${i}`;
-      this.popupCountNumber.className = "number";
-      this.popupCountNumber.textContent = i;
-      numberTrack.appendChild(this.popupCountNumber);
-      widthTrack += 45;
-    }
-    numberTrack.style.width = widthTrack;
+    this.#updateNumbers();
 
-    const slider = document.getElementById("popup-count-range");
+    const container = document.getElementById("popup-count-countainer");
+    container.focus();
 
-    this.updateNumber(1);
+    container.addEventListener("mousedown", (event) => {
+      this.isDragging = true;
+      this.startingOffset = event.clientX;
+      this.moved = false;
+      this.wheelAccumulatedDelta = 0;
+    });
 
-    slider.addEventListener("input", (event) => {
-      let value = parseInt(event.target.value);
-      this.params.current = this.params.max - value + 1;
-      this.updateNumber(value);
+    container.addEventListener("mouseleave", () => {
+      this.isDragging = false;
+      this.#updateNumbers();
+      this.wheelAccumulatedDelta = 0;
+    });
+
+    container.addEventListener("mouseup", (event) => {
+      this.isDragging = false;
+      if (!this.moved) {
+        const rect = container.getBoundingClientRect();
+        this.currentOffset -= event.clientX - (rect.right + rect.left) * 0.5;
+        this.startingOffset = event.clientX;
+      }
+      this.#updateNumbers();
+      this.wheelAccumulatedDelta = 0;
+    });
+
+    container.addEventListener("mousemove", (event) => {
+      if (this.isDragging) {
+        this.moved = true;
+
+        this.currentOffset += event.clientX - this.startingOffset;
+        this.startingOffset = event.clientX;
+        this.#updateNumbers();
+      }
+    });
+
+    container.addEventListener(
+      "wheel",
+      (event) => {
+        const DOM_DELTA_PIXEL = 0;
+        // Valeur arbritraire qui peux etre changer pour
+        // changer la vitesse avec les tracpad et certaines souris
+        const MIN_PIXEL_DELTA = 60;
+
+        if (Math.abs(event.deltaY) > 0) {
+          if (
+            Math.sign(this.wheelAccumulatedDelta) != Math.sign(event.deltaY)
+          ) {
+            this.wheelAccumulatedDelta = 0;
+          }
+          this.wheelAccumulatedDelta +=
+            event.deltaMode == DOM_DELTA_PIXEL ? event.deltaY : MIN_PIXEL_DELTA;
+          if (Math.abs(this.wheelAccumulatedDelta) >= MIN_PIXEL_DELTA) {
+            const rect = document
+              .querySelector(".popup-count-number")
+              .getBoundingClientRect();
+            this.currentOffset +=
+              rect.width * Math.sign(this.wheelAccumulatedDelta);
+            this.#updateNumbers();
+            this.wheelAccumulatedDelta = 0;
+          }
+        }
+      },
+      { passive: true }
+    );
+
+    document.addEventListener("keyup", (event) => {
+      switch (event.key) {
+        case "Enter":
+          this.resolve({ cancel: false, value: this.value });
+          break;
+        case "Escape":
+          this.resolve({ cancel: true });
+          break;
+      }
     });
 
     const popupCountConfirm = document.getElementById("popup-count-confirm");
     popupCountConfirm.addEventListener("click", () => {
-      this.resolve({ cancel: false, value: this.params.current });
-    });
-  }
-
-  updateNumber(activeNumber) {
-    const numberTrack = document.querySelector(".number-track");
-    const numbers = document.querySelectorAll(".number");
-    const numberWidth = 30;
-
-    numbers.forEach((element) => {
-      element.className = "number hidden";
+      this.resolve({ cancel: false, value: this.value });
     });
 
-    numbers[activeNumber - 1].className = "number active";
-
-    if (activeNumber > 1 && numbers[activeNumber - 2]) {
-      numbers[activeNumber - 2].className = "number visible";
-    }
-    if (activeNumber < numbers.length && numbers[activeNumber]) {
-      numbers[activeNumber].className = "number visible";
-    }
-
-    if (numberTrack) {
-      const containerWidth = numberTrack.offsetWidth;
-      const centerPosition = containerWidth / 2;
-      const activeNumberElement = numbers[activeNumber - 1];
-      const activeNumberPosition =
-        activeNumberElement.offsetLeft + activeNumberElement.offsetWidth / 2;
-      const translateX = centerPosition - activeNumberPosition;
-
-      numberTrack.style.transition =
-        "transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)";
-      numberTrack.style.transform = `translateX(${translateX}px)`;
+    const popupCountCancel = document.getElementById("popup-count-cancel");
+    if (this.params.cancel === true) {
+      popupCountCancel.addEventListener("click", () => {
+        this.resolve({ cancel: true });
+      });
+    } else {
+      popupCountCancel.hidden = true;
+      popupCountCancel.style.opacity = 0;
+      popupCountCancel.style.pointerEvents = "none";
+      document.getElementById("popup-count-cancel-back").hidden = true;
     }
   }
 
   #applyDefault() {
     this.params.id ??= "count-popup";
-    this.params.classList ??= [];
     this.params.bottom ??= true;
     this.params.cancel ??= true;
-    this.params.min ??= 3;
-    this.params.max ??= 7;
     this.params.current ??= this.params.max;
+    this.params.tempCallback ??= () => {};
+    this.params.speed ??= 5;
   }
 
-  #updateDisplayText() {
+  #updateNumbers() {
     const rotate = (num) => {
       const range = this.params.max - this.params.min + 1; // Calculate the range
       return (
@@ -202,23 +255,49 @@ export class CountPopup extends PopupBase {
       );
     };
 
-    function clamp(value, min, max) {
-      return Math.min(Math.max(value, min), max);
+    const numbersDiv = document.getElementsByClassName("popup-count-number");
+
+    const rect = numbersDiv[0].getBoundingClientRect();
+
+    if (this.currentOffset == null) {
+      this.currentOffset =
+        rect.width *
+        (this.params.max - this.params.current + (3 - this.params.min + 1));
     }
 
-    this.params.current = clamp(
-      this.params.current,
-      this.params.min,
-      this.params.max
-    );
+    if (!this.isDragging) {
+      this.currentOffset =
+        Math.round(this.currentOffset / rect.width) * rect.width;
+    }
+
+    let current = 3 - Math.round(this.currentOffset / rect.width);
+
+    const duration =
+      Math.abs(this.currentOffset - this.lastOffsets) /
+      (rect.width * this.params.speed); // Time = Distance / Speed
+    for (const number of numbersDiv) {
+      number.style.transition = this.isDragging
+        ? ""
+        : `transform ${duration}s linear`;
+      number.style.transform = `translateX(${
+        this.currentOffset - (3 - current) * rect.width
+      }px)`;
+    }
+    this.lastOffsets = this.currentOffset;
 
     const numbers = [
-      rotate(this.params.current - 2),
-      rotate(this.params.current - 1),
-      rotate(this.params.current),
-      rotate(this.params.current + 1),
-      rotate(this.params.current + 2),
+      rotate(current - 2),
+      rotate(current - 1),
+      rotate(current),
+      rotate(current + 1),
+      rotate(current + 2),
     ];
+
+    this.value = numbers[2];
+    if (this.lastValue !== this.value) {
+      this.params.tempCallback(this.value);
+      this.lastValue = this.value;
+    }
 
     for (let i = 0; i < numbers.length; i++) {
       const popupCountNumber = document.getElementById(
@@ -303,7 +382,6 @@ export class AttackPopup extends PopupBase {
     };
 
     this.current = rotate(this.current + offset);
-    console.log(this.current);
 
     const attackPopupDice = document.getElementById("attack-popup-dice");
 
@@ -333,5 +411,238 @@ export class AttackPopup extends PopupBase {
         )}%)`;
       }
     }
+  }
+}
+
+export class SettingsPopup extends PopupBase {
+  constructor(params = {}) {
+    super(params);
+    this.init();
+  }
+
+  init() {
+    this.#applyDefault();
+    super.init();
+
+    this.popupDiv.innerHTML = `<div id="popup-settings-top">
+          <div id="popup-settings-top-play-stop">
+            <div class="popup-settings-top-button">
+              <div
+                id="popup-settings-stop-back"
+                class="popup-settings-top-back"
+              ></div>
+              <div id="popup-settings-stop" class="popup-settings-img">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 320 512"
+                  id="popup-settings-stop-svg"
+                >
+                  <!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.-->
+                  <path
+                    id="popup-settings-stop-path"
+                    d="M48 64C21.5 64 0 85.5 0 112L0 400c0 26.5 21.5 48 48 48l32 0c26.5 0 48-21.5 48-48l0-288c0-26.5-21.5-48-48-48L48 64zm192 0c-26.5 0-48 21.5-48 48l0 288c0 26.5 21.5 48 48 48l32 0c26.5 0 48-21.5 48-48l0-288c0-26.5-21.5-48-48-48l-32 0z"
+                  />
+                </svg>
+              </div>
+            </div>
+            <div class="popup-settings-top-button">
+              <div
+                id="popup-settings-play-back"
+                class="popup-settings-top-back"
+              ></div>
+              <div id="popup-settings-play" class="popup-settings-img">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 384 512"
+                  id="popup-settings-play-svg"
+                >
+                  <!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.-->
+                  <path
+                    id="popup-settings-play-path"
+                    d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80L0 432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div id="popup-settings-title" class="kanit-900">Settings</div>
+          <div id="popup-settings-top-close" class="popup-settings-top-button">
+            <div
+              id="popup-settings-close-back"
+              class="popup-settings-top-back"
+            ></div>
+            <div id="popup-settings-close" class="popup-settings-img">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 352 512"
+                id="popup-settings-close-svg"
+              >
+                <!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.-->
+                <path
+                  id="popup-settings-close-path"
+                  d="M242.7 256l100.1-100.1c12.3-12.3 12.3-32.2 0-44.5l-22.2-22.2c-12.3-12.3-32.2-12.3-44.5 0L176 189.3 75.9 89.2c-12.3-12.3-32.2-12.3-44.5 0L9.2 111.5c-12.3 12.3-12.3 32.2 0 44.5L109.3 256 9.2 356.1c-12.3 12.3-12.3 32.2 0 44.5l22.2 22.2c12.3 12.3 32.2 12.3 44.5 0L176 322.7l100.1 100.1c12.3 12.3 32.2 12.3 44.5 0l22.2-22.2c12.3-12.3 12.3-32.2 0-44.5L242.7 256z"
+                />
+              </svg>
+            </div>
+          </div>
+        </div>
+        <div class="popup-settings-line"></div>
+        <div id="popup-settings-categories">
+          <div
+            id="popup-settings-category-sound"
+            class="popup-settings-category"
+          >
+            <label for="music" class="kanit-900">Volume</label>
+            <input
+              type="range"
+              id="popup-settings-music"
+              class="popup-settings-slider"
+              name="music"
+              min="0"
+              max="100"
+            />
+            <label for="sfx" class="kanit-900">SFX</label>
+            <input
+              type="range"
+              id="popup-settings-sfx"
+              class="popup-settings-slider"
+              name="sfx"
+              min="0"
+              max="100"
+            />
+          </div>
+          <div class="popup-settings-line"></div>
+          <div id="popup-settings-category-ui" class="popup-settings-category">
+            <label for="scale" class="kanit-900">UI Scale</label>
+            <input
+              type="range"
+              id="popup-settings-scale"
+              class="popup-settings-slider"
+              name="scale"
+              min="0"
+              max="100"
+            />
+          </div>
+          <div class="popup-settings-line"></div>
+        </div>`;
+
+    const sliders = document.getElementsByClassName("popup-settings-slider");
+    const updateSliderGradiant = (slider) => {
+      slider.style.background = `linear-gradient(to right, #78cff1 0%, #78cff1 ${
+        ((slider.value - slider.min) / (slider.max - slider.min)) * 100
+      }%, #151515 ${
+        ((slider.value - slider.min) / (slider.max - slider.min)) * 100
+      }%, #151515 100%)`;
+    };
+
+    document.getElementById("popup-settings-music").value =
+      this.params.volumeMusic * 100;
+    document.getElementById("popup-settings-sfx").value =
+      this.params.volumeSFX * 100;
+    for (const slider of sliders) {
+      updateSliderGradiant(slider);
+
+      slider.addEventListener("input", (event) => {
+        updateSliderGradiant(event.currentTarget);
+        switch (event.currentTarget.id) {
+          case "popup-settings-music":
+            this.params.music(slider.value * 0.01);
+            break;
+          case "popup-settings-sfx":
+            this.params.sfx(slider.value * 0.01);
+            break;
+        }
+      });
+    }
+
+    const popupSettingsTopClose = document.getElementById(
+      "popup-settings-top-close"
+    );
+    popupSettingsTopClose.addEventListener("click", () => {
+      this.resolve({ cancel: false });
+    });
+  }
+
+  #applyDefault() {
+    this.params.id ??= "popup-settings";
+    this.params.bottom ??= true;
+    this.params.cancel ??= true;
+    this.params.music ??= () => {};
+    this.params.sfx ??= () => {};
+    this.params.ui ??= () => {};
+    this.params.volumeMusic ??= 0.5;
+    this.params.volumeSFX ??= 0.5;
+
+    console.log(this.params.volumeMusic);
+  }
+}
+
+export class CardPopup extends PopupBase {
+  constructor(params = {}) {
+    super(params);
+    this.init();
+  }
+  init() {
+    super.init();
+
+    this.popupDiv.innerHTML = `
+
+    <header id="popup-cards-header">
+      <h1 id="popup-cards-title">Cards</h1>
+    </header>
+
+    <div id="flex-center-popup-cards">
+      <div id="selected-card-1" class="selected-card-holder">
+        <img class='image-card' src='./assets/images/riskCardInfantry.png' alt='infantry'img>
+      </div>
+
+      <div id="selected-card-2" class="selected-card-holder">
+        <img class='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
+      </div>
+
+      <div id="selected-card-3" class="selected-card-holder">
+        
+      </div>
+      
+      
+      
+    </div>
+
+    <div id="popup-cards-button-container">
+      <div id="popup-background-image-button-close">
+        <img id="card-cancel-button-background" src="./assets/images/riskCancelButton.png" alt="close">
+        <button id="popup-cards-button-close">
+          <img id="popup-image-close" src="./assets/images/riskXImage.png" alt="close">
+        </button>
+      </div>
+
+      <button id="popup-cards-button">
+        <span id="trade-text">Trade cards</span>
+        <span id="extra-troops-count">+10</span>
+      </button>
+    </div>
+    
+    <footer id="popup-cards-footer">
+      <div id="popup-cards-remaining-cards">
+        <div class="card-wrapper">
+          <img class='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
+        </div>
+        <img class='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
+        <img class='image-card' src='./assets/images/riskCardJoker.png' alt='cavalry'img>
+        <img class='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
+        <img class='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
+      </div>
+    </footer>
+    `;
+
+    document
+      .getElementById("popup-cards-button-close")
+      .addEventListener("click", function () {
+        document.getElementById("popup-cards-container").remove();
+      });
+
+    this.backgroundDiv.classList.add("background-popup-cards");
+    this.backgroundDiv.classList.remove("background-popup-center");
+    this.backgroundDiv.id = "popup-cards-container";
   }
 }

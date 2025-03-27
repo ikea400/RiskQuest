@@ -1,3 +1,5 @@
+import { randomInteger } from "./utils.js";
+
 export const EPhases = Object.freeze({
   NONE: Symbol("NONE"),
   PICKING: Symbol("PICKING"),
@@ -280,47 +282,60 @@ export const territoiresList = {
   },
 };
 
-export const continentsList = {
-  "north-america": { bonus: 5, territoires: [] },
-  "south-america": { bonus: 2, territoires: [] },
-  europe: { bonus: 5, territoires: [] },
-  africa: { bonus: 3, territoires: [] },
-  asia: { bonus: 7, territoires: [] },
-  oceania: { bonus: 2, territoires: [] },
-};
+function fillContinents() {
+  const continents = {
+    "north-america": { bonus: 5, territoires: [] },
+    "south-america": { bonus: 2, territoires: [] },
+    europe: { bonus: 5, territoires: [] },
+    africa: { bonus: 3, territoires: [] },
+    asia: { bonus: 7, territoires: [] },
+    oceania: { bonus: 2, territoires: [] },
+  };
 
-// Remplie les continents avec leurs territoires pour éviter de devoir le faire manuellement.
-for (const territoireId in territoiresList) {
-  const territoire = territoiresList[territoireId];
+  // Remplie les continents avec leurs territoires pour éviter de devoir le faire manuellement.
+  for (const territoireId in territoiresList) {
+    const territoire = territoiresList[territoireId];
 
-  continentsList[territoire.continent].territoires.push(territoireId);
+    continents[territoire.continent].territoires.push(territoireId);
+  }
+  return continents;
 }
+
+export const continentsList = fillContinents();
+
+console.log(continentsList);
 
 export const playersList = [
   undefined,
   {
     name: "Player01",
     img: "./assets/images/player1-profile.webp",
+    bot: false,
   },
   {
     name: "Player02",
     img: "./assets/images/player2-profile.webp",
+    bot: true,
   },
   {
     name: "Player03",
     img: "./assets/images/player3-profile.webp",
+    bot: true,
   },
   {
     name: "Player04",
     img: "./assets/images/player4-profile.webp",
+    bot: true,
   },
   {
     name: "Player05",
     img: "./assets/images/player5-profile.webp",
+    bot: true,
   },
   {
     name: "Player06",
     img: "./assets/images/player6-profile.webp",
+    bot: true,
   },
 ];
 
@@ -360,4 +375,48 @@ export function getStartingTroops(playerCount) {
 
   const troopsList = [35, 30, 25, 20];
   return troopsList[playerCount - data.MIN_PLAYER_COUNT];
+}
+
+export function playImmersiveSounds(newPhase) {
+  switch (newPhase) {
+    case EPhases.ATTACK:
+      switch (randomInteger(1, 6)) {
+        case 1:
+          document.getElementById("charge1-sound").play();
+          break;
+        case 2:
+          document.getElementById("charge2-sound").play();
+          break;
+        case 3:
+          document.getElementById("advance-sound").play();
+          break;
+        case 4:
+          document.getElementById("killThemAll-sound").play();
+          break;
+        case 5:
+          document.getElementById("forward-sound").play();
+          break;
+        case 6:
+          document.getElementById("goGoGo-sound").play();
+          break;
+      }
+      break;
+    case EPhases.FORTIFY:
+    case EPhases.DRAFT:
+      switch (randomInteger(1, 4)) {
+        case 1:
+          document.getElementById("reinforcements-sound").play();
+          break;
+        case 2:
+          document.getElementById("standFirm-sound").play();
+          break;
+        case 3:
+          document.getElementById("formRanks-sound").play();
+          break;
+        case 4:
+          document.getElementById("frontlines-sound").play();
+          break;
+      }
+      break;
+  }
 }
