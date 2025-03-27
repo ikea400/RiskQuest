@@ -532,10 +532,7 @@
 .popup-settings-img:active {
   transform: translateY(8%);
 }
-/* change all p to em 
--
--
-*/
+
 #flex-center-popup-cards {
   display: flex;
   flex-direction: row;
