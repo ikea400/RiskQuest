@@ -813,7 +813,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let containerPays = document.getElementById("pays-background");
   containerPays.addEventListener("click", function () {
-    document.getElementById("sea-music").play();
+    document
+      .getElementById("sea-music")
+      .play()
+      .catch((error) => {
+        console.error(error);
+      });
+
     if (data.currentPhase != EPhases.DRAFT) {
       setSelectedTerritoire(null);
       setAttackableTerritoires([]);
