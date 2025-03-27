@@ -534,11 +534,24 @@ export class SettingsPopup extends PopupBase {
         ((slider.value - slider.min) / (slider.max - slider.min)) * 100
       }%, #151515 100%)`;
     };
+
+    document.getElementById("popup-settings-music").value =
+      this.params.volumeMusic * 100;
+    document.getElementById("popup-settings-sfx").value =
+      this.params.volumeSFX * 100;
     for (const slider of sliders) {
       updateSliderGradiant(slider);
 
       slider.addEventListener("input", (event) => {
         updateSliderGradiant(event.currentTarget);
+        switch (event.currentTarget.id) {
+          case "popup-settings-music":
+            this.params.music(slider.value * 0.01);
+            break;
+          case "popup-settings-sfx":
+            this.params.sfx(slider.value * 0.01);
+            break;
+        }
       });
     }
 
@@ -554,6 +567,13 @@ export class SettingsPopup extends PopupBase {
     this.params.id ??= "popup-settings";
     this.params.bottom ??= true;
     this.params.cancel ??= true;
+    this.params.music ??= () => {};
+    this.params.sfx ??= () => {};
+    this.params.ui ??= () => {};
+    this.params.volumeMusic ??= 0.5;
+    this.params.volumeSFX ??= 0.5;
+
+    console.log(this.params.volumeMusic);
   }
 }
 
@@ -564,7 +584,7 @@ export class CardPopup extends PopupBase {
   }
   init() {
     super.init();
-    
+
     this.popupDiv.innerHTML = `
 
     <header id="popup-cards-header">
@@ -602,12 +622,13 @@ export class CardPopup extends PopupBase {
         <img class='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
       </div>
     </footer>
-
     `;
 
-    document.getElementById("popup-cards-button-close").addEventListener("click", function () {
-      document.getElementById("popup-cards-container").remove();
-    });
+    document
+      .getElementById("popup-cards-button-close")
+      .addEventListener("click", function () {
+        document.getElementById("popup-cards-container").remove();
+      });
 
     this.backgroundDiv.classList.add("background-popup-cards");
     this.backgroundDiv.classList.remove("background-popup-center");

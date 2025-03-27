@@ -349,6 +349,7 @@ export function countNewTroops(ownedTerritoriesIds, playerId) {
 
     if (!continent.territoires.some(territoireNotOwnedByPlayer)) {
       newTroops += continent.bonus;
+      console.log(`+ ${continent.bonus}(${newTroops}) troups to ${playerId} for owning ${continentId}`);
     }
   }
 
