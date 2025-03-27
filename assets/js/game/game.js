@@ -30,7 +30,7 @@ import {
   updatePastilleFakeTroops,
 } from "./display.js";
 import { initializeGame, saveMove } from "../api/gameDataService.js";
-import { CountPopup, AttackPopup, SettingsPopup } from "../popup.js";
+import { CountPopup, AttackPopup, SettingsPopup, CardPopup } from "../popup.js";
 
 import RandomBot from "../bot/bot.js";
 
@@ -709,6 +709,29 @@ function startMainLoop(playerCount, callback) {
   handler();
 }
 
+function cardHandler() {
+  if (document.getElementById("popup-cards-container") == null) {
+    const popup = new CardPopup({});
+    popup.show();
+
+    let card = document.getElementsByClassName("card-wrapper");
+
+    let country = document.getElementById("alaska").cloneNode(false);
+    country.id = "territory-card";
+    country.classList.remove("territoire");
+    country.classList.remove("attackable-territory");
+
+    let svgWrapper = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svgWrapper.classList.add("svg-card");
+    const bbox = country.getBBox();
+    svgWrapper.setAttribute("viewBox", "0 60 150 50");
+    svgWrapper.setAttribute("preserveAspectRatio", "xMidYMid meet");
+    svgWrapper.appendChild(country);
+
+    card[0].appendChild(svgWrapper);
+  }
+}
+
 document.addEventListener("DOMContentLoaded", function () {
   const autoPlacement = true;
   const playerCount = 6;
@@ -786,4 +809,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   new ResizeObserver(updatePastillesPosition).observe(document.body);
   window.addEventListener("resize", updatePastillesPosition);
+  // etablir le popup des cartes quand on clique sur l'image des cartes
+  document.getElementById("cards-img").addEventListener("click", cardHandler);
 });

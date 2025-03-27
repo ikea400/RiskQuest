@@ -86,7 +86,7 @@ class TestPopup extends PopupBase {
 
   show() {
     return super.show(function () {
-      console.log("SHould be there");
+      console.log("Should be there");
     });
   }
 
@@ -554,5 +554,63 @@ export class SettingsPopup extends PopupBase {
     this.params.id ??= "popup-settings";
     this.params.bottom ??= true;
     this.params.cancel ??= true;
+  }
+}
+
+export class CardPopup extends PopupBase {
+  constructor(params = {}) {
+    super(params);
+    this.init();
+  }
+  init() {
+    super.init();
+    
+    this.popupDiv.innerHTML = `
+
+    <header id="popup-cards-header">
+      <h1 id="popup-cards-title">Cards</h1>
+    </header>
+
+    <div id="flex-center-popup-cards">
+      <img class='image-card' src='./assets/images/riskCardInfantry.png' alt='infantry'img>
+      <img class='image-card' src='./assets/images/riskCardCannon.png' alt='cannon'img>
+      <img class='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
+    </div>
+
+    <div id="popup-cards-button-container">
+      <div id="popup-background-image-button-close">
+        <img id="card-cancel-button-background" src="./assets/images/riskCancelButton.png" alt="close">
+        <button id="popup-cards-button-close">
+          <img id="popup-image-close" src="./assets/images/riskXImage.png" alt="close">
+        </button>
+      </div>
+
+      <button id="popup-cards-button">
+        <span id="trade-text">Trade cards</span>
+        <span id="extra-troops-count">+10</span>
+      </button>
+    </div>
+    
+    <footer id="popup-cards-footer">
+      <div id="popup-cards-remaining-cards">
+        <div class="card-wrapper">
+          <img id='test-card' class='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
+        </div>
+        <img class='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
+        <img class='image-card' src='./assets/images/riskCardJoker.png' alt='cavalry'img>
+        <img class='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
+        <img class='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
+      </div>
+    </footer>
+
+    `;
+
+    document.getElementById("popup-cards-button-close").addEventListener("click", function () {
+      document.getElementById("popup-cards-container").remove();
+    });
+
+    this.backgroundDiv.classList.add("background-popup-cards");
+    this.backgroundDiv.classList.remove("background-popup-center");
+    this.backgroundDiv.id = "popup-cards-container";
   }
 }
