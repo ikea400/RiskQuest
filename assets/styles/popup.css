@@ -672,8 +672,8 @@
   left: 2em;
   gap: 1em;
 }
-#popup-cards-remaining-cards img:hover, #flex-center-popup-cards img:hover {
-  transform: scale(1.1);
+#popup-cards-remaining-cards img:hover, #flex-center-popup-cards img:hover, .card-wrapper:hover {
+  transform: scale(1.02);
   -webkit-user-drag: none;
   -webkit-user-select: none;
   -ms-user-select: none;
@@ -734,4 +734,9 @@
   left: 10%;
   bottom: 10%;
   overflow: visible;
+}
+.selected-card-holder {
+  border: 0.2em solid rgb(80, 77, 77);
+  padding: 0.5em;
+  min-width: 9.5em;
 }

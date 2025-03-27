@@ -716,7 +716,7 @@ function cardHandler() {
 
     let card = document.getElementsByClassName("card-wrapper");
 
-    let country = document.getElementById("quebec").cloneNode(false);
+    let country = document.getElementById("alaska").cloneNode(false);
     country.id = "territory-card";
     country.classList.remove("territoire");
     country.classList.remove("attackable-territory");
@@ -726,16 +726,15 @@ function cardHandler() {
       "svg"
     );
     svgWrapper.classList.add("svg-card");
-    const bbox = country.getBBox();
-    svgWrapper.setAttribute("viewBox", "13 80 60 15");
+    
     svgWrapper.setAttribute("preserveAspectRatio", "xMidYMid meet");
+    
     svgWrapper.appendChild(country);
 
     card[0].appendChild(svgWrapper);
 
-    console.log(country);
-    console.log(country.getBBox());
-    console.log(country.getBoundingClientRect());
+    const bbox = country.getBBox();
+    svgWrapper.setAttribute("viewBox", `${bbox.x} ${bbox.y} ${bbox.width} ${bbox.height}`);
   }
 }
 

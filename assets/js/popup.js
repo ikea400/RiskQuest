@@ -592,9 +592,20 @@ export class CardPopup extends PopupBase {
     </header>
 
     <div id="flex-center-popup-cards">
-      <img class='image-card' src='./assets/images/riskCardInfantry.png' alt='infantry'img>
-      <img class='image-card' src='./assets/images/riskCardCannon.png' alt='cannon'img>
-      <img class='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
+      <div id="selected-card-1" class="selected-card-holder">
+        <img class='image-card' src='./assets/images/riskCardInfantry.png' alt='infantry'img>
+      </div>
+
+      <div id="selected-card-2" class="selected-card-holder">
+        <img class='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
+      </div>
+
+      <div id="selected-card-3" class="selected-card-holder">
+        
+      </div>
+      
+      
+      
     </div>
 
     <div id="popup-cards-button-container">
@@ -614,7 +625,7 @@ export class CardPopup extends PopupBase {
     <footer id="popup-cards-footer">
       <div id="popup-cards-remaining-cards">
         <div class="card-wrapper">
-          <img id='test-card' class='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
+          <img class='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
         </div>
         <img class='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
         <img class='image-card' src='./assets/images/riskCardJoker.png' alt='cavalry'img>
