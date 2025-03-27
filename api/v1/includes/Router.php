@@ -6,7 +6,7 @@
  */
 interface Middleware
 {
-    public function handle(callable $next, ...$args) : JsonResponse;
+    public function handle(callable $next, ...$args): JsonResponse;
 }
 
 
@@ -39,7 +39,7 @@ class Router
     {
         $this->routes[] = [
             'methode' => strtoupper($methode),
-            'route' => $this->route2Regex($route),
+            'route' => $this->route2Regex(strtolower($route)),
             'callback' => $callback,
             'middlewares' =>  $middlewares
         ];
@@ -63,6 +63,9 @@ class Router
 
         // Retirer les paramètres de la requête (p. ex., ?id=1)
         $requestUri = parse_url($requestUri, PHP_URL_PATH);
+
+        // Convertir le chemin URI en minuscules pour garantir une correspondance cohérente
+        $requestUri = strtolower($requestUri);
 
         // Parcourir les routes et vérifier si l'une correspond à l'URI
         foreach ($this->routes as $route) {

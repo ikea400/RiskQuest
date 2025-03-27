@@ -1,3 +1,5 @@
+import { randomInteger } from "./utils.js";
+
 export const EPhases = Object.freeze({
   NONE: Symbol("NONE"),
   PICKING: Symbol("PICKING"),
@@ -20,22 +22,22 @@ export const territoiresList = {
   alaska: {
     continent: "north-america",
     connection: ["northwestTerritory", "alberta", "kamchakta"],
-    pastille: { x: 0.5, y: 0.35 },
+    pastille: { x: 0.6, y: 0.4 },
   },
   northwestTerritory: {
     continent: "north-america",
     connection: ["alaska", "alberta", "ontario", "greenland"],
-    pastille: { x: 0.42, y: 0.8 },
+    pastille: { x: 0.45, y: 0.82 },
   },
   greenland: {
     continent: "north-america",
     connection: ["northwestTerritory", "ontario", "quebec", "iceland"],
-    pastille: { x: 0.58, y: 0.35 },
+    pastille: { x: 0.61, y: 0.34 },
   },
   alberta: {
     continent: "north-america",
     connection: ["alaska", "northwestTerritory", "ontario", "westernUs"],
-    pastille: { x: 0.43, y: 0.44 },
+    pastille: { x: 0.49, y: 0.49 },
   },
   ontario: {
     continent: "north-america",
@@ -47,47 +49,47 @@ export const territoiresList = {
       "westernUs",
       "easternUs",
     ],
-    pastille: { x: 0.4, y: 0.47 },
+    pastille: { x: 0.49, y: 0.52 },
   },
   quebec: {
     continent: "north-america",
     connection: ["ontario", "greenland", "easternUs"],
-    pastille: { x: 0.38, y: 0.42 },
+    pastille: { x: 0.42, y: 0.48 },
   },
   westernUs: {
     continent: "north-america",
     connection: ["alberta", "ontario", "easternUs", "centralAmerica"],
-    pastille: { x: 0.43, y: 0.37 },
+    pastille: { x: 0.49, y: 0.43 },
   },
   easternUs: {
     continent: "north-america",
     connection: ["ontario", "quebec", "westernUs", "centralAmerica"],
-    pastille: { x: 0.32, y: 0.47 },
+    pastille: { x: 0.37, y: 0.52 },
   },
   centralAmerica: {
     continent: "north-america",
     connection: ["easternUs", "westernUs", "venezuela"],
-    pastille: { x: 0.32, y: 0.24 },
+    pastille: { x: 0.34, y: 0.25 },
   },
   venezuela: {
     continent: "south-america",
     connection: ["centralAmerica", "peru", "brazil"],
-    pastille: { x: 0.27, y: 0.325 },
+    pastille: { x: 0.34, y: 0.36 },
   },
   peru: {
     continent: "south-america",
     connection: ["venezuela", "brazil", "argentina"],
-    pastille: { x: 0.41, y: 0.57 },
+    pastille: { x: 0.35, y: 0.57 },
   },
   brazil: {
     continent: "south-america",
     connection: ["venezuela", "peru", "argentina", "northAfrica"],
-    pastille: { x: 0.48, y: 0.35 },
+    pastille: { x: 0.53, y: 0.4 },
   },
   argentina: {
     continent: "south-america",
     connection: ["peru", "brazil"],
-    pastille: { x: 0.335, y: 0.32 },
+    pastille: { x: 0.39, y: 0.37 },
   },
   northAfrica: {
     continent: "africa",
@@ -99,22 +101,22 @@ export const territoiresList = {
       "westernEurope",
       "southernEurope",
     ],
-    pastille: { x: 0.4, y: 0.43 },
+    pastille: { x: 0.45, y: 0.48 },
   },
   congo: {
     continent: "africa",
     connection: ["northAfrica", "southAfrica", "eastAfrica"],
-    pastille: { x: 0.465, y: 0.425 },
+    pastille: { x: 0.53, y: 0.485 },
   },
   southAfrica: {
     continent: "africa",
     connection: ["madagascar", "congo", "eastAfrica"],
-    pastille: { x: 0.4, y: 0.43 },
+    pastille: { x: 0.46, y: 0.49 },
   },
   madagascar: {
     continent: "africa",
     connection: ["southAfrica", "eastAfrica"],
-    pastille: { x: 1.4, y: 0.5 },
+    pastille: { x: 1.9, y: 1 },
   },
   eastAfrica: {
     continent: "africa",
@@ -126,12 +128,12 @@ export const territoiresList = {
       "egypt",
       "middleEast",
     ],
-    pastille: { x: 0.4, y: 0.43 },
+    pastille: { x: 0.47, y: 0.44 },
   },
   egypt: {
     continent: "africa",
     connection: ["middleEast", "southernEurope", "northAfrica", "eastAfrica"],
-    pastille: { x: 0.42, y: 0.35 },
+    pastille: { x: 0.49, y: 0.42 },
   },
   westernEurope: {
     continent: "europe",
@@ -153,7 +155,7 @@ export const territoiresList = {
       "northernEurope",
       "northAfrica",
     ],
-    pastille: { x: 0.63, y: 0.255 },
+    pastille: { x: 0.69, y: 0.35 },
   },
   northernEurope: {
     continent: "europe",
@@ -164,7 +166,7 @@ export const territoiresList = {
       "ukraine",
       "scandinavia",
     ],
-    pastille: { x: 0.5, y: 0.5 },
+    pastille: { x: 0.6, y: 0.6 },
   },
   greatBritain: {
     continent: "europe",
@@ -190,7 +192,7 @@ export const territoiresList = {
       "ural",
       "afghanistan",
     ],
-    pastille: { x: 0.5, y: 0.6 },
+    pastille: { x: 0.52, y: 0.62 },
   },
   middleEast: {
     continent: "asia",
@@ -201,62 +203,62 @@ export const territoiresList = {
       "afghanistan",
       "southernEurope",
     ],
-    pastille: { x: 0.37, y: 0.25 },
+    pastille: { x: 0.41, y: 0.3 },
   },
   afghanistan: {
     continent: "asia",
     connection: ["middleEast", "india", "china", "ural", "ukraine"],
-    pastille: { x: 0.52, y: 0.35 },
+    pastille: { x: 0.56, y: 0.39 },
   },
   ural: {
     continent: "asia",
     connection: ["ukraine", "afghanistan", "china", "siberia"],
-    pastille: { x: 0.37, y: 0.56 },
+    pastille: { x: 0.45, y: 0.6 },
   },
   india: {
     continent: "asia",
     connection: ["middleEast", "afghanistan", "china"],
-    pastille: { x: 0.52, y: 0.31 },
+    pastille: { x: 0.59, y: 0.35 },
   },
   siberia: {
     continent: "asia",
     connection: ["ural", "china", "mongolia", "irkutsk", "yakutsk"],
-    pastille: { x: 0.45, y: 0.5 },
+    pastille: { x: 0.5, y: 0.53 },
   },
   china: {
     continent: "asia",
     connection: ["siam", "india", "afghanistan", "ural", "siberia", "mongolia"],
-    pastille: { x: 0.5, y: 0.43 },
+    pastille: { x: 0.53, y: 0.46 },
   },
   mongolia: {
     continent: "asia",
     connection: ["japan", "china", "siberia", "irkutsk", "kamchakta"],
-    pastille: { x: 0.54, y: 0.35 },
+    pastille: { x: 0.59, y: 0.43 },
   },
   japan: {
     continent: "asia",
     connection: ["mongolia", "kamchakta"],
-    pastille: { x: 1.2, y: 0.43 },
+    pastille: { x: 1.4, y: 0.43 },
   },
   irkutsk: {
     continent: "asia",
     connection: ["mongolia", "siberia", "yakutsk", "kamchakta"],
-    pastille: { x: 0.44, y: 0.43 },
+    pastille: { x: 0.48, y: 0.5 },
   },
   yakutsk: {
     continent: "asia",
     connection: ["siberia", "irkutsk", "kamchakta"],
-    pastille: { x: 0.45, y: 0.62 },
+    pastille: { x: 0.49, y: 0.65 },
   },
   kamchakta: {
     continent: "asia",
     connection: ["yakutsk", "irkutsk", "mongolia", "japan", "alaska"],
-    pastille: { x: 0.58, y: 0.2 },
+    pastille: { x: 0.61, y: 0.23 },
   },
   siam: {
     continent: "asia",
     connection: ["china", "indonesia"],
-    pastille: { x: 0.45, y: 0.23 },
+    pastille: { x: 0.49, y: 0.31 },
   },
   indonesia: {
     continent: "oceania",
@@ -271,12 +273,12 @@ export const territoiresList = {
   westernAustralia: {
     continent: "oceania",
     connection: ["newGuinea", "easternAustralia", "indonesia"],
-    pastille: { x: 0.45, y: 0.47 },
+    pastille: { x: 0.5, y: 0.56 },
   },
   easternAustralia: {
     continent: "oceania",
     connection: ["westernAustralia", "newGuinea"],
-    pastille: { x: 0.25, y: 0.39 },
+    pastille: { x: 0.27, y: 0.42 },
   },
 };
 
@@ -301,28 +303,47 @@ export const playersList = [
   {
     name: "Player01",
     img: "./assets/images/player1-profile.webp",
+    bot: false,
   },
   {
     name: "Player02",
     img: "./assets/images/player2-profile.webp",
+    bot: true,
   },
   {
     name: "Player03",
     img: "./assets/images/player3-profile.webp",
+    bot: true,
   },
   {
     name: "Player04",
     img: "./assets/images/player4-profile.webp",
+    bot: true,
   },
   {
     name: "Player05",
     img: "./assets/images/player5-profile.webp",
+    bot: true,
   },
   {
     name: "Player06",
     img: "./assets/images/player6-profile.webp",
+    bot: true,
   },
 ];
+
+export const winningOdds = {};
+
+fetch("http://localhost/riskquest/assets/data/odds.json")
+  .then(async (response) => {
+    const json = await response.json();
+    winningOdds.blitz = json.blitz;
+    winningOdds.classic = json.classic;
+    console.log(winningOdds);
+  })
+  .catch((error) => {
+    throw Error(`Failed to load odds data from server: ${error}`);
+  });
 
 /**
  * Retourne le nombre de troupes initial pour chaque joueur en fonction du nombre de joueurs.
@@ -347,4 +368,50 @@ export function getStartingTroops(playerCount) {
 
   const troopsList = [35, 30, 25, 20];
   return troopsList[playerCount - data.MIN_PLAYER_COUNT];
+}
+
+
+export function playImmersiveSounds(newPhase){
+  
+  switch(newPhase){
+    case EPhases.ATTACK:
+      switch(randomInteger(1,6)){
+        case 1:
+        document.getElementById('charge1-sound').play();
+        break;
+        case 2:
+        document.getElementById('charge2-sound').play();
+        break;
+        case 3:
+        document.getElementById('advance-sound').play();
+        break;
+        case 4:
+        document.getElementById('killThemAll-sound').play();
+        break;
+        case 5:
+        document.getElementById('forward-sound').play();
+        break;
+        case 6:
+        document.getElementById('goGoGo-sound').play();
+        break;
+      }
+      break;
+    case EPhases.FORTIFY:
+    case EPhases.DRAFT:
+      switch(randomInteger(1,4)){
+        case 1:
+          document.getElementById('reinforcements-sound').play();
+        break;
+        case 2:
+        document.getElementById('standFirm-sound').play();
+        break;
+        case 3:
+        document.getElementById('formRanks-sound').play();
+        break;
+        case 4:
+        document.getElementById('frontlines-sound').play();
+        break;
+      }
+      break;
+  }
 }
