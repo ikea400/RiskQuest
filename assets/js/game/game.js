@@ -727,11 +727,15 @@ function cardHandler() {
     );
     svgWrapper.classList.add("svg-card");
     const bbox = country.getBBox();
-    svgWrapper.setAttribute("viewBox", "0 60 150 50");
+    svgWrapper.setAttribute("viewBox", ``);
     svgWrapper.setAttribute("preserveAspectRatio", "xMidYMid meet");
     svgWrapper.appendChild(country);
 
     card[0].appendChild(svgWrapper);
+
+    console.log(country);
+    console.log(country.getBBox());
+    console.log(country.getBoundingClientRect());
   }
 }
 
@@ -811,6 +815,8 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log(volume);
       },
       sfx: (volume) => {},
+      volumeSFX: 30,
+      volumeMusic: 60,
     });
     await popup.show();
   });
