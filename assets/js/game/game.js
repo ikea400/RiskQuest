@@ -269,7 +269,7 @@ function startDraftPhase(playerCount, callback) {
     // Attendre un peu avant de passer au prochain stage pour laisser l'utilisateur voir les choix
     setTimeout(() => {
       startAttackPhase(playerCount, callback);
-    }, 10000);
+    }, 1000);
   } else {
     async function territoireHandler() {
       const popup = new CountPopup({
@@ -403,7 +403,7 @@ function startAttackPhase(playerCount, callback) {
 
     setTimeout(() => {
       startFortifyPhase(playerCount, callback);
-    }, 10000);
+    }, 1000);
   } else {
     const territoriesIds = Object.keys(territoiresList);
     const territoiresSvgs = territoriesIds.map((territoireId) =>
