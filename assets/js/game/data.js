@@ -12,7 +12,7 @@ export const EPhases = Object.freeze({
 export const EBotSpeed = Object.freeze({
   SLOW: Object.freeze({ name: "slow", delay: 2000 }),
   NORMAL: Object.freeze({ name: "normal", delay: 1000 }),
-  FAST: Object.freeze({ name: "fast", delay: 50 }),
+  FAST: Object.freeze({ name: "fast", delay: 500 }),
 });
 
 export const data = {
@@ -22,7 +22,7 @@ export const data = {
   currentPlayerId: 1,
   selectedTerritoire: undefined,
   currentPhase: EPhases.ATTACK,
-  botSpeed: EBotSpeed.FAST,
+  botSpeed: EBotSpeed.SLOW,
 };
 
 export const territoiresList = {
