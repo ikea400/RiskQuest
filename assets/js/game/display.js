@@ -319,10 +319,10 @@ export function addTroopsChangeParticle(territoireId, playerId, troopsCount) {
   particule.style.left = pastille.style.left; // Position the particule
   particule.style.top = pastille.style.top;
 
-  requestAnimationFrame(() => {
+  setTimeout(() => {
     particule.style.transform = "translate(-50%, -50%) translateY(-70px)"; // Move upwards
     particule.style.fontSize = 0; // Fade out
-  });
+  }, 16);
 
   console.log(pastille.style.left, pastille.style.top);
 
