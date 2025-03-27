@@ -557,7 +557,7 @@ export class SettingsPopup extends PopupBase {
   }
 }
 
-class CardPopup extends PopupBase {
+export class CardPopup extends PopupBase {
   constructor(params = {}) {
     super(params);
     this.init();

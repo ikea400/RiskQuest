@@ -30,7 +30,7 @@ import {
   updatePastilleFakeTroops,
 } from "./display.js";
 import { initializeGame, saveMove } from "../api/gameDataService.js";
-import { CountPopup, AttackPopup, SettingsPopup } from "../popup.js";
+import { CountPopup, AttackPopup, SettingsPopup, CardPopup } from "../popup.js";
 
 import RandomBot from "../bot/bot.js";
 
