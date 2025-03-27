@@ -815,8 +815,6 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log(volume);
       },
       sfx: (volume) => {},
-      volumeSFX: 30,
-      volumeMusic: 60,
     });
     await popup.show();
   });

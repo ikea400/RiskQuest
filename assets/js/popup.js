@@ -536,8 +536,9 @@ export class SettingsPopup extends PopupBase {
     };
 
     document.getElementById("popup-settings-music").value =
-      this.params.volumeMusic;
-    document.getElementById("popup-settings-sfx").value = this.params.volumeSFX;
+      this.params.volumeMusic * 100;
+    document.getElementById("popup-settings-sfx").value =
+      this.params.volumeSFX * 100;
     for (const slider of sliders) {
       updateSliderGradiant(slider);
 
@@ -569,8 +570,8 @@ export class SettingsPopup extends PopupBase {
     this.params.music ??= () => {};
     this.params.sfx ??= () => {};
     this.params.ui ??= () => {};
-    this.params.volumeMusic ??= 50;
-    this.params.volumeSFX ??= 50;
+    this.params.volumeMusic ??= 0.5;
+    this.params.volumeSFX ??= 0.5;
 
     console.log(this.params.volumeMusic);
   }
