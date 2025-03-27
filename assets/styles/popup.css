@@ -532,10 +532,7 @@
 .popup-settings-img:active {
   transform: translateY(8%);
 }
-/* change all p to em 
--
--
-*/
+
 #flex-center-popup-cards {
   display: flex;
   flex-direction: row;
@@ -709,9 +706,9 @@
   animation: close-button-hover 2s infinite;
 }
 @keyframes close-button-hover {
-  0% {background-color:rgb(202, 84, 84);}
+  0% {background-color:rgb(203, 62, 62);}
   50% {background-color:rgb(255, 0, 0);}
-  100% {background-color:rgb(202, 84, 84);}
+  100% {background-color:rgb(203, 62, 62);}
 }
 #card-cancel-button-background {
   width: 7em;
@@ -730,12 +727,11 @@
   height: fit-content;
 }
 .svg-card {
+  pointer-events: none;
   position: absolute;
-  width: fit-content;
-  height: fit-content;
-  left: 0px;
-  top: 0%;
-  right: 0px;
-  bottom: 0px;
+  width: 80%;
+  height: 40%;
+  left: 10%;
+  bottom: 10%;
   overflow: visible;
 }
