@@ -127,7 +127,7 @@
   height: 100vh;
   z-index: 15;
 }
-#image-card {
+.image-card {
   width: 150px;
   height: auto;
 }
@@ -294,4 +294,28 @@
 #popup-image-close {
   width: 4em;
   height: 4em;
+}
+#territory-card {
+  width: 200px;
+  height: 200px;
+  left: 0%;
+  right: 0%;
+  top: 0%;
+  bottom: 0%;
+  z-index: 10;
+}
+.card-wrapper {
+  position: relative;
+  width: fit-content;
+  height: fit-content;
+}
+.svg-card {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  left: 0px;
+  top: 20%;
+  right: 0px;
+  bottom: 0px;
+  overflow: visible;
 }

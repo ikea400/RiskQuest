@@ -386,9 +386,25 @@ function startMainLoop(callback) {
 }
 
 function cardHandler() {
-  if (document.getElementById("flex-center-popup-cards") == null) {
+  if (document.getElementById("popup-cards-container") == null) {
     const popup = new CardPopup({});
     popup.show();
+
+    let card = document.getElementsByClassName("card-wrapper");
+
+    let country = document.getElementById("alaska").cloneNode(false);
+    country.id = "territory-card";
+    country.classList.remove("territoire");
+    country.classList.remove("attackable-territory");
+
+    let svgWrapper = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svgWrapper.classList.add("svg-card");
+    const bbox = country.getBBox();
+    svgWrapper.setAttribute("viewBox", "0 60 150 50");
+    svgWrapper.setAttribute("preserveAspectRatio", "xMidYMid meet");
+    svgWrapper.appendChild(country);
+
+    card[0].appendChild(svgWrapper);
   }
 }
 

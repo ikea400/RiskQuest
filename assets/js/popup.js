@@ -271,9 +271,9 @@ class CardPopup extends PopupBase {
     </header>
 
     <div id="flex-center-popup-cards">
-      <img id='image-card' src='./assets/images/riskCardInfantry.png' alt='infantry'img>
-      <img id='image-card' src='./assets/images/riskCardCannon.png' alt='cannon'img>
-      <img id='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
+      <img class='image-card' src='./assets/images/riskCardInfantry.png' alt='infantry'img>
+      <img class='image-card' src='./assets/images/riskCardCannon.png' alt='cannon'img>
+      <img class='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
     </div>
 
     <div id="popup-cards-button-container">
@@ -292,14 +292,13 @@ class CardPopup extends PopupBase {
     
     <footer id="popup-cards-footer">
       <div id="popup-cards-remaining-cards">
-        <img id='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
-        <img id='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
-        <img id='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
-        <img id='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
-        <img id='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
-        <img id='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
-        <img id='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
-        <img id='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
+        <div class="card-wrapper">
+          <img id='test-card' class='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
+        </div>
+        <img class='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
+        <img class='image-card' src='./assets/images/riskCardJoker.png' alt='cavalry'img>
+        <img class='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
+        <img class='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
       </div>
     </footer>
 
