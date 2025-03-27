@@ -421,11 +421,10 @@ export function playImmersiveSounds(newPhase) {
   }
 }
 
-export function setVolumeMusic(volume){
-  
+export function setMusicVolume(volume){
   document.getElementById("sea-music").volume = volume;
 }
-export function setSFXMusic(volume){
+export function setSFXVolume(volume){
   const listID = ['canon-sound','protect-sound','charge1-sound'
   ,'charge2-sound','advance-sound','formRanks-sound','killThemAll-sound'
   ,'standFirm-sound','reinforcements-sound','frontlines-sound'

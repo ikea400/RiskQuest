@@ -5,6 +5,8 @@ import {
   EPhases,
   territoiresList,
   playersList,
+  setMusicVolume,
+  setSFXVolume,
 } from "./data.js";
 import {
   getAttackableNeighbour,
@@ -368,10 +370,8 @@ function startAttackPhase(playerCount, callback) {
       }
 
       if (territoiresList[defenderTerritoireId].troops <= 0) {
-
         document.getElementById('canon-sound').load();
         document.getElementById('canon-sound').play();
-        console.log('AAAAAATTTAACK')
 
         const defenderPlayerId = territoiresList[defenderTerritoireId].playerId;
         takeOverTerritoryFromTerritory(
@@ -406,9 +406,6 @@ function startAttackPhase(playerCount, callback) {
       } else {
         document.getElementById('protect-sound').load();
         document.getElementById('protect-sound').play();
-
-
-        console.log('DDDDEEEEEFFFFEEENNCCEEE')
       }
     }
 
@@ -514,6 +511,8 @@ function startAttackPhase(playerCount, callback) {
 
       if (territoiresList[defenderTerritoireId].troops <= 0) {
         const defenderPlayerId = territoiresList[defenderTerritoireId].playerId;
+          document.getElementById('canon-sound').load();
+          document.getElementById('canon-sound').play();
         takeOverTerritoryFromTerritory(
           attackerTerritoireId,
           defenderTerritoireId,
@@ -564,6 +563,9 @@ function startAttackPhase(playerCount, callback) {
             `${attackerTerritoireId}-${defenderTerritoireId}`
           ].movedTroops = count;
         }
+      } else {
+        document.getElementById('protect-sound').load();
+        document.getElementById('protect-sound').play();
       }
 
       setSelectedTerritoire(null);
@@ -818,16 +820,16 @@ document.addEventListener("DOMContentLoaded", function () {
   let settingsButton = document.getElementById("settings-button");
   settingsButton.addEventListener("click", async () => {
     const popup = new SettingsPopup({
-      music: (volume) => {
-        console.log(volume);
-      },
-      sfx: (volume) => {},
+      music:setMusicVolume,
+      sfx:setSFXVolume,
+      volumeMusic: document.getElementById('canon-sound').volume,
+      volumeSFX: document.getElementById('charge1-sound').volume
     });
     await popup.show();
   });
 
   new ResizeObserver(updatePastillesPosition).observe(document.body);
   window.addEventListener("resize", updatePastillesPosition);
-  // etablir le popup des cartes quand on clique sur l'image des cartes
+  // établir le popup des cartes quand on clique sur l'image des cartes
   document.getElementById("cards-img").addEventListener("click", cardHandler);
 });

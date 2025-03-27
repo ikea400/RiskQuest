@@ -565,6 +565,7 @@ export class SettingsPopup extends PopupBase {
     this.params.music ??= () => {};
     this.params.sfx ??= () => {};
     this.params.ui ??= () => {};
+    
   }
 }
 
