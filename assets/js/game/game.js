@@ -32,7 +32,7 @@ import {
 import { initializeGame, saveMove } from "../api/gameDataService.js";
 import { CountPopup, AttackPopup, SettingsPopup } from "../popup.js";
 
-import RandomBot from "../bot/randombot.js";
+import RandomBot from "../bot/bot.js";
 
 // window.addEventListener("pageshow", function (event) {
 //   // S'assurer qu'un token et username est disponible sinon redirection vers la page principale
@@ -575,6 +575,18 @@ function startFortifyPhase(playerCount, callback) {
   updateCurrentPhase(EPhases.FORTIFY);
 
   if (playersList[data.currentPlayerId].bot) {
+    const bot = playersList[data.currentPlayerId].bot;
+    const fortify = bot.pickFortify();
+
+    if (fortify) {
+      moveTroopsFromTerritory(
+        fortify.from,
+        fortify.to,
+        data.currentPlayerId,
+        fortify.troops
+      );
+      Move.fortifyDraft[fortify.to] = fortify.troops;
+    }
     callback();
   } else {
     const ownedTerritoriesIds = Object.keys(territoiresList).filter(
@@ -607,7 +619,6 @@ function startFortifyPhase(playerCount, callback) {
       }).catch((error) => {
         console.log("Error at api.php when saving fortify move: " + error);
       });
-
       callback();
     }
 

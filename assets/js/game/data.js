@@ -310,26 +310,32 @@ export const playersList = [
   {
     name: "Player01",
     img: "./assets/images/player1-profile.webp",
+    bot: false,
   },
   {
     name: "Player02",
     img: "./assets/images/player2-profile.webp",
+    bot: true,
   },
   {
     name: "Player03",
     img: "./assets/images/player3-profile.webp",
+    bot: true,
   },
   {
     name: "Player04",
     img: "./assets/images/player4-profile.webp",
+    bot: true,
   },
   {
     name: "Player05",
     img: "./assets/images/player5-profile.webp",
+    bot: true,
   },
   {
     name: "Player06",
     img: "./assets/images/player6-profile.webp",
+    bot: true,
   },
 ];
 
