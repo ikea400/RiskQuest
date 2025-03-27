@@ -716,7 +716,7 @@ function cardHandler() {
 
     let card = document.getElementsByClassName("card-wrapper");
 
-    let country = document.getElementById("alaska").cloneNode(false);
+    let country = document.getElementById("quebec").cloneNode(false);
     country.id = "territory-card";
     country.classList.remove("territoire");
     country.classList.remove("attackable-territory");
@@ -727,7 +727,7 @@ function cardHandler() {
     );
     svgWrapper.classList.add("svg-card");
     const bbox = country.getBBox();
-    svgWrapper.setAttribute("viewBox", ``);
+    svgWrapper.setAttribute("viewBox", "13 80 60 15");
     svgWrapper.setAttribute("preserveAspectRatio", "xMidYMid meet");
     svgWrapper.appendChild(country);
 
