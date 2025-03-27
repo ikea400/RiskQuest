@@ -732,7 +732,10 @@ function cardHandler() {
     country.classList.remove("territoire");
     country.classList.remove("attackable-territory");
 
-    let svgWrapper = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    let svgWrapper = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "svg"
+    );
     svgWrapper.classList.add("svg-card");
     const bbox = country.getBBox();
     svgWrapper.setAttribute("viewBox", "0 60 150 50");
@@ -814,7 +817,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let settingsButton = document.getElementById("settings-button");
   settingsButton.addEventListener("click", async () => {
-    const popup = new SettingsPopup();
+    const popup = new SettingsPopup({
+      music: (volume) => {
+        console.log(volume);
+      },
+      sfx: (volume) => {},
+    });
     await popup.show();
   });
 
