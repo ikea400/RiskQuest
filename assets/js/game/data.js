@@ -9,6 +9,12 @@ export const EPhases = Object.freeze({
   FORTIFY: Symbol("FORTIFY"),
 });
 
+export const EBotSpeed = Object.freeze({
+  SLOW: Object.freeze({ name: "slow", delay: 2000 }),
+  NORMAL: Object.freeze({ name: "normal", delay: 1000 }),
+  FAST: Object.freeze({ name: "fast", delay: 50 }),
+});
+
 export const data = {
   MIN_PLAYER_COUNT: 3,
   MAX_PLAYER_COUNT: 6,
@@ -16,6 +22,7 @@ export const data = {
   currentPlayerId: 1,
   selectedTerritoire: undefined,
   currentPhase: EPhases.ATTACK,
+  botSpeed: EBotSpeed.FAST,
 };
 
 export const territoiresList = {

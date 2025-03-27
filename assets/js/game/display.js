@@ -1,4 +1,10 @@
-import { data, EPhases, territoiresList, playersList, playImmersiveSounds} from "./data.js";
+import {
+  data,
+  EPhases,
+  territoiresList,
+  playersList,
+  playImmersiveSounds,
+} from "./data.js";
 import { countPlayerTerritoires, countPlayerTroops } from "./logic.js";
 import * as utils from "./utils.js";
 
@@ -142,10 +148,10 @@ export function updatePastilleTroopsCount(territoireId) {
 
 /**
  * Met à jour l'affichage des troupes pour un territoire spécifique.
- * 
- * Cette fonction met à jour l'élément HTML correspondant au territoire donné 
+ *
+ * Cette fonction met à jour l'élément HTML correspondant au territoire donné
  * en ajoutant un certain nombre de troupes au compteur actuel.
- * 
+ *
  * @param {string} territoireId - L'identifiant du territoire dont l'affichage des troupes doit être mis à jour.
  * @param {number} count - Le nombre de troupes à ajouter (peut être négatif pour réduire les troupes).
  */

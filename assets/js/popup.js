@@ -1,4 +1,4 @@
-import { winningOdds } from "./game/data.js";
+import { EBotSpeed, winningOdds } from "./game/data.js";
 
 class PopupBase {
   #resolveCallback;
@@ -524,6 +524,17 @@ export class SettingsPopup extends PopupBase {
             />
           </div>
           <div class="popup-settings-line"></div>
+          <div id="popup-settings-category-bot" class="popup-settings-category">
+            <label for="speed" class="kanit-900">Bot Speed</label>
+            <input
+              type="range"
+              id="popup-settings-speed"
+              class="popup-settings-slider"
+              min="0"
+              max="2"
+            />
+          </div>
+          <div class="popup-settings-line"></div>
         </div>`;
 
     const sliders = document.getElementsByClassName("popup-settings-slider");
@@ -551,6 +562,11 @@ export class SettingsPopup extends PopupBase {
           case "popup-settings-sfx":
             this.params.sfx(slider.value * 0.01);
             break;
+          case "popup-settings-speed":
+            this.params.speed(
+              [EBotSpeed.SLOW, EBotSpeed.NORMAL, EBotSpeed.FAST][slider.value]
+            );
+            break;
         }
       });
     }
@@ -570,6 +586,7 @@ export class SettingsPopup extends PopupBase {
     this.params.music ??= () => {};
     this.params.sfx ??= () => {};
     this.params.ui ??= () => {};
+    this.params.speed ??= (speed) => {};
     this.params.volumeMusic ??= 0.5;
     this.params.volumeSFX ??= 0.5;
 

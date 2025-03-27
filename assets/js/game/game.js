@@ -253,23 +253,26 @@ function startDraftPhase(playerCount, callback) {
 
   if (playersList[data.currentPlayerId].bot) {
     const drafts = playersList[data.currentPlayerId].bot.pickDraftTroops();
-    for (const draft of drafts) {
-      moveTroopsFromPlayer(
-        draft.territoire,
-        data.currentPlayerId,
-        draft.troops
-      );
-      addTroopsChangeParticle(
-        draft.territoire,
-        data.currentPlayerId,
-        draft.troops
-      );
+    for (let i = 0; i < drafts.length; i++) {
+      const draft = drafts[i];
+      setTimeout(() => {
+        moveTroopsFromPlayer(
+          draft.territoire,
+          data.currentPlayerId,
+          draft.troops
+        );
+        addTroopsChangeParticle(
+          draft.territoire,
+          data.currentPlayerId,
+          draft.troops
+        );
+      }, data.botSpeed.delay * (i + 1));
     }
 
     // Attendre un peu avant de passer au prochain stage pour laisser l'utilisateur voir les choix
     setTimeout(() => {
       startAttackPhase(playerCount, callback);
-    }, 1000);
+    }, data.botSpeed.delay * (drafts.length + 1));
   } else {
     async function territoireHandler() {
       const popup = new CountPopup({
@@ -337,73 +340,80 @@ function startAttackPhase(playerCount, callback) {
   if (playersList[data.currentPlayerId].bot) {
     const bot = playersList[data.currentPlayerId].bot;
     let limit = 10;
-    let attack;
-    while ((attack = bot.pickAttack()) && limit-- > 0) {
-      const attackerTerritoireId = attack.attacker;
-      const defenderTerritoireId = attack.defender;
-      console.log(attack);
 
-      const [defenderLostTroops, attackerLostTroops] = utils.blitzAttack(
-        territoiresList[defenderTerritoireId].troops,
-        territoiresList[attackerTerritoireId].troops - 1
-      );
-      console.log(defenderLostTroops, attackerLostTroops);
-
-      // Enlever les troops
-      if (defenderLostTroops > 0) {
-        removeTroopsFromTerritory(defenderTerritoireId, defenderLostTroops);
-        addTroopsChangeParticle(
-          defenderTerritoireId,
-          territoiresList[defenderTerritoireId].playerId,
-          -defenderLostTroops
-        );
-      }
-      if (attackerLostTroops > 0) {
-        removeTroopsFromTerritory(attackerTerritoireId, attackerLostTroops);
-        addTroopsChangeParticle(
-          attackerTerritoireId,
-          data.currentPlayerId,
-          -attackerLostTroops
-        );
-      }
-
-      if (territoiresList[defenderTerritoireId].troops <= 0) {
-        const defenderPlayerId = territoiresList[defenderTerritoireId].playerId;
-        takeOverTerritoryFromTerritory(
-          attackerTerritoireId,
-          defenderTerritoireId,
-          data.currentPlayerId,
-          1
-        );
-
-        updatePlayerDeadState(
-          defenderPlayerId,
-          checkPlayerDeadState(defenderPlayerId)
-        );
-
-        let count = 2;
-        if (territoiresList[attackerTerritoireId].troops > 3) {
-          count = bot.pickPostAttack(
-            attackerTerritoireId,
-            defenderTerritoireId,
-            2
-          );
-        } else {
-          count = territoiresList[attackerTerritoireId].troops - 1;
+    const handler = () => {
+      setTimeout(() => {
+        const attack = bot.pickAttack();
+        if (!attack || limit-- <= 0) {
+          return startFortifyPhase(playerCount, callback);
         }
 
-        moveTroopsFromTerritory(
-          attackerTerritoireId,
-          defenderTerritoireId,
-          data.currentPlayerId,
-          count
-        );
-      }
-    }
+        const attackerTerritoireId = attack.attacker;
+        const defenderTerritoireId = attack.defender;
+        console.log(attack);
 
-    setTimeout(() => {
-      startFortifyPhase(playerCount, callback);
-    }, 1000);
+        const [defenderLostTroops, attackerLostTroops] = utils.blitzAttack(
+          territoiresList[defenderTerritoireId].troops,
+          territoiresList[attackerTerritoireId].troops - 1
+        );
+        console.log(defenderLostTroops, attackerLostTroops);
+
+        // Enlever les troops
+        if (defenderLostTroops > 0) {
+          removeTroopsFromTerritory(defenderTerritoireId, defenderLostTroops);
+          addTroopsChangeParticle(
+            defenderTerritoireId,
+            territoiresList[defenderTerritoireId].playerId,
+            -defenderLostTroops
+          );
+        }
+        if (attackerLostTroops > 0) {
+          removeTroopsFromTerritory(attackerTerritoireId, attackerLostTroops);
+          addTroopsChangeParticle(
+            attackerTerritoireId,
+            data.currentPlayerId,
+            -attackerLostTroops
+          );
+        }
+
+        if (territoiresList[defenderTerritoireId].troops <= 0) {
+          const defenderPlayerId =
+            territoiresList[defenderTerritoireId].playerId;
+          takeOverTerritoryFromTerritory(
+            attackerTerritoireId,
+            defenderTerritoireId,
+            data.currentPlayerId,
+            1
+          );
+
+          updatePlayerDeadState(
+            defenderPlayerId,
+            checkPlayerDeadState(defenderPlayerId)
+          );
+
+          let count = 2;
+          if (territoiresList[attackerTerritoireId].troops > 3) {
+            count = bot.pickPostAttack(
+              attackerTerritoireId,
+              defenderTerritoireId,
+              2
+            );
+          } else {
+            count = territoiresList[attackerTerritoireId].troops - 1;
+          }
+
+          moveTroopsFromTerritory(
+            attackerTerritoireId,
+            defenderTerritoireId,
+            data.currentPlayerId,
+            count
+          );
+        }
+        handler();
+      }, data.botSpeed.delay);
+    };
+
+    handler();
   } else {
     const territoriesIds = Object.keys(territoiresList);
     const territoiresSvgs = territoriesIds.map((territoireId) =>
@@ -575,19 +585,21 @@ function startFortifyPhase(playerCount, callback) {
   updateCurrentPhase(EPhases.FORTIFY);
 
   if (playersList[data.currentPlayerId].bot) {
-    const bot = playersList[data.currentPlayerId].bot;
-    const fortify = bot.pickFortify();
+    setTimeout(() => {
+      const bot = playersList[data.currentPlayerId].bot;
+      const fortify = bot.pickFortify();
 
-    if (fortify) {
-      moveTroopsFromTerritory(
-        fortify.from,
-        fortify.to,
-        data.currentPlayerId,
-        fortify.troops
-      );
-      Move.fortifyDraft[fortify.to] = fortify.troops;
-    }
-    setTimeout(callback, 1000);
+      if (fortify) {
+        moveTroopsFromTerritory(
+          fortify.from,
+          fortify.to,
+          data.currentPlayerId,
+          fortify.troops
+        );
+        Move.fortifyDraft[fortify.to] = fortify.troops;
+      }
+      callback();
+    }, data.botSpeed.delay);
   } else {
     const ownedTerritoriesIds = Object.keys(territoiresList).filter(
       (territoireId) =>
@@ -743,7 +755,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const autoPlacement = true;
   const playerCount = 6;
   // Where does the bots start if there is any. Else set to 0
-  const botPlayerStart = 2;
+  const botPlayerStart = 1;
 
   // Initialization des troops
   for (let playerId = 1; playerId <= playerCount; playerId++) {
@@ -815,6 +827,9 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log(volume);
       },
       sfx: (volume) => {},
+      speed: (speed) => {
+        data.botSpeed = speed;
+      },
     });
     await popup.show();
   });
