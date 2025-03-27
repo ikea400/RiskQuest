@@ -587,7 +587,7 @@ function startFortifyPhase(playerCount, callback) {
       );
       Move.fortifyDraft[fortify.to] = fortify.troops;
     }
-    callback();
+    setTimeout(callback, 1000);
   } else {
     const ownedTerritoriesIds = Object.keys(territoiresList).filter(
       (territoireId) =>
@@ -728,7 +728,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   setCurrentPlayer(
     utils.getRandomStartingPlayer(
-      botPlayerStart > 0 ? botPlayerStart - 1 : playerCount
+      botPlayerStart > 1 ? botPlayerStart - 1 : playerCount
     )
   );
 
