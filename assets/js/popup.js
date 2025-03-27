@@ -539,6 +539,14 @@ export class SettingsPopup extends PopupBase {
 
       slider.addEventListener("input", (event) => {
         updateSliderGradiant(event.currentTarget);
+        switch (event.currentTarget.id) {
+          case "popup-settings-music":
+            this.params.music(slider.value * 0.01);
+            break;
+          case "popup-settings-sfx":
+            this.params.sfx(slider.value * 0.01);
+            break;
+        }
       });
     }
 
@@ -554,6 +562,9 @@ export class SettingsPopup extends PopupBase {
     this.params.id ??= "popup-settings";
     this.params.bottom ??= true;
     this.params.cancel ??= true;
+    this.params.music ??= () => {};
+    this.params.sfx ??= () => {};
+    this.params.ui ??= () => {};
   }
 }
 
@@ -564,7 +575,7 @@ export class CardPopup extends PopupBase {
   }
   init() {
     super.init();
-    
+
     this.popupDiv.innerHTML = `
 
     <header id="popup-cards-header">
@@ -605,9 +616,11 @@ export class CardPopup extends PopupBase {
 
     `;
 
-    document.getElementById("popup-cards-button-close").addEventListener("click", function () {
-      document.getElementById("popup-cards-container").remove();
-    });
+    document
+      .getElementById("popup-cards-button-close")
+      .addEventListener("click", function () {
+        document.getElementById("popup-cards-container").remove();
+      });
 
     this.backgroundDiv.classList.add("background-popup-cards");
     this.backgroundDiv.classList.remove("background-popup-center");
