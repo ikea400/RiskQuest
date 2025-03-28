@@ -10,9 +10,9 @@ export const EPhases = Object.freeze({
 });
 
 export const EBotSpeed = Object.freeze({
-  SLOW: Object.freeze({ name: "slow", delay: 2000 }),
-  NORMAL: Object.freeze({ name: "normal", delay: 1000 }),
-  FAST: Object.freeze({ name: "fast", delay: 500 }),
+  SLOW: Object.freeze({ name: "slow", delay: 2000, index: 0 }),
+  NORMAL: Object.freeze({ name: "normal", delay: 1000, index: 1 }),
+  FAST: Object.freeze({ name: "fast", delay: 500, index: 2 }),
 });
 
 export const data = {
