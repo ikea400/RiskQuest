@@ -45,7 +45,7 @@ $router->post("/register", function ($bodyArray): JsonResponse {
 
     // Generation de la requete
     $requete = $pdo->safeQuery(
-        "SELECT 1 FROM User WHERE name = :username",
+        "SELECT 1 FROM user WHERE name = :username",
         ['username' => $username]
     );
     if (!$requete) {
@@ -61,7 +61,7 @@ $router->post("/register", function ($bodyArray): JsonResponse {
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
     // Generation de la seconde requete
-    $requete = $pdo->prepare("INSERT INTO User (name, password) VALUES (:username, :password);");
+    $requete = $pdo->prepare("INSERT INTO user (name, password) VALUES (:username, :password);");
     if (!$requete->execute(
         [
             'username' => $username,
@@ -89,7 +89,7 @@ $router->post("/login", function ($bodyArray): JsonResponse {
 
     // Generation de la requete
     $requete = $pdo->safeQuery(
-        "SELECT password, id FROM User WHERE name = :name AND guest = FALSE",
+        "SELECT password, id FROM user WHERE name = :name AND guest = FALSE",
         ['name' => $username]
     );
 
@@ -115,7 +115,7 @@ $router->post("/guest", function (): JsonResponse {
 
     // Préparer la requête
     $requete = $pdo->prepare(
-        "SELECT 1 FROM User WHERE name=:name;"
+        "SELECT 1 FROM user WHERE name=:name;"
     );
 
 
@@ -134,14 +134,14 @@ $router->post("/guest", function (): JsonResponse {
 
     // Insérer le nouveaux invité
     if (!$pdo->safeQuery(
-        "INSERT INTO User (name, guest) VALUES (:username, TRUE);",
+        "INSERT INTO user (name, guest) VALUES (:username, TRUE);",
         ['username' => $guestName]
     )) {
         return JsonResponse::internalServerError();
     }
 
     $requete = $pdo->safeQuery(
-        "SELECT id FROM User WHERE name=:name AND guest=TRUE;",
+        "SELECT id FROM user WHERE name=:name AND guest=TRUE;",
         ['name' => $guestName]
     );
 
@@ -158,7 +158,20 @@ $router->post("/guest", function (): JsonResponse {
     ]);
 });
 
-//
+$router->get("/game/{gameId}", function ($gameId, $tokenPayload): JsonResponse {
+    if (!is_numeric($gameId) && is_null($gameId)){
+        return JsonResponse::badRequest();
+    }
+
+    $pdo = new DatabaseConnection();
+
+    $result = $pdo->safeQuery(
+        "SELECT * FROM Game JOIN Move ON Game.id = Move.game_id WHERE Game.id = :gameId;",
+        ['gameId' => $gameId]
+    );
+    return JsonResponse::success($result->fetch());
+}, $authMiddleware, $jsonMiddleware);
+
 $router->post("/saveMove", function ( $tokenPayload, $bodyArray): JsonResponse {
 
     if(empty($bodyArray)){
@@ -168,12 +181,15 @@ $router->post("/saveMove", function ( $tokenPayload, $bodyArray): JsonResponse {
     $pdo = new DatabaseConnection();
     //retrieve game id to identify the move 
     $playerList = $bodyArray["players"];
-    $game_id = $playerList["game_id"];
+    $game_id = $playerList[7];
+    $move = $bodyArray["move"];
+    $currentPlayer = $move["player"];
     $moveJson = json_encode($bodyArray, true);
     if(!$pdo->safeQuery(
-        "INSERT INTO Move (game_id, move_data) VALUES (:game_id, :move_data);",
+        "INSERT INTO Move (game_id, move_data, player) VALUES (:game_id, :move_data, :player);",
         ["game_id" => $game_id,
-            "move_data" => $moveJson]
+            "move_data" => $moveJson,
+            "player" => $currentPlayer]
     )){
         return JsonResponse::badRequest();
     }
@@ -204,8 +220,11 @@ $router->post("/initializegame", function ($tokenPayload, $bodyArray): JsonRespo
     }
 
     $game_id = $pdo->lastInsertId();
-
+    $counter = 0;
     foreach( $bodyArray["players"] as $index => $player){
+        //dans players, le premier element est null
+        if($counter++ ==  0) continue;
+
         $playerName = $player["name"];
         if(!$pdo->safeQuery(
             "INSERT INTO User_Game (game_id, player_name, player_id) 
@@ -213,7 +232,7 @@ $router->post("/initializegame", function ($tokenPayload, $bodyArray): JsonRespo
             [
                 'game_id'     => $game_id,
                 'player_name' => $playerName,
-                'player_id'   => $index + 1
+                'player_id'   => $index 
             ]
 
         )){
@@ -235,7 +254,7 @@ $router->get("/user/{userId}", function ($userId): JsonResponse {
     $pdo = new DatabaseConnection();
 
     // Préparer la requête
-    $requete = $pdo->prepare("SELECT name, join_date, guest FROM User WHERE id = :id");
+    $requete = $pdo->prepare("SELECT name, join_date, guest FROM user WHERE id = :id");
 
     // Envoyer les paramètres
     $requete->execute(['id' => $userId]);

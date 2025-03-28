@@ -29,7 +29,7 @@ import {
   addTroopsChangeParticle,
   updatePastilleFakeTroops,
 } from "./display.js";
-import { initializeGame, saveMove } from "../api/gameDataService.js";
+import { initializeGame, saveMove, setAsGest } from "../api/gameDataService.js";
 import { CountPopup, AttackPopup, SettingsPopup, CardPopup } from "../popup.js";
 
 import RandomBot from "../bot/bot.js";
@@ -765,38 +765,54 @@ document.addEventListener("DOMContentLoaded", function () {
     ? [startRandomTerritoryDistribution, startRandomTroopsPlacement]
     : [startTurnTerritoriesSelection, startTurnTroopsPlacement];
 
-  distributionFn(playerCount, () => {
-    console.log("Selection is done");
+  //met le player a guest avant chaque partie TEMPORAIREMENT
+  setAsGest().then((response) => {
+    if (response.success === true) {
+      
+  
+      sessionStorage.setItem("token", response.token);
+      sessionStorage.setItem("saved-username", response.name);
+      sessionStorage.setItem("saved-userId", response.id);
+      sessionStorage.setItem("guest", true);
+      
+    } else {
+      console.log([reponseJSON.error || "Erreur inconnue"]);
+    }
+  }).then(() => {
+    distributionFn(playerCount, () => {
+      console.log("Selection is done");
 
-    placementFn(playerCount, () => {
-      //create game with player info
-      initializeGame({
-        players: playersList,
-        playerCount: playerCount,
-      })
-        .then((value) => {
-          playersList.push({ game_id: value["game_id"] });
-          //nesting saveMove beacause it is dependent on playersList, save the move only after receiving game_id
-          //make inital move to save inital territory and troop distribution
-          saveMove({
-            players: playersList,
-            territories: territoiresList,
-            move: {},
-          }).catch((error) => {
-            console.log("Error at api.php when making inital move: " + error);
-          });
+      placementFn(playerCount, () => {
+        //create game with player info
+        initializeGame({
+          players: playersList,
+          playerCount: playerCount,
         })
-        .catch((error) => {
-          console.log("Error at api.php when initializing game: " + error);
+          .then((value) => {
+            playersList[7] = value["gameId"];
+            //nesting saveMove beacause it is dependent on playersList, save the move only after receiving game_id
+            //make inital move to save inital territory and troop distribution
+            console.log("Game id: " + value["game_id"]);
+            saveMove({
+              players: playersList,
+              territories: territoiresList,
+              move: {player: 0},
+            }).catch((error) => {
+              console.log("Error at api.php when making inital move: " + error);
+            });
+          })
+          .catch((error) => {
+            console.log("Error at api.php when initializing game: " + error);
+          });
+
+        console.log("Distribution is done");
+
+        startMainLoop(playerCount, () => {
+          console.log("Main game loop is done");
         });
-
-      console.log("Distribution is done");
-
-      startMainLoop(playerCount, () => {
-        console.log("Main game loop is done");
       });
     });
-  });
+ });
 
   let containerPays = document.getElementById("pays-background");
   containerPays.addEventListener("click", function () {
