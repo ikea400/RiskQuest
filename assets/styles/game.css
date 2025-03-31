@@ -361,6 +361,7 @@ body {
   font-size: 3em;
   -webkit-text-stroke: 3px black;
   user-select: none;
+  z-index: 3;
 }
 
 #top-buttons-container {
