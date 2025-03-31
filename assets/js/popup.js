@@ -607,10 +607,22 @@ export class CardPopup extends PopupBase {
       <div id="legend-card">
         <img id="card-legend-header" src='./assets/images/riskBonusLegendHeader.png' alt='Legend'img>
         <div id="legend-card-information">
-          <span>4 Infantry</span>
-          <span>6 Cavalry</span>
-          <span>8 Artillery</span>
-          <span>10 All Three</span>
+          <span>
+            <span class="legend-number">4</span> <span>Infantry</span>
+          </span>
+
+          <span>
+            <span class="legend-number">6</span> <span>Cavalry</span>
+          </span>
+
+          <span>
+            <span class="legend-number">8</span> <span>Artillery</span>
+          </span>
+
+          <span>
+            <span class="legend-number">10</span> <span>All Three</span>
+          </span>
+
         </div>
       </div>
       
