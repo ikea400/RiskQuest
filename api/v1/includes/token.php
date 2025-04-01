@@ -9,7 +9,7 @@ class JWTToken
     {
         // set payload default value for payload if not set already.
         $payload['iat'] ??= time();
-        $payload['ext'] ??= time() + TOKEN_DURATION;
+        $payload['exp'] ??= time() + TOKEN_DURATION;
 
         [$privateKey, $type] = self::getPrivateKey();
         return JWT::encode($payload, $privateKey, $type);

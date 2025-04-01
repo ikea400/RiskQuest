@@ -158,8 +158,27 @@ $router->post("/guest", function (): JsonResponse {
     ]);
 });
 
+$router->get("/games/{userId}", function ($userId, $tokenPayload): JsonResponse {
+    if (!$userId || !is_numeric($userId) || $userId != $tokenPayload["id"]) {
+        return JsonResponse::unauthorized();
+    }
+
+    $pdo = new DatabaseConnection();
+
+    $requete = $pdo->safeQuery(
+        "SELECT game_id FROM User_Game WHERE user_id=:userId;",
+        ['userId' => $userId]
+    );
+
+    if (!$requete) {
+        return JsonResponse::internalServerError();
+    }
+
+    return JsonResponse::success(["games" => $requete->fetchAll()]);
+}, $authMiddleware);
+
 $router->get("/game/{gameId}", function ($gameId, $tokenPayload): JsonResponse {
-    if (!is_numeric($gameId) && is_null($gameId)){
+    if (!is_numeric($gameId) && is_null($gameId)) {
         return JsonResponse::badRequest();
     }
 
@@ -172,10 +191,10 @@ $router->get("/game/{gameId}", function ($gameId, $tokenPayload): JsonResponse {
     return JsonResponse::success($result->fetch());
 }, $authMiddleware, $jsonMiddleware);
 
-$router->post("/saveMove", function ( $tokenPayload, $bodyArray): JsonResponse {
+$router->post("/saveMove", function ($tokenPayload, $bodyArray): JsonResponse {
 
-    if(empty($bodyArray)){
-       return JsonResponse::badRequest();
+    if (empty($bodyArray)) {
+        return JsonResponse::badRequest();
     }
 
     $pdo = new DatabaseConnection();
@@ -185,68 +204,66 @@ $router->post("/saveMove", function ( $tokenPayload, $bodyArray): JsonResponse {
     $move = $bodyArray["move"];
     $currentPlayer = $move["player"];
     $moveJson = json_encode($bodyArray, true);
-    if(!$pdo->safeQuery(
+    if (!$pdo->safeQuery(
         "INSERT INTO Move (game_id, move_data, player) VALUES (:game_id, :move_data, :player);",
-        ["game_id" => $game_id,
+        [
+            "game_id" => $game_id,
             "move_data" => $moveJson,
-            "player" => $currentPlayer]
-    )){
+            "player" => $currentPlayer
+        ]
+    )) {
         return JsonResponse::badRequest();
     }
 
     return JsonResponse::success();
-
-}, $authMiddleware, $jsonMiddleware );
+}, $authMiddleware, $jsonMiddleware);
 
 
 
 $router->post("/initializegame", function ($tokenPayload, $bodyArray): JsonResponse {
 
-    if(empty($bodyArray)){
-       return JsonResponse::badRequest();
+    if (empty($bodyArray)) {
+        return JsonResponse::badRequest();
     }
 
     $pdo = new DatabaseConnection();
 
     $pdo->beginTransaction();
 
-    if(!$pdo->safeQuery(
+    if (!$pdo->safeQuery(
         "INSERT INTO Game (player_count, start_date) VALUES (:player_count, NOW());",
         ['player_count' => $bodyArray["playerCount"]]
-        )){
+    )) {
         $pdo->rollBack();
         return JsonResponse::internalServerError();
-        
     }
 
     $game_id = $pdo->lastInsertId();
     $counter = 0;
-    foreach( $bodyArray["players"] as $index => $player){
+    foreach ($bodyArray["players"] as $index => $player) {
         //dans players, le premier element est null
-        if($counter++ ==  0) continue;
+        if ($counter++ ==  0) continue;
 
         $playerName = $player["name"];
-        if(!$pdo->safeQuery(
+        if (!$pdo->safeQuery(
             "INSERT INTO User_Game (game_id, player_name, player_id) 
              VALUES (:game_id, :player_name, :player_id);",
             [
                 'game_id'     => $game_id,
                 'player_name' => $playerName,
-                'player_id'   => $index 
+                'player_id'   => $index
             ]
 
-        )){
+        )) {
             $pdo->rollBack();
             return JsonResponse::internalServerError();
-          
-        } 
+        }
     }
 
     $pdo->commit();
     //need the game_id to add it to game data, and to save move
     return JsonResponse::success(['gameId' => $game_id]);
-    
-},$authMiddleware, $jsonMiddleware);
+}, $authMiddleware, $jsonMiddleware);
 
 
 $router->get("/user/{userId}", function ($userId): JsonResponse {
@@ -277,12 +294,14 @@ $router->post("/user/password/{userId}", function ($userId, $tokenPayload, $body
         return JsonResponse::unauthorized();
     }
 
-    if (empty($bodyArray['old-password']) || empty($bodyArray['new-password']) ||
-    !is_string($bodyArray['old-password']) || !is_string($bodyArray['new-password'])) {
+    if (
+        empty($bodyArray['old-password']) || empty($bodyArray['new-password']) ||
+        !is_string($bodyArray['old-password']) || !is_string($bodyArray['new-password'])
+    ) {
         return JsonResponse::badRequest();
     }
 
-    
+
 
     return JsonResponse::success(['id' => $userId, 'payload' => $tokenPayload, 'body' => $bodyArray]);
 }, $authMiddleware, $jsonMiddleware);
