@@ -788,7 +788,7 @@ document.addEventListener("DOMContentLoaded", function () {
       sessionStorage.setItem("guest", true);
       
     } else {
-      console.log([reponseJSON.error || "Erreur inconnue"]);
+      console.log([response.error || "Erreur inconnue"]);
     }
   }).then(() => {
     distributionFn(playerCount, () => {

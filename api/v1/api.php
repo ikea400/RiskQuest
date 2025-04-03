@@ -165,11 +165,17 @@ $router->get("/game/{gameId}", function ($gameId, $tokenPayload): JsonResponse {
 
     $pdo = new DatabaseConnection();
 
-    $result = $pdo->safeQuery(
+    $requete = $pdo->safeQuery(
         "SELECT * FROM Game JOIN Move ON Game.id = Move.game_id WHERE Game.id = :gameId;",
         ['gameId' => $gameId]
     );
-    return JsonResponse::success($result->fetch());
+    $result = $requete->fetch();
+    
+    if (!$result) {
+        return JsonResponse::notFound();
+    }
+    return JsonResponse::success($result);
+
 }, $authMiddleware, $jsonMiddleware);
 
 $router->post("/saveMove", function ( $tokenPayload, $bodyArray): JsonResponse {
