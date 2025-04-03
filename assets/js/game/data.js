@@ -17,6 +17,12 @@ export const CardType = Object.freeze({
   CAVALRY: Symbol("CAVALRY"),
 });
 
+export const EBotSpeed = Object.freeze({
+  SLOW: Object.freeze({ name: "slow", delay: 2000, index: 0 }),
+  NORMAL: Object.freeze({ name: "normal", delay: 1000, index: 1 }),
+  FAST: Object.freeze({ name: "fast", delay: 500, index: 2 }),
+});
+
 export const data = {
   MIN_PLAYER_COUNT: 3,
   MAX_PLAYER_COUNT: 6,
@@ -24,6 +30,7 @@ export const data = {
   currentPlayerId: 1,
   selectedTerritoire: undefined,
   currentPhase: EPhases.ATTACK,
+  botSpeed: EBotSpeed.SLOW,
 };
 
 export const territoiresList = {
@@ -390,26 +397,27 @@ export function getStartingTroops(playerCount) {
 }
 
 export function playImmersiveSounds(newPhase) {
+  let promise = undefined;
   switch (newPhase) {
     case EPhases.ATTACK:
       switch (randomInteger(1, 6)) {
         case 1:
-          document.getElementById("charge1-sound").play();
+          promise = document.getElementById("charge1-sound").play();
           break;
         case 2:
-          document.getElementById("charge2-sound").play();
+          promise = document.getElementById("charge2-sound").play();
           break;
         case 3:
-          document.getElementById("advance-sound").play();
+          promise = document.getElementById("advance-sound").play();
           break;
         case 4:
-          document.getElementById("killThemAll-sound").play();
+          promise = document.getElementById("killThemAll-sound").play();
           break;
         case 5:
-          document.getElementById("forward-sound").play();
+          promise = document.getElementById("forward-sound").play();
           break;
         case 6:
-          document.getElementById("goGoGo-sound").play();
+          promise = document.getElementById("goGoGo-sound").play();
           break;
       }
       break;
@@ -417,20 +425,24 @@ export function playImmersiveSounds(newPhase) {
     case EPhases.DRAFT:
       switch (randomInteger(1, 4)) {
         case 1:
-          document.getElementById("reinforcements-sound").play();
+          promise = document.getElementById("reinforcements-sound").play();
           break;
         case 2:
-          document.getElementById("standFirm-sound").play();
+          promise = document.getElementById("standFirm-sound").play();
           break;
         case 3:
-          document.getElementById("formRanks-sound").play();
+          promise = document.getElementById("formRanks-sound").play();
           break;
         case 4:
-          document.getElementById("frontlines-sound").play();
+          promise = document.getElementById("frontlines-sound").play();
           break;
       }
       break;
   }
+
+  promise.catch(error => {
+    console.error(error);
+  });
 }
 
 export function setMusicVolume(volume){

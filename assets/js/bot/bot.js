@@ -12,11 +12,38 @@ export default class Bot extends BotBase {
     super(params);
   }
 
-  // Phase de sélection initiale des territoires
+  //Phase de sélection initiale des territoires
   pickTerritory() {
     const territoiresLibres = Object.keys(territoiresList).filter(
       (territoiresId) => territoiresList[territoiresId].playerId == null
     );
+
+    //Prioriser les territoires qui permettent de contrôler des continents
+    const continentPriority = [
+      'oceania',
+      'south-america',
+      'africa',
+      'north-america',
+      'europe',
+      'asia'
+    ];
+
+    // Chercher d'abord les territoires dans les continents prioritaires
+    for (const continent of continentPriority) {
+      const continentTerritoires = continentsList[continent].territoires;
+      const availableInContinent = territoiresLibres.filter(id => 
+        continentTerritoires.includes(id)
+      );
+      
+      if (availableInContinent.length > 0) {
+        // Choisir aléatoirement parmi les territoires disponibles du continent
+        return availableInContinent[
+          utils.randomInteger(0, availableInContinent.length - 1)
+        ];
+      }
+    }
+
+    // Si aucun territoire dans les continents prioritaires n'est disponible, choisir aléatoirement
     return territoiresLibres[
       utils.randomInteger(0, territoiresLibres.length - 1)
     ];
@@ -24,11 +51,29 @@ export default class Bot extends BotBase {
 
   // Phase de placement initial des troupes
   pickStartTroop() {
-    const territoires = Object.keys(territoiresList).filter(
-      (territoiresId) =>
-        territoiresList[territoiresId].playerId === this.playerId
+    const ownedTerritoires = Object.keys(territoiresList).filter(
+      (territoiresId) => territoiresList[territoiresId].playerId === this.playerId
     );
-    return territoires[utils.randomInteger(0, territoires.length - 1)];
+
+    // Stratégie : Renforcer les territoires frontaliers (qui ont des voisins ennemis)
+    const frontierTerritoires = ownedTerritoires.filter(territoireId => {
+      return territoiresList[territoireId].connection.some(neighborId => {
+        const neighbor = territoiresList[neighborId];
+        return neighbor.playerId && neighbor.playerId !== this.playerId;
+      });
+    });
+
+    // Si on a des territoires frontaliers, en choisir un au hasard
+    if (frontierTerritoires.length > 0) {
+      return frontierTerritoires[
+        utils.randomInteger(0, frontierTerritoires.length - 1)
+      ];
+    }
+
+    // Sinon, choisir un territoire au hasard parmi ceux possédés
+    return ownedTerritoires[
+      utils.randomInteger(0, ownedTerritoires.length - 1)
+    ];
   }
 
   //Phase Draft - Placement stratégique des troupes
@@ -43,6 +88,45 @@ export default class Bot extends BotBase {
 
     //Trier les zones par taille en ordre décroissant
     zones.sort((a, b) => b.length - a.length);
+
+    //Objet des territoires classés par continent pour obtenir le pourcentage
+    const pourcentageContinents = {
+      "north-america": {
+        territoires: [],
+        pourcentage: 0,
+        name: "north-america",
+      },
+      "south-america": {
+        territoires: [],
+        pourcentage: 0,
+        name: "south-america",
+      },
+      europe: { territoires: [], pourcentage: 0, name: "europe" },
+      africa: { territoires: [], pourcentage: 0, name: "africa" },
+      asia: { territoires: [], pourcentage: 0, name: "asia" },
+      oceania: { territoires: [], pourcentage: 0, name: "oceania" },
+    };
+
+    //Tableau des continents à focus
+    const focus = [];
+
+    // Évaluer le pourcentage de continents possédé
+    for (const idTerritoire of ownedTerritoires) {
+      //Déterminer le continent du territoire
+      const continent = territoiresList[idTerritoire].continent;
+      pourcentageContinents[continent].territoires.push(idTerritoire);
+      //Évalue le pourcentage actuel de possession du continent
+      pourcentageContinents[continent].pourcentage = Math.round(
+        (pourcentageContinents[continent].territoires.length /
+          continentsList[continent].territoires.length) *
+          100
+      );
+
+      //Détermine les continents sur lesquels se concentrer
+      if (100 < pourcentageContinents[continent].pourcentage >= 75) {
+        focus.push(pourcentageContinents[continent].name);
+      }
+    }
 
     //Pour chaque zone, trouver le territoire avec le plus de troupes qui a des voisins ennemis
     let targetTerritories = [];
@@ -59,6 +143,33 @@ export default class Bot extends BotBase {
           targetTerritories.push(territoireId);
         }
       }
+    }
+
+    let territoireFocus = [];
+    //Trouve les territoires à focus pour compléter un continent qui est bientôt complété
+    for (const territoire of targetTerritories) {
+      for (const continent of focus) {
+        //Conditions (le territoire est dans un continent à focus et son voisin attackable est dans le continent)
+        if (
+          territoiresList[territoire].continent == focus &&
+          getAttackableNeighbour(territoire).length > 0
+        ) {
+          for (const attackableNeighbour of getAttackableNeighbour(
+            territoire
+          )) {
+            if (territoiresList[attackableNeighbour].continent == continent) {
+              const index = targetTerritories.indexOf(territoire);
+              targetTerritories.splice(index, index);
+              territoireFocus.push(territoire);
+            }
+          }
+        }
+      }
+    }
+
+    //Ajout des territoires à focus en haut des priorités des territoires ciblés
+    for (const territoire of territoireFocus) {
+      targetTerritories.unshift(territoire);
     }
 
     // Répartir les troupes proportionnellement sur les territoires cibles
@@ -80,7 +191,6 @@ export default class Bot extends BotBase {
   //Phase d'attaque - Stratégie d'attaque
   pickAttack() {
     const MIN_ODDS = 0.8; //80% de chances minimum
-
     //Trier les territoires par nombre de troupes (décroissant)
     const ownedTerritoires = Object.keys(territoiresList)
       .filter((id) => territoiresList[id].playerId === this.playerId)
@@ -176,7 +286,6 @@ export default class Bot extends BotBase {
           );
         }
       }
-
       const score = territoiresList[territoireId].troops - maxEnemyTroops;
       territoryScores.push({
         territoireId,

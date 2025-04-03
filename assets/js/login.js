@@ -72,9 +72,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (reponseJSON.success === true) {
       updateErrors([]);
 
-      sessionStorage.setItem("token", reponse.token);
-      sessionStorage.setItem("saved-username", reponse.name);
-      sessionStorage.setItem("saved-userId", reponse.id);
+      sessionStorage.setItem("token", reponseJSON.token);
+      sessionStorage.setItem("saved-username", reponseJSON.name);
+      sessionStorage.setItem("saved-userId", reponseJSON.id);
       sessionStorage.setItem("guest", true);
       window.location.href = "/riskquest/";
     } else {

@@ -1,4 +1,10 @@
-import { data, EPhases, territoiresList, playersList, playImmersiveSounds} from "./data.js";
+import {
+  data,
+  EPhases,
+  territoiresList,
+  playersList,
+  playImmersiveSounds,
+} from "./data.js";
 import { countPlayerTerritoires, countPlayerTroops } from "./logic.js";
 import * as utils from "./utils.js";
 
@@ -142,10 +148,10 @@ export function updatePastilleTroopsCount(territoireId) {
 
 /**
  * Met à jour l'affichage des troupes pour un territoire spécifique.
- * 
- * Cette fonction met à jour l'élément HTML correspondant au territoire donné 
+ *
+ * Cette fonction met à jour l'élément HTML correspondant au territoire donné
  * en ajoutant un certain nombre de troupes au compteur actuel.
- * 
+ *
  * @param {string} territoireId - L'identifiant du territoire dont l'affichage des troupes doit être mis à jour.
  * @param {number} count - Le nombre de troupes à ajouter (peut être négatif pour réduire les troupes).
  */
@@ -313,10 +319,10 @@ export function addTroopsChangeParticle(territoireId, playerId, troopsCount) {
   particule.style.left = pastille.style.left; // Position the particule
   particule.style.top = pastille.style.top;
 
-  requestAnimationFrame(() => {
+  setTimeout(() => {
     particule.style.transform = "translate(-50%, -50%) translateY(-70px)"; // Move upwards
     particule.style.fontSize = 0; // Fade out
-  });
+  }, 16);
 
   console.log(pastille.style.left, pastille.style.top);
 
