@@ -1,3 +1,4 @@
+import { generateGameCards } from "./logic.js";
 import { randomInteger } from "./utils.js";
 
 export const EPhases = Object.freeze({
@@ -7,6 +8,13 @@ export const EPhases = Object.freeze({
   DRAFT: Symbol("DRAFT"),
   ATTACK: Symbol("ATTACK"),
   FORTIFY: Symbol("FORTIFY"),
+});
+
+export const CardType = Object.freeze({
+  JOKER: Symbol("JOKER"),
+  INFANTRY: Symbol("INFANTRY"),
+  ARTILLERY: Symbol("ARTILLERY"),
+  CAVALRY: Symbol("CAVALRY"),
 });
 
 export const data = {
@@ -281,6 +289,10 @@ export const territoiresList = {
     pastille: { x: 0.27, y: 0.42 },
   },
 };
+
+export const gameCards = generateGameCards();
+
+console.log(gameCards);
 
 function fillContinents() {
   const continents = {

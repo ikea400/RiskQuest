@@ -7,6 +7,7 @@ import {
   playersList,
   setMusicVolume,
   setSFXVolume,
+  gameCards,
 } from "./data.js";
 import {
   getAttackableNeighbour,
@@ -22,6 +23,7 @@ import {
   removeTroopsFromTerritory,
   moveTroopsFromTerritory,
   takeOverTerritoryFromTerritory,
+  drawCard,
 } from "./logic.js";
 import {
   updatePastillesPosition,
@@ -511,6 +513,11 @@ function startAttackPhase(playerCount, callback) {
 
       if (territoiresList[defenderTerritoireId].troops <= 0) {
         const defenderPlayerId = territoiresList[defenderTerritoireId].playerId;
+
+          drawCard(data.currentPlayerId);
+          console.log(gameCards);
+          console.log(playersList[data.currentPlayerId].cards);
+          
           document.getElementById('canon-sound').load();
           document.getElementById('canon-sound').play();
         takeOverTerritoryFromTerritory(
@@ -826,8 +833,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const popup = new SettingsPopup({
       music:setMusicVolume,
       sfx:setSFXVolume,
-      volumeMusic: document.getElementById('canon-sound').volume,
-      volumeSFX: document.getElementById('charge1-sound').volume
+      volumeMusic: document.getElementById('sea-music').volume,
+      volumeSFX: document.getElementById('charge1-sound').volume,
     });
     await popup.show();
   });
