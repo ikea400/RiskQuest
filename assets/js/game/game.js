@@ -734,6 +734,12 @@ function startMainLoop(playerCount, callback) {
 
     // Commence un rounde
     startOneRound(playerCount, handler);
+    // afficher les cartes si c'est le tour d'un joueur
+    if (!data.currentPlayerId.bot) {
+      document.getElementById("cards-button").classList.add("hidden");
+    } else {
+      document.getElementById("cards-button").classList.remove("hidden");
+    }
   };
 
   // Demarage de la boucle
@@ -771,6 +777,10 @@ function cardHandler() {
     );
   }
 }
+
+/*
+/ DOMContentLoaded
+*/
 
 document.addEventListener("DOMContentLoaded", function () {
   const enLigne = false;
