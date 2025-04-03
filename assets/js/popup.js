@@ -215,7 +215,7 @@ export class CountPopup extends PopupBase {
           this.resolve({ cancel: false, value: this.value });
           break;
         case "Escape":
-          this.resolve({ cancel: true });
+          if (this.params.cancel === true) this.resolve({ cancel: true });
           break;
       }
     });
@@ -399,10 +399,13 @@ export class AttackPopup extends PopupBase {
 
     if (this.params.defender && this.params.attacker) {
       let odds;
-      if (this.current === 0 && winningOdds.blitz) {
+      if (
+        this.current === 0 &&
+        winningOdds.blitz &&
+        this.params.defender < winningOdds.blitz.length &&
+        this.params.attacker < winningOdds.blitz.length
+      ) {
         odds = winningOdds.blitz;
-      } else if (this.current > 0 && winningOdds.classic) {
-        odds = winningOdds.classic;
       }
 
       if (odds) {
@@ -550,6 +553,8 @@ export class SettingsPopup extends PopupBase {
       this.params.volumeMusic * 100;
     document.getElementById("popup-settings-sfx").value =
       this.params.volumeSFX * 100;
+    document.getElementById("popup-settings-speed").value =
+      this.params.currentSpeed.index;
     for (const slider of sliders) {
       updateSliderGradiant(slider);
 
@@ -589,8 +594,7 @@ export class SettingsPopup extends PopupBase {
     this.params.speed ??= (speed) => {};
     this.params.volumeMusic ??= 0.5;
     this.params.volumeSFX ??= 0.5;
-
-    console.log(this.params.volumeMusic);
+    this.params.currentSpeed ??= EBotSpeed.SLOW;
   }
 }
 
@@ -621,6 +625,27 @@ export class CardPopup extends PopupBase {
         
       </div>
       
+      <div id="legend-card">
+        <img id="card-legend-header" src='./assets/images/riskBonusLegendHeader.png' alt='Legend'img>
+        <div id="legend-card-information">
+          <span>
+            <span class="legend-number">4</span> <span>Infantry</span>
+          </span>
+
+          <span>
+            <span class="legend-number">6</span> <span>Cavalry</span>
+          </span>
+
+          <span>
+            <span class="legend-number">8</span> <span>Artillery</span>
+          </span>
+
+          <span>
+            <span class="legend-number">10</span> <span>All Three</span>
+          </span>
+
+        </div>
+      </div>
       
       
     </div>

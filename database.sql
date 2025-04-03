@@ -80,7 +80,7 @@ BEGIN
 
     IF NEW.id IS NULL OR NEW.id = 0 THEN
         WHILE id_exists AND attempts < max_attempts DO
-            SET new_id = 1 + FLOOR(RAND() * (9223372036854775806));
+            SET new_id = 1 + FLOOR(RAND() * (9007199254740991));
             SET id_exists = (SELECT COUNT(*) FROM User WHERE id = new_id) > 0;
             SET attempts = attempts + 1;
         END WHILE;
@@ -117,7 +117,7 @@ BEGIN
 
     IF NEW.id IS NULL OR NEW.id = 0 THEN
         WHILE id_exists AND attempts < max_attempts DO
-            SET new_id = 1 + FLOOR(RAND() * (9223372036854775807));
+            SET new_id = 1 + FLOOR(RAND() * (9007199254740991));
             SET id_exists = (SELECT COUNT(*) FROM Game WHERE id = new_id) > 0;
             SET attempts = attempts + 1;
         END WHILE;
@@ -166,4 +166,6 @@ INSERT INTO User (name, guest) VALUES('Guest01', TRUE);
 
 SELECT *
 FROM User;
+
+SELECT game_id FROM User_Game WHERE user_id=1;
 
