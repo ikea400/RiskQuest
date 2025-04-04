@@ -257,7 +257,7 @@ function startDraftPhase(playerCount, callback) {
   addTroops(data.currentPlayerId, newTroops);
 
   console.log(playersList[data.currentPlayerId].cards.length);
-  if(playersList[data.currentPlayerId].cards.length >= 5){
+  if (playersList[data.currentPlayerId].cards.length >= 5) {
     let cards = getBestSetForTroops();
     console.log(cards);
     addTroops(data.currentPlayerId, claimCards(cards));
@@ -617,10 +617,10 @@ function startFortifyPhase(playerCount, callback, canGetCard) {
 
   console.log("startFortifyPhase");
   updateCurrentPhase(EPhases.FORTIFY);
-  if(canGetCard){
-    console.log("Pickacard")
+  if (canGetCard) {
+    console.log("Pickacard");
     drawCard(data.currentPlayerId);
-    console.log(playersList[data.currentPlayerId].cards)
+    console.log(playersList[data.currentPlayerId].cards);
   }
   if (playersList[data.currentPlayerId].bot) {
     setTimeout(() => {
@@ -792,7 +792,7 @@ function cardHandler() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-  const enLigne = true;
+  const enLigne = false;
   const autoPlacement = true;
   const playerCount = 6;
   // Where does the bots start if there is any. Else set to 0
@@ -853,7 +853,7 @@ document.addEventListener("DOMContentLoaded", function () {
               playersList[7] = value["gameId"];
               //nesting saveMove beacause it is dependent on playersList, save the move only after receiving game_id
               //make inital move to save inital territory and troop distribution
-              console.log("Game id: " + value["game_id"]);
+              console.log("Game id: " + value["gameId"]);
               saveMove({
                 players: playersList,
                 territories: territoiresList,
@@ -911,18 +911,4 @@ document.addEventListener("DOMContentLoaded", function () {
   window.addEventListener("resize", updatePastillesPosition);
   // établir le popup des cartes quand on clique sur l'image des cartes
   document.getElementById("cards-img").addEventListener("click", cardHandler);
-
-  const list = [];
-  for (const territoireId in territoiresList) {
-    const element = document.getElementById(territoireId);
-    const bbox = element.getBBox();
-    list.push({
-      id: territoireId,
-      path: document.getElementById(territoireId).getAttribute("d"),
-      pastille: territoiresList[territoireId].pastille,
-      bbox: { x: bbox.x, y: bbox.y, width: bbox.width, height: bbox.height },
-    });
-  }
-
-  console.log(JSON.stringify(list));
 });
