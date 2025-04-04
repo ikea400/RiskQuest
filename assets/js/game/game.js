@@ -24,6 +24,9 @@ import {
   moveTroopsFromTerritory,
   takeOverTerritoryFromTerritory,
   drawCard,
+  claimCards,
+  getBestSetForTroops,
+  discardCards,
 } from "./logic.js";
 import {
   updatePastillesPosition,
@@ -50,7 +53,6 @@ import RandomBot from "../bot/bot.js";
 // });
 
 let gameFinished = false;
-
 /**
  * Démarre la phase de sélection des territoires pour les joueurs.
  * @param {number} playerCount - Nombre total de joueurs participant au jeu.
@@ -251,9 +253,17 @@ function startDraftPhase(playerCount, callback) {
 
   // Calcule le nombre de nouvelle troop de la phase draft
   const newTroops = countNewTroops(ownedTerritoriesIds, data.currentPlayerId);
-
   // Ajouter les troupes
   addTroops(data.currentPlayerId, newTroops);
+
+  console.log(playersList[data.currentPlayerId].cards.length);
+  if(playersList[data.currentPlayerId].cards.length >= 5){
+    let cards = getBestSetForTroops();
+    console.log(cards);
+    addTroops(data.currentPlayerId, claimCards(cards));
+    discardCards(data.currentPlayerId, cards);
+    console.log(playersList[data.currentPlayerId].cards);
+  }
 
   if (playersList[data.currentPlayerId].bot) {
     const drafts = playersList[data.currentPlayerId].bot.pickDraftTroops();
@@ -333,6 +343,7 @@ function startDraftPhase(playerCount, callback) {
 }
 
 function startAttackPhase(playerCount, callback) {
+  let canGetCard = false;
   const Move = {
     player: data.currentPlayerId,
     attacks: {},
@@ -349,7 +360,7 @@ function startAttackPhase(playerCount, callback) {
       setTimeout(() => {
         const attack = bot.pickAttack();
         if (!attack || limit-- <= 0) {
-          return startFortifyPhase(playerCount, callback);
+          return startFortifyPhase(playerCount, callback, canGetCard);
         }
 
         const attackerTerritoireId = attack.attacker;
@@ -381,6 +392,7 @@ function startAttackPhase(playerCount, callback) {
         }
 
         if (territoiresList[defenderTerritoireId].troops <= 0) {
+          canGetCard = true;
           document.getElementById("canon-sound").load();
           document.getElementById("canon-sound").play();
 
@@ -423,6 +435,7 @@ function startAttackPhase(playerCount, callback) {
         handler();
       }, data.botSpeed.delay);
     };
+    handler();
   } else {
     const territoriesIds = Object.keys(territoiresList);
     const territoiresSvgs = territoriesIds.map((territoireId) =>
@@ -447,7 +460,7 @@ function startAttackPhase(playerCount, callback) {
         console.log("Error at api.php when saving attack move: " + error);
       });
 
-      startFortifyPhase(playerCount, callback);
+      startFortifyPhase(playerCount, callback, canGetCard);
     }
     turnHudAction.addEventListener("click", nextHandler, { once: true });
 
@@ -523,10 +536,7 @@ function startAttackPhase(playerCount, callback) {
       if (territoiresList[defenderTerritoireId].troops <= 0) {
         const defenderPlayerId = territoiresList[defenderTerritoireId].playerId;
 
-        drawCard(data.currentPlayerId);
-        console.log(gameCards);
-        console.log(playersList[data.currentPlayerId].cards);
-
+        canGetCard = true;
         document.getElementById("canon-sound").load();
         document.getElementById("canon-sound").play();
         takeOverTerritoryFromTerritory(
@@ -594,7 +604,7 @@ function startAttackPhase(playerCount, callback) {
   }
 }
 
-function startFortifyPhase(playerCount, callback) {
+function startFortifyPhase(playerCount, callback, canGetCard) {
   const Move = {
     player: data.currentPlayerId,
     fortifyDraft: {},
@@ -602,7 +612,11 @@ function startFortifyPhase(playerCount, callback) {
 
   console.log("startFortifyPhase");
   updateCurrentPhase(EPhases.FORTIFY);
-
+  if(canGetCard){
+    console.log("Pickacard")
+    drawCard(data.currentPlayerId);
+    console.log(playersList[data.currentPlayerId].cards)
+  }
   if (playersList[data.currentPlayerId].bot) {
     setTimeout(() => {
       const bot = playersList[data.currentPlayerId].bot;
