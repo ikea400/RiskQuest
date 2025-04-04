@@ -31,6 +31,7 @@ export const data = {
   selectedTerritoire: undefined,
   currentPhase: EPhases.ATTACK,
   botSpeed: EBotSpeed.SLOW,
+  discardPile:[],
 };
 
 export const territoiresList = {

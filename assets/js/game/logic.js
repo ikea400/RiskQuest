@@ -586,15 +586,17 @@ export function drawCard(playerId) {
  */
 export function discardCards(playerId, cards) {
   for (const card of cards) {
-    playersList[playerId].cards.pop(card);
-    discardPile.push(card);
+    let index = playersList[playerId].cards.indexOf(card);
+    playersList[playerId].cards.splice(index, 1);
+    data.discardPile.push(card);
   }
-  if(discardPile.length < 5){
-      discardPile = shuffleArray(discardPile);
-      for (const card of discardPile) {
-          gameCards.push(card);
-      }
+  if (gameCards.length < 5) {
+    data.discardPile = shuffleArray(data.discardPile);
+    for (const card of data.discardPile) {
+      gameCards.push(card);
     }
+    data.discardPile = [];
+  }
 }
 
 /**
@@ -619,4 +621,10 @@ export function getBestSetForTroops() {
     }
   }
   return bestSet;
+}
+
+export function takeCardsFrom(attakerId, defenderId) {
+    while(playersList[defenderId].cards.length > 0){
+      playersList[attakerId].cards.push(playersList[defenderId].cards.pop());
+    }
 }

@@ -552,6 +552,11 @@ function startAttackPhase(playerCount, callback) {
           checkPlayerDeadState(defenderPlayerId)
         );
 
+        if(checkPlayerDeadState(defenderPlayerId)){
+          
+        }
+
+
         let count = territoiresList[attackerTerritoireId].troops - 1;
         if (territoiresList[attackerTerritoireId].troops > 3) {
           const popup = new CountPopup({
@@ -854,7 +859,7 @@ function generateFullCardImages() {
 */
 
 document.addEventListener("DOMContentLoaded", function () {
-  const enLigne = false;
+  const enLigne = true;
   const autoPlacement = true;
   const playerCount = 6;
   // Where does the bots start if there is any. Else set to 0
@@ -882,7 +887,8 @@ document.addEventListener("DOMContentLoaded", function () {
     : [startTurnTerritoriesSelection, startTurnTroopsPlacement];
 
   const setAsGestFn = enLigne
-    ? setAsGest
+    ? async () =>
+        sessionStorage.getItem("token") ? { success: false } : setAsGest()
     : async () => {
         return { success: false };
       };
@@ -904,6 +910,7 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log("Selection is done");
 
         placementFn(playerCount, () => {
+          playersList[1].userId = sessionStorage.getItem("saved-userId");
           //create game with player info
           initializeGame({
             players: playersList,
@@ -971,4 +978,18 @@ document.addEventListener("DOMContentLoaded", function () {
   window.addEventListener("resize", updatePastillesPosition);
   // établir le popup des cartes quand on clique sur l'image des cartes
   document.getElementById("cards-img").addEventListener("click", cardHandler);
+
+  const list = [];
+  for (const territoireId in territoiresList) {
+    const element = document.getElementById(territoireId);
+    const bbox = element.getBBox();
+    list.push({
+      id: territoireId,
+      path: document.getElementById(territoireId).getAttribute("d"),
+      pastille: territoiresList[territoireId].pastille,
+      bbox: { x: bbox.x, y: bbox.y, width: bbox.width, height: bbox.height },
+    });
+  }
+
+  console.log(JSON.stringify(list));
 });
