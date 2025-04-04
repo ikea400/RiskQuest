@@ -166,7 +166,7 @@ $router->get("/games/{userId}", function ($userId, $tokenPayload): JsonResponse 
     $pdo = new DatabaseConnection();
 
     $requete = $pdo->safeQuery(
-        "SELECT game_id FROM User_Game WHERE user_id=:userId;",
+        "SELECT * FROM Game g JOIN User_Game u ON g.id = u.game_id WHERE u.user_id=:userId;",
         ['userId' => $userId]
     );
 
