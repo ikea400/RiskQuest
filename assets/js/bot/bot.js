@@ -12,11 +12,38 @@ export default class Bot extends BotBase {
     super(params);
   }
 
-  // Phase de sélection initiale des territoires
+  //Phase de sélection initiale des territoires
   pickTerritory() {
     const territoiresLibres = Object.keys(territoiresList).filter(
       (territoiresId) => territoiresList[territoiresId].playerId == null
     );
+
+    //Prioriser les territoires qui permettent de contrôler des continents
+    const continentPriority = [
+      'oceania',
+      'south-america',
+      'africa',
+      'north-america',
+      'europe',
+      'asia'
+    ];
+
+    // Chercher d'abord les territoires dans les continents prioritaires
+    for (const continent of continentPriority) {
+      const continentTerritoires = continentsList[continent].territoires;
+      const availableInContinent = territoiresLibres.filter(id => 
+        continentTerritoires.includes(id)
+      );
+      
+      if (availableInContinent.length > 0) {
+        // Choisir aléatoirement parmi les territoires disponibles du continent
+        return availableInContinent[
+          utils.randomInteger(0, availableInContinent.length - 1)
+        ];
+      }
+    }
+
+    // Si aucun territoire dans les continents prioritaires n'est disponible, choisir aléatoirement
     return territoiresLibres[
       utils.randomInteger(0, territoiresLibres.length - 1)
     ];
@@ -24,11 +51,29 @@ export default class Bot extends BotBase {
 
   // Phase de placement initial des troupes
   pickStartTroop() {
-    const territoires = Object.keys(territoiresList).filter(
-      (territoiresId) =>
-        territoiresList[territoiresId].playerId === this.playerId
+    const ownedTerritoires = Object.keys(territoiresList).filter(
+      (territoiresId) => territoiresList[territoiresId].playerId === this.playerId
     );
-    return territoires[utils.randomInteger(0, territoires.length - 1)];
+
+    // Stratégie : Renforcer les territoires frontaliers (qui ont des voisins ennemis)
+    const frontierTerritoires = ownedTerritoires.filter(territoireId => {
+      return territoiresList[territoireId].connection.some(neighborId => {
+        const neighbor = territoiresList[neighborId];
+        return neighbor.playerId && neighbor.playerId !== this.playerId;
+      });
+    });
+
+    // Si on a des territoires frontaliers, en choisir un au hasard
+    if (frontierTerritoires.length > 0) {
+      return frontierTerritoires[
+        utils.randomInteger(0, frontierTerritoires.length - 1)
+      ];
+    }
+
+    // Sinon, choisir un territoire au hasard parmi ceux possédés
+    return ownedTerritoires[
+      utils.randomInteger(0, ownedTerritoires.length - 1)
+    ];
   }
 
   //Phase Draft - Placement stratégique des troupes

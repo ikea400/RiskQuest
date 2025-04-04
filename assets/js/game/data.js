@@ -1,3 +1,4 @@
+import { generateGameCards } from "./logic.js";
 import { randomInteger } from "./utils.js";
 
 export const EPhases = Object.freeze({
@@ -7,6 +8,13 @@ export const EPhases = Object.freeze({
   DRAFT: Symbol("DRAFT"),
   ATTACK: Symbol("ATTACK"),
   FORTIFY: Symbol("FORTIFY"),
+});
+
+export const CardType = Object.freeze({
+  JOKER: Symbol("JOKER"),
+  INFANTRY: Symbol("INFANTRY"),
+  ARTILLERY: Symbol("ARTILLERY"),
+  CAVALRY: Symbol("CAVALRY"),
 });
 
 export const EBotSpeed = Object.freeze({
@@ -289,6 +297,10 @@ export const territoiresList = {
   },
 };
 
+export const gameCards = generateGameCards();
+
+console.log(gameCards);
+
 function fillContinents() {
   const continents = {
     "north-america": { bonus: 5, territoires: [] },
@@ -432,3 +444,18 @@ export function playImmersiveSounds(newPhase) {
     console.error(error);
   });
 }
+
+export function setMusicVolume(volume){
+  document.getElementById("sea-music").volume = volume;
+}
+export function setSFXVolume(volume){
+  const listID = ['canon-sound','protect-sound','charge1-sound'
+  ,'charge2-sound','advance-sound','formRanks-sound','killThemAll-sound'
+  ,'standFirm-sound','reinforcements-sound','frontlines-sound'
+  ,'forward-sound','goGoGo-sound'];
+  
+  for(const element of listID){
+    document.getElementById(element).volume = volume;
+  }
+}
+
