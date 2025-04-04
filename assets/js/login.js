@@ -3,10 +3,13 @@ window.addEventListener("pageshow", function (event) {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
-
   // Remplisage automatic apres l'inscription
-  document.getElementById("input-username").value = sessionStorage.getItem("registered-username");
-  document.getElementById("input-password").value = sessionStorage.getItem("registered-password");
+  document.getElementById("input-username").value = sessionStorage.getItem(
+    "registered-username"
+  );
+  document.getElementById("input-password").value = sessionStorage.getItem(
+    "registered-password"
+  );
   sessionStorage.removeItem("registered-username");
   sessionStorage.removeItem("registered-password");
 
@@ -50,9 +53,9 @@ document.addEventListener("DOMContentLoaded", () => {
       // Enleve tous les anciennes erreurs
       updateErrors([]);
 
-      sessionStorage.setItem("token", reponse.token);
+      sessionStorage.setItem("token", reponseJSON.token);
       sessionStorage.setItem("saved-username", nomUtilisateur);
-      sessionStorage.setItem("saved-userId", reponse.id);
+      sessionStorage.setItem("saved-userId", reponseJSON.id);
       sessionStorage.setItem("guest", false);
       window.location.href = "/riskquest/";
     } else {
