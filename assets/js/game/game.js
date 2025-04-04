@@ -551,6 +551,11 @@ function startAttackPhase(playerCount, callback) {
           checkPlayerDeadState(defenderPlayerId)
         );
 
+        if(checkPlayerDeadState(defenderPlayerId)){
+          
+        }
+
+
         let count = territoiresList[attackerTerritoireId].troops - 1;
         if (territoiresList[attackerTerritoireId].troops > 3) {
           const popup = new CountPopup({
