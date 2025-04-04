@@ -330,37 +330,37 @@ export const playersList = [
     name: "Player01",
     img: "./assets/images/player1-profile.webp",
     bot: false,
-    cards:[],
+    cards: [],
   },
   {
     name: "Player02",
     img: "./assets/images/player2-profile.webp",
     bot: true,
-    cards:[],
+    cards: [],
   },
   {
     name: "Player03",
     img: "./assets/images/player3-profile.webp",
     bot: true,
-    cards:[],
+    cards: [],
   },
   {
     name: "Player04",
     img: "./assets/images/player4-profile.webp",
     bot: true,
-    cards:[],
+    cards: [],
   },
   {
     name: "Player05",
     img: "./assets/images/player5-profile.webp",
     bot: true,
-    cards:[],
+    cards: [],
   },
   {
     name: "Player06",
     img: "./assets/images/player6-profile.webp",
     bot: true,
-    cards:[],
+    cards: [],
   },
 ];
 
@@ -403,27 +403,26 @@ export function getStartingTroops(playerCount) {
 }
 
 export function playImmersiveSounds(newPhase) {
-  let promise = undefined;
   switch (newPhase) {
     case EPhases.ATTACK:
       switch (randomInteger(1, 6)) {
         case 1:
-          promise = document.getElementById("charge1-sound").play();
+          document.getElementById("charge1-sound").play();
           break;
         case 2:
-          promise = document.getElementById("charge2-sound").play();
+          document.getElementById("charge2-sound").play();
           break;
         case 3:
-          promise = document.getElementById("advance-sound").play();
+          document.getElementById("advance-sound").play();
           break;
         case 4:
-          promise = document.getElementById("killThemAll-sound").play();
+          document.getElementById("killThemAll-sound").play();
           break;
         case 5:
-          promise = document.getElementById("forward-sound").play();
+          document.getElementById("forward-sound").play();
           break;
         case 6:
-          promise = document.getElementById("goGoGo-sound").play();
+          document.getElementById("goGoGo-sound").play();
           break;
       }
       break;
@@ -431,37 +430,42 @@ export function playImmersiveSounds(newPhase) {
     case EPhases.DRAFT:
       switch (randomInteger(1, 4)) {
         case 1:
-          promise = document.getElementById("reinforcements-sound").play();
+          document.getElementById("reinforcements-sound").play();
           break;
         case 2:
-          promise = document.getElementById("standFirm-sound").play();
+          document.getElementById("standFirm-sound").play();
           break;
         case 3:
-          promise = document.getElementById("formRanks-sound").play();
+          document.getElementById("formRanks-sound").play();
           break;
         case 4:
-          promise = document.getElementById("frontlines-sound").play();
+          document.getElementById("frontlines-sound").play();
           break;
       }
       break;
   }
-
-  promise.catch(error => {
-    console.error(error);
-  });
 }
 
-export function setMusicVolume(volume){
+export function setMusicVolume(volume) {
   document.getElementById("sea-music").volume = volume;
 }
-export function setSFXVolume(volume){
-  const listID = ['canon-sound','protect-sound','charge1-sound'
-  ,'charge2-sound','advance-sound','formRanks-sound','killThemAll-sound'
-  ,'standFirm-sound','reinforcements-sound','frontlines-sound'
-  ,'forward-sound','goGoGo-sound'];
-  
-  for(const element of listID){
+export function setSFXVolume(volume) {
+  const listID = [
+    "canon-sound",
+    "protect-sound",
+    "charge1-sound",
+    "charge2-sound",
+    "advance-sound",
+    "formRanks-sound",
+    "killThemAll-sound",
+    "standFirm-sound",
+    "reinforcements-sound",
+    "frontlines-sound",
+    "forward-sound",
+    "goGoGo-sound",
+  ];
+
+  for (const element of listID) {
     document.getElementById(element).volume = volume;
   }
 }
-
