@@ -646,6 +646,7 @@
   margin-top: auto;
   flex-wrap: nowrap;
   width: 100vw;
+  height: min(21vw,29vh);
   position: relative;
   background-color: rgb(30, 30, 30);
   border-top-right-radius: 20px;
@@ -724,6 +725,8 @@
   height: 5vh;
 }
 #territory-card {
+  width: 100%;
+  height: auto;
   z-index: 10;
 }
 .card-wrapper {

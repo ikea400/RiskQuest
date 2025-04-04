@@ -8,6 +8,7 @@ import {
   setMusicVolume,
   setSFXVolume,
   gameCards,
+  CardType,
 } from "./data.js";
 import {
   getAttackableNeighbour,
@@ -764,31 +765,88 @@ function cardHandler() {
     const popup = new CardPopup({});
     popup.show();
 
-    let card = document.getElementsByClassName("card-wrapper");
-
-    let country = document.getElementById("alaska").cloneNode(false);
-    country.id = "territory-card";
-    country.classList.remove("territoire");
-    country.classList.remove("attackable-territory");
-
-    let svgWrapper = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "svg"
-    );
-    svgWrapper.classList.add("svg-card");
-
-    svgWrapper.setAttribute("preserveAspectRatio", "xMidYMid meet");
-
-    svgWrapper.appendChild(country);
-
-    card[0].appendChild(svgWrapper);
-
-    const bbox = country.getBBox();
-    svgWrapper.setAttribute(
-      "viewBox",
-      `${bbox.x} ${bbox.y} ${bbox.width} ${bbox.height}`
-    );
+    // generer les images des cartes du joueur
+    generateFullCardImages();
   }
+}
+
+function generateFullCardImages() {
+  let location = document.getElementById("popup-cards-remaining-cards");
+  let nbDeCartesTotal = playersList[data.currentPlayerId].cards.length;
+
+  // pour chaque carte en main, assembler une image de carte pour représenter la carte
+  for (let i = 0; i < nbDeCartesTotal; i++) {
+
+    // obtenir les informations de la carte
+
+    let card = document.createElement("img");
+    let type = playersList[data.currentPlayerId].cards[i].type;
+    let cardWrapper = document.createElement("div");
+    
+    card.classList.add("image-card");
+
+    // Obtenir le type de carte pour l'image (cavalerie, canon, infanterie, joker)
+
+    if (type == CardType.JOKER) {
+      card.src = "../../images/riskCardJoker.png"
+      cardWrapper.appendChild(card);
+    } else {
+
+      switch (type) {
+        case CardType.ARTILLERY:
+          card.src = "./assets/images/riskCardCannon.png";
+          break;
+        case CardType.CAVALRY:
+          card.src = "./assets/images/riskCardCavalry.png";
+          break;
+        case CardType.INFANTRY:
+          card.src = "./assets/images/riskCardInfantry.png";
+          break;
+      }
+
+      cardWrapper.appendChild(card);
+
+      let name = playersList[data.currentPlayerId].cards[i].territory;
+      let country = document.getElementById(name).cloneNode(false);
+
+      country.id = "territory-card";
+      country.classList.remove("territoire");
+      country.classList.remove("attackable-territory");
+
+
+      let svgWrapper = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "svg"
+      );
+      svgWrapper.classList.add("svg-card");
+
+      svgWrapper.setAttribute("preserveAspectRatio", "xMidYMid meet");
+
+      svgWrapper.appendChild(country);
+
+      cardWrapper.appendChild(svgWrapper);
+
+      // parce que ca fonctionne ??
+      setTimeout(() => {
+        const bbox = country.getBBox();
+        svgWrapper.setAttribute(
+        "viewBox",
+        `${bbox.x} ${bbox.y} ${bbox.width} ${bbox.height}`
+      );
+      }, 0);
+
+    }
+
+    // assembler la carte
+    
+    cardWrapper.classList.add("card-wrapper");
+
+    location.appendChild(cardWrapper);
+  }
+  
+  
+  
+
 }
 
 /*
