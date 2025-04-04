@@ -5,6 +5,9 @@ import {
   EPhases,
   territoiresList,
   playersList,
+  setMusicVolume,
+  setSFXVolume,
+  gameCards,
 } from "./data.js";
 import {
   getAttackableNeighbour,
@@ -20,6 +23,10 @@ import {
   removeTroopsFromTerritory,
   moveTroopsFromTerritory,
   takeOverTerritoryFromTerritory,
+  drawCard,
+  claimCards,
+  getBestSetForTroops,
+  discardCards,
 } from "./logic.js";
 import {
   updatePastillesPosition,
@@ -46,7 +53,6 @@ import RandomBot from "../bot/bot.js";
 // });
 
 let gameFinished = false;
-
 /**
  * Démarre la phase de sélection des territoires pour les joueurs.
  * @param {number} playerCount - Nombre total de joueurs participant au jeu.
@@ -247,9 +253,17 @@ function startDraftPhase(playerCount, callback) {
 
   // Calcule le nombre de nouvelle troop de la phase draft
   const newTroops = countNewTroops(ownedTerritoriesIds, data.currentPlayerId);
-
   // Ajouter les troupes
   addTroops(data.currentPlayerId, newTroops);
+
+  console.log(playersList[data.currentPlayerId].cards.length);
+  if(playersList[data.currentPlayerId].cards.length >= 5){
+    let cards = getBestSetForTroops();
+    console.log(cards);
+    addTroops(data.currentPlayerId, claimCards(cards));
+    discardCards(data.currentPlayerId, cards);
+    console.log(playersList[data.currentPlayerId].cards);
+  }
 
   if (playersList[data.currentPlayerId].bot) {
     const drafts = playersList[data.currentPlayerId].bot.pickDraftTroops();
@@ -329,6 +343,7 @@ function startDraftPhase(playerCount, callback) {
 }
 
 function startAttackPhase(playerCount, callback) {
+  let canGetCard = false;
   const Move = {
     player: data.currentPlayerId,
     attacks: {},
@@ -345,7 +360,7 @@ function startAttackPhase(playerCount, callback) {
       setTimeout(() => {
         const attack = bot.pickAttack();
         if (!attack || limit-- <= 0) {
-          return startFortifyPhase(playerCount, callback);
+          return startFortifyPhase(playerCount, callback, canGetCard);
         }
 
         const attackerTerritoireId = attack.attacker;
@@ -377,6 +392,10 @@ function startAttackPhase(playerCount, callback) {
         }
 
         if (territoiresList[defenderTerritoireId].troops <= 0) {
+          canGetCard = true;
+          document.getElementById("canon-sound").load();
+          document.getElementById("canon-sound").play();
+
           const defenderPlayerId =
             territoiresList[defenderTerritoireId].playerId;
           takeOverTerritoryFromTerritory(
@@ -408,11 +427,14 @@ function startAttackPhase(playerCount, callback) {
             data.currentPlayerId,
             count
           );
+        } else {
+          document.getElementById("protect-sound").load();
+          document.getElementById("protect-sound").play();
         }
+
         handler();
       }, data.botSpeed.delay);
     };
-
     handler();
   } else {
     const territoriesIds = Object.keys(territoiresList);
@@ -438,7 +460,7 @@ function startAttackPhase(playerCount, callback) {
         console.log("Error at api.php when saving attack move: " + error);
       });
 
-      startFortifyPhase(playerCount, callback);
+      startFortifyPhase(playerCount, callback, canGetCard);
     }
     turnHudAction.addEventListener("click", nextHandler, { once: true });
 
@@ -513,6 +535,10 @@ function startAttackPhase(playerCount, callback) {
 
       if (territoiresList[defenderTerritoireId].troops <= 0) {
         const defenderPlayerId = territoiresList[defenderTerritoireId].playerId;
+
+        canGetCard = true;
+        document.getElementById("canon-sound").load();
+        document.getElementById("canon-sound").play();
         takeOverTerritoryFromTerritory(
           attackerTerritoireId,
           defenderTerritoireId,
@@ -563,6 +589,9 @@ function startAttackPhase(playerCount, callback) {
             `${attackerTerritoireId}-${defenderTerritoireId}`
           ].movedTroops = count;
         }
+      } else {
+        document.getElementById("protect-sound").load();
+        document.getElementById("protect-sound").play();
       }
 
       setSelectedTerritoire(null);
@@ -575,7 +604,7 @@ function startAttackPhase(playerCount, callback) {
   }
 }
 
-function startFortifyPhase(playerCount, callback) {
+function startFortifyPhase(playerCount, callback, canGetCard) {
   const Move = {
     player: data.currentPlayerId,
     fortifyDraft: {},
@@ -583,7 +612,11 @@ function startFortifyPhase(playerCount, callback) {
 
   console.log("startFortifyPhase");
   updateCurrentPhase(EPhases.FORTIFY);
-
+  if(canGetCard){
+    console.log("Pickacard")
+    drawCard(data.currentPlayerId);
+    console.log(playersList[data.currentPlayerId].cards)
+  }
   if (playersList[data.currentPlayerId].bot) {
     setTimeout(() => {
       const bot = playersList[data.currentPlayerId].bot;
@@ -754,7 +787,7 @@ function cardHandler() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-  const enLigne = false;
+  const enLigne = true;
   const autoPlacement = true;
   const playerCount = 6;
   // Where does the bots start if there is any. Else set to 0
@@ -782,7 +815,8 @@ document.addEventListener("DOMContentLoaded", function () {
     : [startTurnTerritoriesSelection, startTurnTroopsPlacement];
 
   const setAsGestFn = enLigne
-    ? setAsGest
+    ? async () =>
+        sessionStorage.getItem("token") ? { success: false } : setAsGest()
     : async () => {
         return { success: false };
       };
@@ -804,6 +838,7 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log("Selection is done");
 
         placementFn(playerCount, () => {
+          playersList[1].userId = sessionStorage.getItem("saved-userId");
           //create game with player info
           initializeGame({
             players: playersList,
@@ -855,10 +890,10 @@ document.addEventListener("DOMContentLoaded", function () {
   let settingsButton = document.getElementById("settings-button");
   settingsButton.addEventListener("click", async () => {
     const popup = new SettingsPopup({
-      music: (volume) => {
-        console.log(volume);
-      },
-      sfx: (volume) => {},
+      music: setMusicVolume,
+      sfx: setSFXVolume,
+      volumeMusic: document.getElementById("sea-music").volume,
+      volumeSFX: document.getElementById("charge1-sound").volume,
       speed: (speed) => {
         data.botSpeed = speed;
       },
@@ -869,6 +904,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
   new ResizeObserver(updatePastillesPosition).observe(document.body);
   window.addEventListener("resize", updatePastillesPosition);
-  // etablir le popup des cartes quand on clique sur l'image des cartes
+  // établir le popup des cartes quand on clique sur l'image des cartes
   document.getElementById("cards-img").addEventListener("click", cardHandler);
+
+  const list = [];
+  for (const territoireId in territoiresList) {
+    const element = document.getElementById(territoireId);
+    const bbox = element.getBBox();
+    list.push({
+      id: territoireId,
+      path: document.getElementById(territoireId).getAttribute("d"),
+      pastille: territoiresList[territoireId].pastille,
+      bbox: { x: bbox.x, y: bbox.y, width: bbox.width, height: bbox.height },
+    });
+  }
+
+  console.log(JSON.stringify(list));
 });

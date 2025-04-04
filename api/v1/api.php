@@ -174,7 +174,7 @@ $router->get("/games/{userId}", function ($userId, $tokenPayload): JsonResponse 
         return JsonResponse::internalServerError();
     }
 
-    return JsonResponse::success(["games" => $requete->fetchAll()]);
+    return JsonResponse::success(["games" => array_column($requete->fetchAll(), "game_id")]);
 }, $authMiddleware);
 
 $router->get("/game/{gameId}", function ($gameId, $tokenPayload): JsonResponse {
@@ -252,12 +252,13 @@ $router->post("/initializegame", function ($tokenPayload, $bodyArray): JsonRespo
 
         $playerName = $player["name"];
         if (!$pdo->safeQuery(
-            "INSERT INTO User_Game (game_id, player_name, player_id) 
-             VALUES (:game_id, :player_name, :player_id);",
+            "INSERT INTO User_Game (game_id, player_name, player_id, user_id) 
+             VALUES (:game_id, :player_name, :player_id, :user_id);",
             [
                 'game_id'     => $game_id,
                 'player_name' => $playerName,
-                'player_id'   => $index
+                'player_id'   => $index,
+                "user_id" => $player["userId"]
             ]
 
         )) {
