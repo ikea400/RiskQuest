@@ -436,22 +436,25 @@ function isJoker(card) {
 
 /**
  * Calcule le nombre de troupes obtenues en échangeant des cartes.
+ *
  * @param {Object[]} playerCards - La liste des cartes du joueur.
  * @returns {number|undefined} - Retourne le nombre de troupes ou undefined si l'échange n'est pas possible.
  */
-function claimCards(playerCards) {
+export function claimCards(playerCards) {
   let bonus = 0;
   for (const card of playerCards) {
-    if (territoiresList[card.territory].playerId === data.currentPlayerId) {
-      bonus = 2;
+    if (!isJoker(card)) {
+      if (territoiresList[card.territory].playerId === data.currentPlayerId) {
+        bonus = 2;
+      }
     }
   }
   switch (getSelectionType(playerCards)) {
-    case CardType.INFANTERIE:
+    case CardType.INFANTRY:
       return 4 + bonus;
-    case CardType.CAVALERIE:
+    case CardType.CAVALRY:
       return 6 + bonus;
-    case CardType.ARTILLERIE:
+    case CardType.ARTILLERY:
       return 8 + bonus;
     case 1:
       return 10 + bonus;
@@ -461,12 +464,10 @@ function claimCards(playerCards) {
 }
 
 /**
- * Détermine le type de sélection basé sur les cartes fournies.
- * Cette fonction analyse un ensemble de cartes et retourne le type correspondant
- * selon des règles précises pour les combinaisons d'infanterie, artillerie,
- * cavalerie et joker.
- * @param {Array<Object>} cards - Tableau de cartes à analyser.
- * @returns {CardType|null} Le type de carte sélectionné, ou `null` si aucune combinaison valide.
+ * Détermine le type de sélection en fonction des cartes fournies.
+ *
+ * @param {Array} cards - La liste des cartes sélectionnées.
+ * @returns {CardType|null|number} Le type de carte correspondant ou null si aucune combinaison valide n'est trouvée.
  */
 function getSelectionType(cards) {
   const infantryCards = cards.filter(isInfantry);
@@ -514,10 +515,9 @@ function getSelectionType(cards) {
 }
 
 /**
- * Génère un ensemble de cartes de jeu avec des types et des territoires attribués aléatoirement.
- * Chaque carte (sauf les jokers) possède un territoire unique.
+ * Génère un jeu de cartes pour le jeu, en attribuant aléatoirement des types aux territoires.
  *
- * @returns {Array<Object>} Un tableau d'objets représentant les cartes du jeu.
+ * @returns {Array} Le jeu de cartes mélangé, comprenant 42 cartes de territoire et 2 jokers.
  */
 export function generateGameCards() {
   let gameCards = [];
@@ -549,55 +549,69 @@ export function generateGameCards() {
 }
 
 /**
- * Mélange un tableau en utilisant l'algorithme de Fisher-Yates.
- * Cet algorithme permet de réorganiser les éléments d’un tableau de manière totalement aléatoire.
+ * Mélange les éléments d'un tableau de manière aléatoire en utilisant l'algorithme de Fisher-Yates.
+ *
  * @param {Array} array - Le tableau à mélanger.
  * @returns {Array} Le tableau mélangé.
  */
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1)); // Pick a random index
+    const j = utils.randomInteger(0, i);
     [array[i], array[j]] = [array[j], array[i]]; // Swap elements
   }
   return array;
 }
 
 /**
- * Pioche une carte du jeu en retirant le premier élément du tableau.
- * @param {Array<Object>} gameCards - Le tableau des cartes du jeu.
- * @returns {Object|null} La carte piochée ou `null` si le tableau est vide.
+ * Pioche une carte pour le joueur spécifié et l'ajoute à sa main.
+ *
+ * @param {number} playerId - L'identifiant du joueur qui pioche une carte.
+ * @returns {Array} La liste mise à jour des cartes du joueur.
  */
 export function drawCard(playerId) {
-  if(!playersList[playerId].cards){
+  if (!playersList[playerId].cards) {
     playersList[playerId].cards = [];
   }
-    const drawnCard = gameCards.shift();
-    console.log(playersList[playerId].cards);
-    playersList[playerId].cards.push(drawnCard);
-    return playersList[playerId].cards;
+  const drawnCard = gameCards.shift();
+  playersList[playerId].cards.push(drawnCard);
+  return playersList[playerId].cards;
 }
 
 /**
- * Défausse les cartes et les remet dans le jeu.
- * @param {Array<Object>} cards - Les cartes à défausser.
+ * Défausse les cartes spécifiées du joueur et les ajoute à la pile de défausse.
+ * Mélange et remet les cartes dans le jeu si la pile de défausse contient moins de 5 cartes.
+ *
+ * @param {number} playerId - L'identifiant du joueur qui défausse les cartes.
+ * @param {Array} cards - Les cartes à défausser.
  */
-function discardCards(playerId, cards){
+export function discardCards(playerId, cards) {
   for (const card of cards) {
     playersList[playerId].cards.pop(card);
-    gameCards.push(card);
+    discardPile.push(card);
   }
+  if(discardPile.length < 5){
+      discardPile = shuffleArray(discardPile);
+      for (const card of discardPile) {
+          gameCards.push(card);
+      }
+    }
 }
 
-function getBestSetForTroops(){
+/**
+ * Trouve le meilleur ensemble de trois cartes qui rapporte le maximum de troupes.
+ *
+ * @returns {Array} Le meilleur ensemble de trois cartes qui fournit le plus de troupes.
+ */
+export function getBestSetForTroops() {
   const cards = playersList[data.currentPlayerId].cards;
   let bestSet = null;
   let maxTroops = 0;
-  for (let i = 0; i < cards.length -2; i++) {
-    for (let j = i + 1; j < cards.length -1; j++) {
+  for (let i = 0; i < cards.length - 2; i++) {
+    for (let j = i + 1; j < cards.length - 1; j++) {
       for (let k = j + 1; k < cards.length; k++) {
         let set = [cards[i], cards[j], cards[k]];
         let troops = claimCards(set);
-        if(set > bestSet){
+        if (troops > maxTroops) {
           bestSet = set;
           maxTroops = troops;
         }
@@ -606,4 +620,3 @@ function getBestSetForTroops(){
   }
   return bestSet;
 }
-
