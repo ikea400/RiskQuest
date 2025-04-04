@@ -796,3 +796,17 @@
 .legend-texte {
   font-size: min(1vw,3vh);
 }
+.territory-name-card {
+  position: absolute;
+  font-size: min(1vw,4vh);
+  font-weight: bold;
+  color: white;
+  -webkit-text-stroke: black 0.08em;
+  top: 65%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(10vw,18vh);
+  text-wrap: wrap;
+  text-align: center;
+  overflow: visible;
+}

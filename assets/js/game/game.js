@@ -812,11 +812,11 @@ function generateFullCardImages() {
       cardWrapper.appendChild(card);
 
       let name = playersList[data.currentPlayerId].cards[i].territory;
-      let country = document.getElementById(name).cloneNode(false);
+      let territory = document.getElementById(name).cloneNode(false);
 
-      country.id = "territory-card";
-      country.classList.remove("territoire");
-      country.classList.remove("attackable-territory");
+      territory.id = "territory-card";
+      territory.classList.remove("territoire");
+      territory.classList.remove("attackable-territory");
 
 
       let svgWrapper = document.createElementNS(
@@ -827,17 +827,23 @@ function generateFullCardImages() {
 
       svgWrapper.setAttribute("preserveAspectRatio", "xMidYMid meet");
 
-      svgWrapper.appendChild(country);
+      let territoryName = document.createElement("p");
+      territoryName.classList.add("territory-name-card");
+      name = transformName(name);
+      territoryName.innerText = name;
+
+      svgWrapper.appendChild(territory);
 
       cardWrapper.appendChild(svgWrapper);
+      cardWrapper.appendChild(territoryName);
 
       // doit faire un timeout pour que le viewbox du svg soit initialisé
       setTimeout(() => {
-        const bbox = country.getBBox();
+        const bbox = territory.getBBox();
         svgWrapper.setAttribute(
-        "viewBox",
-        `${bbox.x} ${bbox.y} ${bbox.width} ${bbox.height}`
-      );
+          "viewBox",
+          `${bbox.x} ${bbox.y} ${bbox.width} ${bbox.height}`
+        );
       }, 0);
 
     }
@@ -848,10 +854,18 @@ function generateFullCardImages() {
 
     location.appendChild(cardWrapper);
   }
-  
-  
-  
-
+}
+// turns a territory html element ID into its name by adding spaces if needed
+function transformName(name) {
+  let newName = name.charAt(0).toUpperCase();
+  for (let i = 1; i < name.length; i++) {
+    if (name.charAt(i) == name.charAt(i).toUpperCase()) {
+      newName += " " + name.charAt(i);
+    } else {
+      newName += name.charAt(i);
+    }
+  }
+  return newName;
 }
 
 /*
