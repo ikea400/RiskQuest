@@ -788,7 +788,7 @@ function generateFullCardImages() {
     // Obtenir le type de carte pour l'image (cavalerie, canon, infanterie, joker)
 
     if (type == CardType.JOKER) {
-      card.src = "../../images/riskCardJoker.png"
+      card.src = "./assets/images/riskCardJoker.png"
       cardWrapper.appendChild(card);
     } else {
 
@@ -826,7 +826,7 @@ function generateFullCardImages() {
 
       cardWrapper.appendChild(svgWrapper);
 
-      // parce que ca fonctionne ??
+      // doit faire un timeout pour que le viewbox du svg soit initialisé
       setTimeout(() => {
         const bbox = country.getBBox();
         svgWrapper.setAttribute(
