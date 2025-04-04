@@ -731,15 +731,14 @@ function startMainLoop(playerCount, callback) {
       callback();
       return;
     }
-
+    // afficher les cartes si c'est le tour d'un joueur
+    if (playersList[data.currentPlayerId].bot) {
+      document.getElementsByClassName("cards-container")[0].classList.add("hidden");
+    } else {
+      document.getElementsByClassName("cards-container")[0].classList.remove("hidden");
+    }
     // Commence un rounde
     startOneRound(playerCount, handler);
-    // afficher les cartes si c'est le tour d'un joueur
-    if (!data.currentPlayerId.bot) {
-      document.getElementById("cards-button").classList.add("hidden");
-    } else {
-      document.getElementById("cards-button").classList.remove("hidden");
-    }
   };
 
   // Demarage de la boucle
