@@ -53,13 +53,13 @@ document.addEventListener("DOMContentLoaded", () => {
       // Enleve tous les anciennes erreurs
       updateErrors([]);
 
-      sessionStorage.setItem("token", reponseJSON.token);
+      sessionStorage.setItem("token", responseJSON.token);
       sessionStorage.setItem("saved-username", nomUtilisateur);
-      sessionStorage.setItem("saved-userId", reponseJSON.id);
+      sessionStorage.setItem("saved-userId", responseJSON.id);
       sessionStorage.setItem("guest", false);
       window.location.href = "/riskquest/";
     } else {
-      updateErrors([reponseJSON.error || "Erreur inconnue"]);
+      updateErrors([responseJSON.error || "Erreur inconnue"]);
     }
   });
 

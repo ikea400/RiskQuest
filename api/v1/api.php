@@ -16,6 +16,10 @@ require_once "./includes/middlewares.php";
 require_once "./includes/database_connection.php";
 require_once "./includes/token.php";
 
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
 // Instancier le routeur
 $router = new Router();
 
@@ -166,7 +170,7 @@ $router->get("/games/{userId}", function ($userId, $tokenPayload): JsonResponse 
     $pdo = new DatabaseConnection();
 
     $requete = $pdo->safeQuery(
-        "SELECT * FROM Game g JOIN User_Game u ON g.id = u.game_id WHERE u.user_id=:userId;",
+        "SELECT g.finished, g.id, g.played_time, g.player_count, g.start_date FROM Game g JOIN User_Game u ON g.id = u.game_id WHERE u.user_id=:userId;",
         ['userId' => $userId]
     );
 
@@ -174,11 +178,11 @@ $router->get("/games/{userId}", function ($userId, $tokenPayload): JsonResponse 
         return JsonResponse::internalServerError();
     }
 
-    return JsonResponse::success(["games" => array_column($requete->fetchAll(), "game_id")]);
-}, $authMiddleware);
+    return JsonResponse::success(["games" => $requete->fetchAll()]);
+}, $authMiddleware );
 
 $router->get("/game/{gameId}", function ($gameId, $tokenPayload): JsonResponse {
-    if (!is_numeric($gameId) && is_null($gameId)) {
+    if (!is_numeric($gameId) || is_null($gameId)) {
         return JsonResponse::badRequest();
     }
 
@@ -195,7 +199,8 @@ $router->get("/game/{gameId}", function ($gameId, $tokenPayload): JsonResponse {
     }
     return JsonResponse::success($result);
 
-}, $authMiddleware, $jsonMiddleware);
+}, $authMiddleware);
+
 
 $router->post("/saveMove", function ($tokenPayload, $bodyArray): JsonResponse {
 
