@@ -8,6 +8,7 @@ import {
   setMusicVolume,
   setSFXVolume,
   gameCards,
+  CardType,
 } from "./data.js";
 import {
   getAttackableNeighbour,
@@ -755,7 +756,12 @@ function startMainLoop(playerCount, callback) {
       callback();
       return;
     }
-
+    // afficher les cartes si c'est le tour d'un joueur
+    if (playersList[data.currentPlayerId].bot) {
+      document.getElementsByClassName("cards-container")[0].classList.add("hidden");
+    } else {
+      document.getElementsByClassName("cards-container")[0].classList.remove("hidden");
+    }
     // Commence un rounde
     startOneRound(playerCount, handler);
   };
@@ -769,32 +775,107 @@ function cardHandler() {
     const popup = new CardPopup({});
     popup.show();
 
-    let card = document.getElementsByClassName("card-wrapper");
-
-    let country = document.getElementById("alaska").cloneNode(false);
-    country.id = "territory-card";
-    country.classList.remove("territoire");
-    country.classList.remove("attackable-territory");
-
-    let svgWrapper = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "svg"
-    );
-    svgWrapper.classList.add("svg-card");
-
-    svgWrapper.setAttribute("preserveAspectRatio", "xMidYMid meet");
-
-    svgWrapper.appendChild(country);
-
-    card[0].appendChild(svgWrapper);
-
-    const bbox = country.getBBox();
-    svgWrapper.setAttribute(
-      "viewBox",
-      `${bbox.x} ${bbox.y} ${bbox.width} ${bbox.height}`
-    );
+    // generer les images des cartes du joueur
+    generateFullCardImages();
   }
 }
+
+function generateFullCardImages() {
+  let location = document.getElementById("popup-cards-remaining-cards");
+  let nbDeCartesTotal = playersList[data.currentPlayerId].cards.length;
+
+  // pour chaque carte en main, assembler une image de carte pour représenter la carte
+  for (let i = 0; i < nbDeCartesTotal; i++) {
+
+    // obtenir les informations de la carte
+
+    let card = document.createElement("img");
+    let type = playersList[data.currentPlayerId].cards[i].type;
+    let cardWrapper = document.createElement("div");
+    
+    card.classList.add("image-card");
+
+    // Obtenir le type de carte pour l'image (cavalerie, canon, infanterie, joker)
+
+    if (type == CardType.JOKER) {
+      card.src = "./assets/images/riskCardJoker.png"
+      cardWrapper.appendChild(card);
+    } else {
+
+      switch (type) {
+        case CardType.ARTILLERY:
+          card.src = "./assets/images/riskCardCannon.png";
+          break;
+        case CardType.CAVALRY:
+          card.src = "./assets/images/riskCardCavalry.png";
+          break;
+        case CardType.INFANTRY:
+          card.src = "./assets/images/riskCardInfantry.png";
+          break;
+      }
+
+      cardWrapper.appendChild(card);
+
+      let name = playersList[data.currentPlayerId].cards[i].territory;
+      let territory = document.getElementById(name).cloneNode(false);
+
+      territory.id = "territory-card";
+      territory.classList.remove("territoire");
+      territory.classList.remove("attackable-territory");
+
+
+      let svgWrapper = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "svg"
+      );
+      svgWrapper.classList.add("svg-card");
+
+      svgWrapper.setAttribute("preserveAspectRatio", "xMidYMid meet");
+
+      let territoryName = document.createElement("p");
+      territoryName.classList.add("territory-name-card");
+      name = transformName(name);
+      territoryName.innerText = name;
+
+      svgWrapper.appendChild(territory);
+
+      cardWrapper.appendChild(svgWrapper);
+      cardWrapper.appendChild(territoryName);
+
+      // doit faire un timeout pour que le viewbox du svg soit initialisé
+      setTimeout(() => {
+        const bbox = territory.getBBox();
+        svgWrapper.setAttribute(
+          "viewBox",
+          `${bbox.x} ${bbox.y} ${bbox.width} ${bbox.height}`
+        );
+      }, 0);
+
+    }
+
+    // assembler la carte
+    
+    cardWrapper.classList.add("card-wrapper");
+
+    location.appendChild(cardWrapper);
+  }
+}
+// turns a territory html element ID into its name by adding spaces if needed
+function transformName(name) {
+  let newName = name.charAt(0).toUpperCase();
+  for (let i = 1; i < name.length; i++) {
+    if (name.charAt(i) == name.charAt(i).toUpperCase()) {
+      newName += " " + name.charAt(i);
+    } else {
+      newName += name.charAt(i);
+    }
+  }
+  return newName;
+}
+
+/*
+/ DOMContentLoaded
+*/
 
 document.addEventListener("DOMContentLoaded", function () {
   const enLigne = false;

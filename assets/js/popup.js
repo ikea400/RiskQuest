@@ -614,40 +614,39 @@ export class CardPopup extends PopupBase {
 
     <div id="flex-center-popup-cards">
       <div id="selected-card-1" class="selected-card-holder">
-        <img class='image-card' src='./assets/images/riskCardInfantry.png' alt='infantry'img>
+        <img class='image-card' src='./assets/images/riskCardInfantry.png' alt='infantry'>
       </div>
 
       <div id="selected-card-2" class="selected-card-holder">
-        <img class='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
+        <img class='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'>
       </div>
 
       <div id="selected-card-3" class="selected-card-holder">
         
       </div>
       
-      <div id="legend-card">
-        <img id="card-legend-header" src='./assets/images/riskBonusLegendHeader.png' alt='Legend'img>
-        <div id="legend-card-information">
-          <span>
-            <span class="legend-number">4</span> <span>Infantry</span>
-          </span>
+    </div>
 
-          <span>
-            <span class="legend-number">6</span> <span>Cavalry</span>
-          </span>
+    <div id="legend-card">
+      <img id="card-legend-header" src='./assets/images/riskBonusLegendHeader.png' alt='Legend'img>
+      <div id="legend-card-information">
+        <span>
+          <span class="legend-number">4</span> <span class="legend-texte">Infantry</span>
+        </span>
 
-          <span>
-            <span class="legend-number">8</span> <span>Artillery</span>
-          </span>
+        <span>
+          <span class="legend-number">6</span> <span class="legend-texte">Cavalry</span>
+        </span>
 
-          <span>
-            <span class="legend-number">10</span> <span>All Three</span>
-          </span>
+        <span>
+          <span class="legend-number">8</span> <span class="legend-texte">Artillery</span>
+        </span>
 
-        </div>
+        <span>
+          <span class="legend-number">10</span> <span class="legend-texte">All Three</span>
+        </span>
+
       </div>
-      
-      
     </div>
 
     <div id="popup-cards-button-container">
@@ -666,13 +665,6 @@ export class CardPopup extends PopupBase {
     
     <footer id="popup-cards-footer">
       <div id="popup-cards-remaining-cards">
-        <div class="card-wrapper">
-          <img class='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
-        </div>
-        <img class='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
-        <img class='image-card' src='./assets/images/riskCardJoker.png' alt='cavalry'img>
-        <img class='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
-        <img class='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
       </div>
     </footer>
     `;
