@@ -27,6 +27,7 @@ import {
   claimCards,
   getBestSetForTroops,
   discardCards,
+  takeCardsFrom,
 } from "./logic.js";
 import {
   updatePastillesPosition,
@@ -409,6 +410,10 @@ function startAttackPhase(playerCount, callback) {
             defenderPlayerId,
             checkPlayerDeadState(defenderPlayerId)
           );
+
+          if(checkPlayerDeadState(defenderPlayerId)){
+              takeCardsFrom(data.currentPlayerId,defenderPlayerId)
+          }
 
           let count = 2;
           if (territoiresList[attackerTerritoireId].troops > 3) {
