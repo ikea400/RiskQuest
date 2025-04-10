@@ -123,7 +123,7 @@ export default class Bot extends BotBase {
       );
 
       //Détermine les continents sur lesquels se concentrer
-      if (100 < pourcentageContinents[continent].pourcentage >= 75) {
+      if (pourcentageContinents[continent].pourcentage >= 60 && pourcentageContinents[continent].pourcentage < 100) {
         focus.push(pourcentageContinents[continent].name);
       }
     }
