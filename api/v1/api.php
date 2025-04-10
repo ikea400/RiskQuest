@@ -202,6 +202,26 @@ $router->get("/game/{gameId}", function ($gameId, $tokenPayload): JsonResponse {
 }, $authMiddleware);
 
 
+$router->get("/moves/{gameId}", function ($gameId, $tokenPayload): JsonResponse {
+    if ($gameId == null || !is_numeric($gameId)) {
+        return JsonResponse::badRequest();
+    }
+
+    $pdo = new DatabaseConnection();
+    $result = $pdo->safeQuery(
+        "SELECT number, move_data as moveData, player
+                            FROM Move
+                            WHERE game_id = :gameId;",
+        ["gameId" => $gameId]
+    );
+
+    if ($result == false) {
+        return JsonResponse::internalServerError();
+    }
+
+    return JsonResponse::success(["moves" => $result->fetchAll()]);
+}, $authMiddleware);
+
 $router->post("/saveMove", function ($tokenPayload, $bodyArray): JsonResponse {
 
     if (empty($bodyArray)) {
@@ -263,7 +283,7 @@ $router->post("/initializegame", function ($tokenPayload, $bodyArray): JsonRespo
                 'game_id'     => $game_id,
                 'player_name' => $playerName,
                 'player_id'   => $index,
-                "user_id" => $player["userId"]
+                "user_id" => $player["userId"] ?? null
             ]
 
         )) {

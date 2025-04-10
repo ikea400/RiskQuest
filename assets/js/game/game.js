@@ -8,6 +8,7 @@ import {
   setMusicVolume,
   setSFXVolume,
   gameCards,
+  CardType,
 } from "./data.js";
 import {
   getAttackableNeighbour,
@@ -257,7 +258,7 @@ function startDraftPhase(playerCount, callback) {
   addTroops(data.currentPlayerId, newTroops);
 
   console.log(playersList[data.currentPlayerId].cards.length);
-  if(playersList[data.currentPlayerId].cards.length >= 5){
+  if (playersList[data.currentPlayerId].cards.length >= 5) {
     let cards = getBestSetForTroops();
     console.log(cards);
     addTroops(data.currentPlayerId, claimCards(cards));
@@ -551,6 +552,11 @@ function startAttackPhase(playerCount, callback) {
           checkPlayerDeadState(defenderPlayerId)
         );
 
+        if(checkPlayerDeadState(defenderPlayerId)){
+          
+        }
+
+
         let count = territoiresList[attackerTerritoireId].troops - 1;
         if (territoiresList[attackerTerritoireId].troops > 3) {
           const popup = new CountPopup({
@@ -612,10 +618,10 @@ function startFortifyPhase(playerCount, callback, canGetCard) {
 
   console.log("startFortifyPhase");
   updateCurrentPhase(EPhases.FORTIFY);
-  if(canGetCard){
-    console.log("Pickacard")
+  if (canGetCard) {
+    console.log("Pickacard");
     drawCard(data.currentPlayerId);
-    console.log(playersList[data.currentPlayerId].cards)
+    console.log(playersList[data.currentPlayerId].cards);
   }
   if (playersList[data.currentPlayerId].bot) {
     setTimeout(() => {
@@ -745,7 +751,12 @@ function startMainLoop(playerCount, callback) {
       callback();
       return;
     }
-
+    // afficher les cartes si c'est le tour d'un joueur
+    if (playersList[data.currentPlayerId].bot) {
+      document.getElementsByClassName("cards-container")[0].classList.add("hidden");
+    } else {
+      document.getElementsByClassName("cards-container")[0].classList.remove("hidden");
+    }
     // Commence un rounde
     startOneRound(playerCount, handler);
   };
@@ -759,35 +770,110 @@ function cardHandler() {
     const popup = new CardPopup({});
     popup.show();
 
-    let card = document.getElementsByClassName("card-wrapper");
-
-    let country = document.getElementById("alaska").cloneNode(false);
-    country.id = "territory-card";
-    country.classList.remove("territoire");
-    country.classList.remove("attackable-territory");
-
-    let svgWrapper = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "svg"
-    );
-    svgWrapper.classList.add("svg-card");
-
-    svgWrapper.setAttribute("preserveAspectRatio", "xMidYMid meet");
-
-    svgWrapper.appendChild(country);
-
-    card[0].appendChild(svgWrapper);
-
-    const bbox = country.getBBox();
-    svgWrapper.setAttribute(
-      "viewBox",
-      `${bbox.x} ${bbox.y} ${bbox.width} ${bbox.height}`
-    );
+    // generer les images des cartes du joueur
+    generateFullCardImages();
   }
 }
 
+function generateFullCardImages() {
+  let location = document.getElementById("popup-cards-remaining-cards");
+  let nbDeCartesTotal = playersList[data.currentPlayerId].cards.length;
+
+  // pour chaque carte en main, assembler une image de carte pour représenter la carte
+  for (let i = 0; i < nbDeCartesTotal; i++) {
+
+    // obtenir les informations de la carte
+
+    let card = document.createElement("img");
+    let type = playersList[data.currentPlayerId].cards[i].type;
+    let cardWrapper = document.createElement("div");
+    
+    card.classList.add("image-card");
+
+    // Obtenir le type de carte pour l'image (cavalerie, canon, infanterie, joker)
+
+    if (type == CardType.JOKER) {
+      card.src = "./assets/images/riskCardJoker.png"
+      cardWrapper.appendChild(card);
+    } else {
+
+      switch (type) {
+        case CardType.ARTILLERY:
+          card.src = "./assets/images/riskCardCannon.png";
+          break;
+        case CardType.CAVALRY:
+          card.src = "./assets/images/riskCardCavalry.png";
+          break;
+        case CardType.INFANTRY:
+          card.src = "./assets/images/riskCardInfantry.png";
+          break;
+      }
+
+      cardWrapper.appendChild(card);
+
+      let name = playersList[data.currentPlayerId].cards[i].territory;
+      let territory = document.getElementById(name).cloneNode(false);
+
+      territory.id = "territory-card";
+      territory.classList.remove("territoire");
+      territory.classList.remove("attackable-territory");
+
+
+      let svgWrapper = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "svg"
+      );
+      svgWrapper.classList.add("svg-card");
+
+      svgWrapper.setAttribute("preserveAspectRatio", "xMidYMid meet");
+
+      let territoryName = document.createElement("p");
+      territoryName.classList.add("territory-name-card");
+      name = transformName(name);
+      territoryName.innerText = name;
+
+      svgWrapper.appendChild(territory);
+
+      cardWrapper.appendChild(svgWrapper);
+      cardWrapper.appendChild(territoryName);
+
+      // doit faire un timeout pour que le viewbox du svg soit initialisé
+      setTimeout(() => {
+        const bbox = territory.getBBox();
+        svgWrapper.setAttribute(
+          "viewBox",
+          `${bbox.x} ${bbox.y} ${bbox.width} ${bbox.height}`
+        );
+      }, 0);
+
+    }
+
+    // assembler la carte
+    
+    cardWrapper.classList.add("card-wrapper");
+
+    location.appendChild(cardWrapper);
+  }
+}
+// turns a territory html element ID into its name by adding spaces if needed
+function transformName(name) {
+  let newName = name.charAt(0).toUpperCase();
+  for (let i = 1; i < name.length; i++) {
+    if (name.charAt(i) == name.charAt(i).toUpperCase()) {
+      newName += " " + name.charAt(i);
+    } else {
+      newName += name.charAt(i);
+    }
+  }
+  return newName;
+}
+
+/*
+/ DOMContentLoaded
+*/
+
 document.addEventListener("DOMContentLoaded", function () {
-  const enLigne = true;
+  const enLigne = false;
   const autoPlacement = true;
   const playerCount = 6;
   // Where does the bots start if there is any. Else set to 0
@@ -848,7 +934,7 @@ document.addEventListener("DOMContentLoaded", function () {
               playersList[7] = value["gameId"];
               //nesting saveMove beacause it is dependent on playersList, save the move only after receiving game_id
               //make inital move to save inital territory and troop distribution
-              console.log("Game id: " + value["game_id"]);
+              console.log("Game id: " + value["gameId"]);
               saveMove({
                 players: playersList,
                 territories: territoiresList,
@@ -906,18 +992,4 @@ document.addEventListener("DOMContentLoaded", function () {
   window.addEventListener("resize", updatePastillesPosition);
   // établir le popup des cartes quand on clique sur l'image des cartes
   document.getElementById("cards-img").addEventListener("click", cardHandler);
-
-  const list = [];
-  for (const territoireId in territoiresList) {
-    const element = document.getElementById(territoireId);
-    const bbox = element.getBBox();
-    list.push({
-      id: territoireId,
-      path: document.getElementById(territoireId).getAttribute("d"),
-      pastille: territoiresList[territoireId].pastille,
-      bbox: { x: bbox.x, y: bbox.y, width: bbox.width, height: bbox.height },
-    });
-  }
-
-  console.log(JSON.stringify(list));
 });
