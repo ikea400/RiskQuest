@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let motDePasse = document.getElementById("input-password").value.trim();
 
     // Envoyer la requête à l'API
-    let reponse = await fetch("http://localhost/riskquest/api/v1/login", {
+    let response = await fetch("http://localhost/riskquest/api/v1/login", {
       method: "POST",
       body: JSON.stringify({ username: nomUtilisateur, password: motDePasse }),
       headers: {
@@ -48,18 +48,18 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Transformer la réponse en JSON
-    let reponseJSON = await reponse.json();
-    if (reponseJSON.success === true) {
+    let responseJSON = await response.json();
+    if (responseJSON.success === true) {
       // Enleve tous les anciennes erreurs
       updateErrors([]);
 
-      sessionStorage.setItem("token", reponseJSON.token);
+      sessionStorage.setItem("token", responseJSON.token);
       sessionStorage.setItem("saved-username", nomUtilisateur);
-      sessionStorage.setItem("saved-userId", reponseJSON.id);
+      sessionStorage.setItem("saved-userId", responseJSON.id);
       sessionStorage.setItem("guest", false);
       window.location.href = "/riskquest/";
     } else {
-      updateErrors([reponseJSON.error || "Erreur inconnue"]);
+      updateErrors([responseJSON.error || "Erreur inconnue"]);
     }
   });
 
