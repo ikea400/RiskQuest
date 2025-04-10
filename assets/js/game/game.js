@@ -515,11 +515,15 @@ function startAttackPhase(playerCount, callback) {
     turnHudAction.addEventListener("click", nextHandler, { once: true });
 
     async function territoireHandler() {
-      if (territoiresList[this.id].playerId === data.currentPlayerId) {
+      if (
+        territoiresList[this.id].playerId === data.currentPlayerId &&
+        territoiresList[this.id].troops > 1
+      ) {
         setSelectedTerritoire(this.id);
         setAttackableTerritoires(getAttackableNeighbour(this.id));
       }
-      if (!data.selectedTerritoire) {
+
+      if (!data.selectedTerritoire || data.selectedTerritoire === this.id) {
         return;
       }
 
