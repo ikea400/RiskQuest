@@ -849,6 +849,7 @@ function generateFullCardImages() {
 // ajouter la fonctionalité de clicker sur une carte pour la selectionner
 function addOnClickToCard(card) {
   let deck = document.getElementById("popup-cards-remaining-cards");
+  let bonusTroopsCountText = document.getElementById("extra-troops-count");
   // si la carte est dans la main, on peut l'ajouter a un des emplacement de carte selectionnés
   if (deck.contains(card)) {
     // le html id de l'emplacement ou la carte va aller sans le numéro
@@ -863,10 +864,59 @@ function addOnClickToCard(card) {
         i = -1;
       }
     }
+
+    if (document.getElementById("selected-card-1").childElementCount != 0 &&
+      document.getElementById("selected-card-2").childElementCount != 0 &&
+      document.getElementById("selected-card-3").childElementCount != 0) {
+      let bonusCount = obtainBonusTroopCount();
+      bonusTroopsCountText.innerText = "+" + bonusCount;
+    }
+
+
   } else {
     // si la carte fait partie de la selection, on la remet dans notre main
     deck.appendChild(card);
+    bonusTroopsCountText.innerText = "+" + 0;
   }
+}
+
+function obtainBonusTroopCount() {
+
+  // obtenir les elements html des cartes qu'on veut convertir en troop
+  let SelectedCard1 = document.getElementById("selected-card-1").firstElementChild.firstElementChild;
+  let SelectedCard2 = document.getElementById("selected-card-2").firstElementChild.firstElementChild;
+  let SelectedCard3 = document.getElementById("selected-card-3").firstElementChild.firstElementChild;
+
+  let deckArray = [];
+  let playerArray = playersList[data.currentPlayerId].cards;
+
+  // traverser la liste des cartes dans la main du joueur pour determiner quelles cartes sont selectionnées
+  // et les ajouter dans un tableau
+  let classList1 = SelectedCard1.classList;
+  let classList2 = SelectedCard2.classList;
+  let classList3 = SelectedCard3.classList;
+  
+  for (let i = 0; i < playerArray.length; i++) {
+    // regarder si la carte i de la main fait partie des cartes selectionnées. Si oui, on la rajoute au tableau
+    // on ne regarde pas pour les joker
+    if (classList1.contains(playerArray[i].type?.description) && classList1.contains(playerArray[i].territory)
+      || classList2.contains(playerArray[i].type?.description) && classList2.contains(playerArray[i].territory)
+      || classList3.contains(playerArray[i].type?.description) && classList3.contains(playerArray[i].territory)) {
+      deckArray.push(playerArray[i]);
+    }
+  }
+  let nbOfJokers = 3 - deckArray.length;
+
+  for (let i = 0; i < playerArray.length && nbOfJokers > 0; i++) {
+    if (playerArray[i].type.description == "JOKER") {
+      deckArray.push(playerArray[i]);
+      nbOfJokers--;
+    }
+  }
+  console.log("deck to claim: ");
+  console.log(deckArray);
+  console.log("ammount returned: " + claimCards(deckArray));
+  return claimCards(deckArray);
 }
 
 function addClassesToCard(card, type, name) {
@@ -887,7 +937,7 @@ function transformName(name) {
 }
 
 /*
-/ DOMContentLoaded
+*  DOMContentLoaded
 */
 
 document.addEventListener("DOMContentLoaded", function () {
