@@ -659,7 +659,7 @@ export class CardPopup extends PopupBase {
 
       <button id="popup-cards-button">
         <span id="trade-text">Trade cards</span>
-        <span id="extra-troops-count">+10</span>
+        <span id="extra-troops-count">+0</span>
       </button>
     </div>
     
