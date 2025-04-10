@@ -856,7 +856,7 @@ function transformName(name) {
 */
 
 document.addEventListener("DOMContentLoaded", function () {
-  const enLigne = true;
+  const enLigne = false;
   const autoPlacement = true;
   const playerCount = 6;
   // Where does the bots start if there is any. Else set to 0
