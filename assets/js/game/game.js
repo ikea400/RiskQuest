@@ -239,9 +239,9 @@ function startRandomTroopsPlacement(playerCount, callback) {
 
 function startDraftPhase(playerCount, callback) {
   //the move value defines the players actions during this draft phase
-  const Move = {
+  const currentMove = {
     player: data.currentPlayerId,
-    draft: {},
+    draft: [],
   };
 
   console.log("startDraftPhase");
@@ -266,27 +266,42 @@ function startDraftPhase(playerCount, callback) {
     console.log(playersList[data.currentPlayerId].cards);
   }
 
+  const nextPhase = () => {
+    startAttackPhase(playerCount, callback);
+
+    //send the draft move data to the api
+    console.log(currentMove);
+    saveMove({
+      players: playersList,
+      territories: territoiresList,
+      move: currentMove,
+    }).catch((error) => {
+      console.log("Error at api.php when saving draft move: " + error);
+    });
+  };
+
+  const putTroops = (territoireId, troopsCount) => {
+    moveTroopsFromPlayer(territoireId, data.currentPlayerId, troopsCount);
+    addTroopsChangeParticle(territoireId, data.currentPlayerId, troopsCount);
+    //the drafted troops are add to move data
+    currentMove.draft.push({
+      territoireId,
+      troopsCount,
+    });
+  };
+
   if (playersList[data.currentPlayerId].bot) {
     const drafts = playersList[data.currentPlayerId].bot.pickDraftTroops();
     for (let i = 0; i < drafts.length; i++) {
       const draft = drafts[i];
       setTimeout(() => {
-        moveTroopsFromPlayer(
-          draft.territoire,
-          data.currentPlayerId,
-          draft.troops
-        );
-        addTroopsChangeParticle(
-          draft.territoire,
-          data.currentPlayerId,
-          draft.troops
-        );
+        putTroops(draft.territoire, draft.troops);
       }, data.botSpeed.delay * (i + 1));
     }
 
     // Attendre un peu avant de passer au prochain stage pour laisser l'utilisateur voir les choix
     setTimeout(() => {
-      startAttackPhase(playerCount, callback);
+      nextPhase();
     }, data.botSpeed.delay * (drafts.length + 1));
   } else {
     async function territoireHandler() {
@@ -303,10 +318,7 @@ function startDraftPhase(playerCount, callback) {
       updatePastilleFakeTroops(this.id, 0);
 
       if (result.cancel === false && result.value > 0) {
-        moveTroopsFromPlayer(this.id, data.currentPlayerId, result.value);
-        addTroopsChangeParticle(this.id, data.currentPlayerId, result.value);
-        //the drafted troops are add to move data
-        Move.draft[this.id] = result.value;
+        putTroops(this.id, result.value);
 
         // Tous les pieces ont été placé
         if (playersList[data.currentPlayerId].troops <= 0) {
@@ -317,17 +329,7 @@ function startDraftPhase(playerCount, callback) {
               .removeEventListener("click", territoireHandler);
           }
           setAttackableTerritoires([]);
-          startAttackPhase(playerCount, callback);
-
-          //send the draft move data to the api
-          console.log(Move);
-          saveMove({
-            players: playersList,
-            territories: territoiresList,
-            move: Move,
-          }).catch((error) => {
-            console.log("Error at api.php when saving draft move: " + error);
-          });
+          nextPhase();
         }
       }
     }
