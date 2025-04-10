@@ -29,6 +29,8 @@ import {
   getBestSetForTroops,
   discardCards,
   takeCardsFrom,
+  possessTerritory,
+  addTroopsToTerritory,
 } from "./logic.js";
 import {
   updatePastillesPosition,
@@ -263,6 +265,9 @@ function startDraftPhase(playerCount, callback) {
     let cards = getBestSetForTroops();
     console.log(cards);
     addTroops(data.currentPlayerId, claimCards(cards));
+    if(possessTerritory(cards)!== null){
+      addTroopsToTerritory(possessTerritory(cards), 2);
+    }
     discardCards(data.currentPlayerId, cards);
     console.log(playersList[data.currentPlayerId].cards);
   }
@@ -350,6 +355,8 @@ function startAttackPhase(playerCount, callback) {
     player: data.currentPlayerId,
     attacks: {},
   };
+
+  
 
   console.log("startAttackPhase");
   updateCurrentPhase(EPhases.ATTACK);
@@ -882,7 +889,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const autoPlacement = true;
   const playerCount = 6;
   // Where does the bots start if there is any. Else set to 0
-  const botPlayerStart = 2;
+  const botPlayerStart = 1;
 
   // Initialization des troops
   for (let playerId = 1; playerId <= playerCount; playerId++) {
