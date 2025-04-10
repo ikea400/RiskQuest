@@ -262,7 +262,8 @@ $router->post("/initializegame", function ($tokenPayload, $bodyArray): JsonRespo
     $counter = 0;
     foreach ($bodyArray["players"] as $index => $player) {
         //dans players, le premier element est null
-        if ($counter++ ==  0) continue;
+        if ($index == 0) continue;
+        if (isset($player["bot"]) && $player["bot"] != false) continue;
 
         $playerName = $player["name"];
         if (!$pdo->safeQuery(
