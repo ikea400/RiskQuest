@@ -785,26 +785,28 @@ function generateFullCardImages() {
     // obtenir les informations de la carte
 
     let card = document.createElement("img");
-    let type = playersList[data.currentPlayerId].cards[i].type;
+    let type = playersList[data.currentPlayerId].cards[i].type.description;
     let cardWrapper = document.createElement("div");
     
     card.classList.add("image-card");
 
     // Obtenir le type de carte pour l'image (cavalerie, canon, infanterie, joker)
 
-    if (type == CardType.JOKER) {
+    if (type == "JOKER") {
       card.src = "./assets/images/riskCardJoker.png"
+      // ajouter la classe joker pour savoir quelle carte on manipule
+      card.classList.add(type);
       cardWrapper.appendChild(card);
     } else {
 
       switch (type) {
-        case CardType.ARTILLERY:
+        case "ARTILLERY":
           card.src = "./assets/images/riskCardCannon.png";
           break;
-        case CardType.CAVALRY:
+        case "CAVALRY":
           card.src = "./assets/images/riskCardCavalry.png";
           break;
-        case CardType.INFANTRY:
+        case "INFANTRY":
           card.src = "./assets/images/riskCardInfantry.png";
           break;
       }
@@ -818,6 +820,8 @@ function generateFullCardImages() {
       territory.classList.remove("territoire");
       territory.classList.remove("attackable-territory");
 
+      //ajouter les classes de la carte pour savoir quelle carte on manipule
+      addClassesToCard(card,type,name);
 
       let svgWrapper = document.createElementNS(
         "http://www.w3.org/2000/svg",
@@ -848,12 +852,42 @@ function generateFullCardImages() {
 
     }
 
+    // ajouter le setOnClick pour la carte
+    card.addEventListener("click",() => addOnClickToCard(cardWrapper));
+
     // assembler la carte
     
     cardWrapper.classList.add("card-wrapper");
 
     location.appendChild(cardWrapper);
   }
+}
+// ajouter la fonctionalité de clicker sur une carte pour la selectionner
+function addOnClickToCard(card) {
+  let deck = document.getElementById("popup-cards-remaining-cards");
+  // si la carte est dans la main, on peut l'ajouter a un des emplacement de carte selectionnés
+  if (deck.contains(card)) {
+    // le html id de l'emplacement ou la carte va aller sans le numéro
+    let slot = "selected-card-";
+    for (let i = 1; i <= 3 && i > 0; i++) {
+      let slotId = slot + i;
+      let selectedCardContainer = document.getElementById(slotId);
+      if (selectedCardContainer.childElementCount == 0) {
+        selectedCardContainer.appendChild(card);
+
+        // sortir de la boucle for
+        i = -1;
+      }
+    }
+  } else {
+    // si la carte fait partie de la selection, on la remet dans notre main
+    deck.appendChild(card);
+  }
+}
+
+function addClassesToCard(card, type, name) {
+  card.classList.add(type);
+  card.classList.add(name);
 }
 // turns a territory html element ID into its name by adding spaces if needed
 function transformName(name) {
