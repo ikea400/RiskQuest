@@ -1,6 +1,11 @@
 -- Sélectionner la base de données
 USE tch099_riskquest;
 
+DROP TABLE IF EXISTS User_Game CASCADE;
+DROP TABLE IF EXISTS Move CASCADE;
+DROP TABLE IF EXISTS Game CASCADE;
+DROP TABLE IF EXISTS User CASCADE;
+
 CREATE OR REPLACE TABLE User
 (
     id            BIGINT  NOT NULL PRIMARY KEY CHECK ( id > 0 ),
@@ -41,31 +46,6 @@ CREATE OR REPLACE TABLE User_Game
     FOREIGN KEY (user_id) REFERENCES User (id) ON DELETE CASCADE
 );
 
-/*
-DELIMITER $$
-CREATE OR REPLACE TRIGGER before_insert_User
-    BEFORE INSERT
-    ON User
-    FOR EACH ROW
-BEGIN
-    DECLARE guest_pass BIGINT;
-    DECLARE pass_exists BOOLEAN DEFAULT TRUE;
-    DECLARE max_attempts INT DEFAULT 10;
-    DECLARE attempts INT DEFAULT 0;
-
-    IF NEW.password IS NULL THEN
-        WHILE pass_exists AND attempts < max_attempts DO
-            SET guest_pass = 1 + FLOOR(RAND() * (9223372036854775806));
-            SET pass_exists = (SELECT COUNT(*) FROM User WHERE password = guest_pass) > 0;
-            SET attempts = attempts + 1;
-        END WHILE;
-        SET NEW.password = guest_pass;
-    END IF
-     
-END$$
-DELIMITER ;
-*/
-
 DELIMITER $$
 
 CREATE OR REPLACE TRIGGER before_insert_User
@@ -80,7 +60,7 @@ BEGIN
 
     IF NEW.id IS NULL OR NEW.id = 0 THEN
         WHILE id_exists AND attempts < max_attempts DO
-            SET new_id = 1 + FLOOR(RAND() * (9223372036854775806));
+            SET new_id = 1 + FLOOR(RAND() * (9007199254740991));
             SET id_exists = (SELECT COUNT(*) FROM User WHERE id = new_id) > 0;
             SET attempts = attempts + 1;
         END WHILE;
@@ -117,7 +97,7 @@ BEGIN
 
     IF NEW.id IS NULL OR NEW.id = 0 THEN
         WHILE id_exists AND attempts < max_attempts DO
-            SET new_id = 1 + FLOOR(RAND() * (9223372036854775807));
+            SET new_id = 1 + FLOOR(RAND() * (9007199254740991));
             SET id_exists = (SELECT COUNT(*) FROM Game WHERE id = new_id) > 0;
             SET attempts = attempts + 1;
         END WHILE;
