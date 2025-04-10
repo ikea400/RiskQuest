@@ -345,9 +345,112 @@ function startDraftPhase(playerCount, callback) {
 
 function startAttackPhase(playerCount, callback) {
   let canGetCard = false;
-  const Move = {
+  const currentMove = {
     player: data.currentPlayerId,
-    attacks: {},
+    attacks: [],
+  };
+
+  const nextPhase = () => {
+    //send the attack move data to the api
+    console.log(currentMove);
+    saveMove({
+      players: playersList,
+      territories: territoiresList,
+      move: currentMove,
+    }).catch((error) => {
+      console.log("Error at api.php when saving attack move: " + error);
+    });
+
+    startFortifyPhase(playerCount, callback, canGetCard);
+  };
+
+  const doAttack = (defenderTerritoireId, attackerTerritoireId, attackMode) => {
+    // Calculer le nombre de troops perdu des deux bords.
+    let defenderLostTroops;
+    let attackerLostTroops;
+    if (attackMode === 0) {
+      [defenderLostTroops, attackerLostTroops] = utils.blitzAttack(
+        territoiresList[defenderTerritoireId].troops,
+        territoiresList[attackerTerritoireId].troops - 1
+      );
+    } else {
+      [defenderLostTroops, attackerLostTroops] = utils.classicAttack(
+        Math.min(territoiresList[defenderTerritoireId].troops, 2),
+        attackMode
+      );
+    }
+
+    // Add attacks result to the Move object,
+    //each attack has a attackerTerritoireId-defenderTerritoireId key
+    currentMove.attacks.push({
+      defenderTerritoireId,
+      attackerTerritoireId,
+      defenderLostTroops,
+      attackerLostTroops,
+    });
+
+    console.log(defenderLostTroops, attackerLostTroops);
+    // Enlever les troops
+    if (defenderLostTroops > 0) {
+      removeTroopsFromTerritory(defenderTerritoireId, defenderLostTroops);
+      addTroopsChangeParticle(
+        defenderTerritoireId,
+        territoiresList[defenderTerritoireId].playerId,
+        -defenderLostTroops
+      );
+    }
+    if (attackerLostTroops > 0) {
+      removeTroopsFromTerritory(attackerTerritoireId, attackerLostTroops);
+      addTroopsChangeParticle(
+        attackerTerritoireId,
+        data.currentPlayerId,
+        -attackerLostTroops
+      );
+    }
+  };
+
+  const doTakeOver = (defenderTerritoireId, attackerTerritoireId) => {
+    const defenderPlayerId = territoiresList[defenderTerritoireId].playerId;
+
+    canGetCard = true;
+    document.getElementById("canon-sound").load();
+    document.getElementById("canon-sound").play();
+    takeOverTerritoryFromTerritory(
+      attackerTerritoireId,
+      defenderTerritoireId,
+      data.currentPlayerId,
+      1
+    );
+
+    updatePlayerDeadState(
+      defenderPlayerId,
+      checkPlayerDeadState(defenderPlayerId)
+    );
+  };
+
+  const doMoveTroops = (
+    defenderTerritoireId,
+    attackerTerritoireId,
+    troopsCount
+  ) => {
+    moveTroopsFromTerritory(
+      attackerTerritoireId,
+      defenderTerritoireId,
+      data.currentPlayerId,
+      troopsCount
+    );
+
+    //add the troops displacement after the attack to the move data
+    currentMove.attacks.push({
+      defenderTerritoireId,
+      attackerTerritoireId,
+      movedTroops: troopsCount,
+    });
+  };
+
+  const doAttackFailed = () => {
+    document.getElementById("protect-sound").load();
+    document.getElementById("protect-sound").play();
   };
 
   console.log("startAttackPhase");
@@ -361,55 +464,17 @@ function startAttackPhase(playerCount, callback) {
       setTimeout(() => {
         const attack = bot.pickAttack();
         if (!attack || limit-- <= 0) {
-          return startFortifyPhase(playerCount, callback, canGetCard);
+          return nextPhase();
         }
 
         const attackerTerritoireId = attack.attacker;
         const defenderTerritoireId = attack.defender;
         console.log(attack);
 
-        const [defenderLostTroops, attackerLostTroops] = utils.blitzAttack(
-          territoiresList[defenderTerritoireId].troops,
-          territoiresList[attackerTerritoireId].troops - 1
-        );
-        console.log(defenderLostTroops, attackerLostTroops);
-
-        // Enlever les troops
-        if (defenderLostTroops > 0) {
-          removeTroopsFromTerritory(defenderTerritoireId, defenderLostTroops);
-          addTroopsChangeParticle(
-            defenderTerritoireId,
-            territoiresList[defenderTerritoireId].playerId,
-            -defenderLostTroops
-          );
-        }
-        if (attackerLostTroops > 0) {
-          removeTroopsFromTerritory(attackerTerritoireId, attackerLostTroops);
-          addTroopsChangeParticle(
-            attackerTerritoireId,
-            data.currentPlayerId,
-            -attackerLostTroops
-          );
-        }
+        doAttack(defenderTerritoireId, attackerTerritoireId, 0);
 
         if (territoiresList[defenderTerritoireId].troops <= 0) {
-          canGetCard = true;
-          document.getElementById("canon-sound").load();
-          document.getElementById("canon-sound").play();
-
-          const defenderPlayerId =
-            territoiresList[defenderTerritoireId].playerId;
-          takeOverTerritoryFromTerritory(
-            attackerTerritoireId,
-            defenderTerritoireId,
-            data.currentPlayerId,
-            1
-          );
-
-          updatePlayerDeadState(
-            defenderPlayerId,
-            checkPlayerDeadState(defenderPlayerId)
-          );
+          doTakeOver(defenderTerritoireId, attackerTerritoireId);
 
           let count = 2;
           if (territoiresList[attackerTerritoireId].troops > 3) {
@@ -422,15 +487,9 @@ function startAttackPhase(playerCount, callback) {
             count = territoiresList[attackerTerritoireId].troops - 1;
           }
 
-          moveTroopsFromTerritory(
-            attackerTerritoireId,
-            defenderTerritoireId,
-            data.currentPlayerId,
-            count
-          );
+          doMoveTroops(defenderTerritoireId, attackerTerritoireId, count);
         } else {
-          document.getElementById("protect-sound").load();
-          document.getElementById("protect-sound").play();
+          doAttackFailed();
         }
 
         handler();
@@ -451,17 +510,7 @@ function startAttackPhase(playerCount, callback) {
         territoireSvg.removeEventListener("click", territoireHandler);
       }
 
-      //send the attack move data to the api
-      console.log(Move);
-      saveMove({
-        players: playersList,
-        territories: territoiresList,
-        move: Move,
-      }).catch((error) => {
-        console.log("Error at api.php when saving attack move: " + error);
-      });
-
-      startFortifyPhase(playerCount, callback, canGetCard);
+      nextPhase();
     }
     turnHudAction.addEventListener("click", nextHandler, { once: true });
 
@@ -493,71 +542,12 @@ function startAttackPhase(playerCount, callback) {
         return;
       }
 
-      // Calculer le nombre de troops perdu des deux bords.
-      let defenderLostTroops;
-      let attackerLostTroops;
-      if (result.value === 0) {
-        [defenderLostTroops, attackerLostTroops] = utils.blitzAttack(
-          territoiresList[defenderTerritoireId].troops,
-          territoiresList[attackerTerritoireId].troops - 1
-        );
-      } else {
-        [defenderLostTroops, attackerLostTroops] = utils.classicAttack(
-          Math.min(territoiresList[defenderTerritoireId].troops, 2),
-          result.value
-        );
-      }
-
-      // Add attacks result to the Move object,
-      //each attack has a attackerTerritoireId-defenderTerritoireId key
-      Move.attacks[`${attackerTerritoireId}-${defenderTerritoireId}`] = {
-        defenderLostTroops: defenderLostTroops,
-        attackerLostTroops: attackerLostTroops,
-      };
-
-      console.log(defenderLostTroops, attackerLostTroops);
-      // Enlever les troops
-      if (defenderLostTroops > 0) {
-        removeTroopsFromTerritory(defenderTerritoireId, defenderLostTroops);
-        addTroopsChangeParticle(
-          defenderTerritoireId,
-          territoiresList[defenderTerritoireId].playerId,
-          -defenderLostTroops
-        );
-      }
-      if (attackerLostTroops > 0) {
-        removeTroopsFromTerritory(attackerTerritoireId, attackerLostTroops);
-        addTroopsChangeParticle(
-          attackerTerritoireId,
-          data.currentPlayerId,
-          -attackerLostTroops
-        );
-      }
+      doAttack(defenderTerritoireId, attackerTerritoireId, result.value);
 
       if (territoiresList[defenderTerritoireId].troops <= 0) {
-        const defenderPlayerId = territoiresList[defenderTerritoireId].playerId;
+        doTakeOver(defenderTerritoireId, attackerTerritoireId);
 
-        canGetCard = true;
-        document.getElementById("canon-sound").load();
-        document.getElementById("canon-sound").play();
-        takeOverTerritoryFromTerritory(
-          attackerTerritoireId,
-          defenderTerritoireId,
-          data.currentPlayerId,
-          1
-        );
-
-        updatePlayerDeadState(
-          defenderPlayerId,
-          checkPlayerDeadState(defenderPlayerId)
-        );
-
-        if(checkPlayerDeadState(defenderPlayerId)){
-          
-        }
-
-
-        let count = territoiresList[attackerTerritoireId].troops - 1;
+        let count = 2;
         if (territoiresList[attackerTerritoireId].troops > 3) {
           const popup = new CountPopup({
             min: 2,
@@ -575,29 +565,16 @@ function startAttackPhase(playerCount, callback) {
           updatePastilleFakeTroops(defenderTerritoireId, 0);
           updatePastilleFakeTroops(attackerTerritoireId, 0);
 
-          if (result.cancel === true) {
-            count = 0;
-          } else if (result.value > 1) {
+          if (result.value > 1) {
             count = result.value;
           }
         }
 
         if (count > 0) {
-          moveTroopsFromTerritory(
-            attackerTerritoireId,
-            defenderTerritoireId,
-            data.currentPlayerId,
-            count
-          );
-
-          //add the troops displacement after the attack to the move data
-          Move.attacks[
-            `${attackerTerritoireId}-${defenderTerritoireId}`
-          ].movedTroops = count;
+          doMoveTroops(defenderTerritoireId, attackerTerritoireId, count);
         }
       } else {
-        document.getElementById("protect-sound").load();
-        document.getElementById("protect-sound").play();
+        doAttackFailed();
       }
 
       setSelectedTerritoire(null);
@@ -753,9 +730,13 @@ function startMainLoop(playerCount, callback) {
     }
     // afficher les cartes si c'est le tour d'un joueur
     if (playersList[data.currentPlayerId].bot) {
-      document.getElementsByClassName("cards-container")[0].classList.add("hidden");
+      document
+        .getElementsByClassName("cards-container")[0]
+        .classList.add("hidden");
     } else {
-      document.getElementsByClassName("cards-container")[0].classList.remove("hidden");
+      document
+        .getElementsByClassName("cards-container")[0]
+        .classList.remove("hidden");
     }
     // Commence un rounde
     startOneRound(playerCount, handler);
@@ -781,22 +762,20 @@ function generateFullCardImages() {
 
   // pour chaque carte en main, assembler une image de carte pour représenter la carte
   for (let i = 0; i < nbDeCartesTotal; i++) {
-
     // obtenir les informations de la carte
 
     let card = document.createElement("img");
     let type = playersList[data.currentPlayerId].cards[i].type;
     let cardWrapper = document.createElement("div");
-    
+
     card.classList.add("image-card");
 
     // Obtenir le type de carte pour l'image (cavalerie, canon, infanterie, joker)
 
     if (type == CardType.JOKER) {
-      card.src = "./assets/images/riskCardJoker.png"
+      card.src = "./assets/images/riskCardJoker.png";
       cardWrapper.appendChild(card);
     } else {
-
       switch (type) {
         case CardType.ARTILLERY:
           card.src = "./assets/images/riskCardCannon.png";
@@ -817,7 +796,6 @@ function generateFullCardImages() {
       territory.id = "territory-card";
       territory.classList.remove("territoire");
       territory.classList.remove("attackable-territory");
-
 
       let svgWrapper = document.createElementNS(
         "http://www.w3.org/2000/svg",
@@ -845,11 +823,10 @@ function generateFullCardImages() {
           `${bbox.x} ${bbox.y} ${bbox.width} ${bbox.height}`
         );
       }, 0);
-
     }
 
     // assembler la carte
-    
+
     cardWrapper.classList.add("card-wrapper");
 
     location.appendChild(cardWrapper);
