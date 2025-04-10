@@ -5,6 +5,10 @@ import {
   EPhases,
   territoiresList,
   playersList,
+  setMusicVolume,
+  setSFXVolume,
+  gameCards,
+  CardType,
 } from "./data.js";
 import {
   getAttackableNeighbour,
@@ -20,6 +24,10 @@ import {
   removeTroopsFromTerritory,
   moveTroopsFromTerritory,
   takeOverTerritoryFromTerritory,
+  drawCard,
+  claimCards,
+  getBestSetForTroops,
+  discardCards,
 } from "./logic.js";
 import {
   updatePastillesPosition,
@@ -29,7 +37,7 @@ import {
   addTroopsChangeParticle,
   updatePastilleFakeTroops,
 } from "./display.js";
-import { initializeGame, saveMove } from "../api/gameDataService.js";
+import { initializeGame, saveMove, setAsGest } from "../api/gameDataService.js";
 import { CountPopup, AttackPopup, SettingsPopup, CardPopup } from "../popup.js";
 
 import RandomBot from "../bot/bot.js";
@@ -46,7 +54,6 @@ import RandomBot from "../bot/bot.js";
 // });
 
 let gameFinished = false;
-
 /**
  * Démarre la phase de sélection des territoires pour les joueurs.
  * @param {number} playerCount - Nombre total de joueurs participant au jeu.
@@ -247,29 +254,40 @@ function startDraftPhase(playerCount, callback) {
 
   // Calcule le nombre de nouvelle troop de la phase draft
   const newTroops = countNewTroops(ownedTerritoriesIds, data.currentPlayerId);
-
   // Ajouter les troupes
   addTroops(data.currentPlayerId, newTroops);
 
+  console.log(playersList[data.currentPlayerId].cards.length);
+  if (playersList[data.currentPlayerId].cards.length >= 5) {
+    let cards = getBestSetForTroops();
+    console.log(cards);
+    addTroops(data.currentPlayerId, claimCards(cards));
+    discardCards(data.currentPlayerId, cards);
+    console.log(playersList[data.currentPlayerId].cards);
+  }
+
   if (playersList[data.currentPlayerId].bot) {
     const drafts = playersList[data.currentPlayerId].bot.pickDraftTroops();
-    for (const draft of drafts) {
-      moveTroopsFromPlayer(
-        draft.territoire,
-        data.currentPlayerId,
-        draft.troops
-      );
-      addTroopsChangeParticle(
-        draft.territoire,
-        data.currentPlayerId,
-        draft.troops
-      );
+    for (let i = 0; i < drafts.length; i++) {
+      const draft = drafts[i];
+      setTimeout(() => {
+        moveTroopsFromPlayer(
+          draft.territoire,
+          data.currentPlayerId,
+          draft.troops
+        );
+        addTroopsChangeParticle(
+          draft.territoire,
+          data.currentPlayerId,
+          draft.troops
+        );
+      }, data.botSpeed.delay * (i + 1));
     }
 
     // Attendre un peu avant de passer au prochain stage pour laisser l'utilisateur voir les choix
     setTimeout(() => {
       startAttackPhase(playerCount, callback);
-    }, 1000);
+    }, data.botSpeed.delay * (drafts.length + 1));
   } else {
     async function territoireHandler() {
       const popup = new CountPopup({
@@ -326,6 +344,7 @@ function startDraftPhase(playerCount, callback) {
 }
 
 function startAttackPhase(playerCount, callback) {
+  let canGetCard = false;
   const Move = {
     player: data.currentPlayerId,
     attacks: {},
@@ -337,73 +356,87 @@ function startAttackPhase(playerCount, callback) {
   if (playersList[data.currentPlayerId].bot) {
     const bot = playersList[data.currentPlayerId].bot;
     let limit = 10;
-    let attack;
-    while ((attack = bot.pickAttack()) && limit-- > 0) {
-      const attackerTerritoireId = attack.attacker;
-      const defenderTerritoireId = attack.defender;
-      console.log(attack);
 
-      const [defenderLostTroops, attackerLostTroops] = utils.blitzAttack(
-        territoiresList[defenderTerritoireId].troops,
-        territoiresList[attackerTerritoireId].troops - 1
-      );
-      console.log(defenderLostTroops, attackerLostTroops);
-
-      // Enlever les troops
-      if (defenderLostTroops > 0) {
-        removeTroopsFromTerritory(defenderTerritoireId, defenderLostTroops);
-        addTroopsChangeParticle(
-          defenderTerritoireId,
-          territoiresList[defenderTerritoireId].playerId,
-          -defenderLostTroops
-        );
-      }
-      if (attackerLostTroops > 0) {
-        removeTroopsFromTerritory(attackerTerritoireId, attackerLostTroops);
-        addTroopsChangeParticle(
-          attackerTerritoireId,
-          data.currentPlayerId,
-          -attackerLostTroops
-        );
-      }
-
-      if (territoiresList[defenderTerritoireId].troops <= 0) {
-        const defenderPlayerId = territoiresList[defenderTerritoireId].playerId;
-        takeOverTerritoryFromTerritory(
-          attackerTerritoireId,
-          defenderTerritoireId,
-          data.currentPlayerId,
-          1
-        );
-
-        updatePlayerDeadState(
-          defenderPlayerId,
-          checkPlayerDeadState(defenderPlayerId)
-        );
-
-        let count = 2;
-        if (territoiresList[attackerTerritoireId].troops > 3) {
-          count = bot.pickPostAttack(
-            attackerTerritoireId,
-            defenderTerritoireId,
-            2
-          );
-        } else {
-          count = territoiresList[attackerTerritoireId].troops - 1;
+    const handler = () => {
+      setTimeout(() => {
+        const attack = bot.pickAttack();
+        if (!attack || limit-- <= 0) {
+          return startFortifyPhase(playerCount, callback, canGetCard);
         }
 
-        moveTroopsFromTerritory(
-          attackerTerritoireId,
-          defenderTerritoireId,
-          data.currentPlayerId,
-          count
-        );
-      }
-    }
+        const attackerTerritoireId = attack.attacker;
+        const defenderTerritoireId = attack.defender;
+        console.log(attack);
 
-    setTimeout(() => {
-      startFortifyPhase(playerCount, callback);
-    }, 1000);
+        const [defenderLostTroops, attackerLostTroops] = utils.blitzAttack(
+          territoiresList[defenderTerritoireId].troops,
+          territoiresList[attackerTerritoireId].troops - 1
+        );
+        console.log(defenderLostTroops, attackerLostTroops);
+
+        // Enlever les troops
+        if (defenderLostTroops > 0) {
+          removeTroopsFromTerritory(defenderTerritoireId, defenderLostTroops);
+          addTroopsChangeParticle(
+            defenderTerritoireId,
+            territoiresList[defenderTerritoireId].playerId,
+            -defenderLostTroops
+          );
+        }
+        if (attackerLostTroops > 0) {
+          removeTroopsFromTerritory(attackerTerritoireId, attackerLostTroops);
+          addTroopsChangeParticle(
+            attackerTerritoireId,
+            data.currentPlayerId,
+            -attackerLostTroops
+          );
+        }
+
+        if (territoiresList[defenderTerritoireId].troops <= 0) {
+          canGetCard = true;
+          document.getElementById("canon-sound").load();
+          document.getElementById("canon-sound").play();
+
+          const defenderPlayerId =
+            territoiresList[defenderTerritoireId].playerId;
+          takeOverTerritoryFromTerritory(
+            attackerTerritoireId,
+            defenderTerritoireId,
+            data.currentPlayerId,
+            1
+          );
+
+          updatePlayerDeadState(
+            defenderPlayerId,
+            checkPlayerDeadState(defenderPlayerId)
+          );
+
+          let count = 2;
+          if (territoiresList[attackerTerritoireId].troops > 3) {
+            count = bot.pickPostAttack(
+              attackerTerritoireId,
+              defenderTerritoireId,
+              2
+            );
+          } else {
+            count = territoiresList[attackerTerritoireId].troops - 1;
+          }
+
+          moveTroopsFromTerritory(
+            attackerTerritoireId,
+            defenderTerritoireId,
+            data.currentPlayerId,
+            count
+          );
+        } else {
+          document.getElementById("protect-sound").load();
+          document.getElementById("protect-sound").play();
+        }
+
+        handler();
+      }, data.botSpeed.delay);
+    };
+    handler();
   } else {
     const territoriesIds = Object.keys(territoiresList);
     const territoiresSvgs = territoriesIds.map((territoireId) =>
@@ -428,7 +461,7 @@ function startAttackPhase(playerCount, callback) {
         console.log("Error at api.php when saving attack move: " + error);
       });
 
-      startFortifyPhase(playerCount, callback);
+      startFortifyPhase(playerCount, callback, canGetCard);
     }
     turnHudAction.addEventListener("click", nextHandler, { once: true });
 
@@ -503,6 +536,10 @@ function startAttackPhase(playerCount, callback) {
 
       if (territoiresList[defenderTerritoireId].troops <= 0) {
         const defenderPlayerId = territoiresList[defenderTerritoireId].playerId;
+
+        canGetCard = true;
+        document.getElementById("canon-sound").load();
+        document.getElementById("canon-sound").play();
         takeOverTerritoryFromTerritory(
           attackerTerritoireId,
           defenderTerritoireId,
@@ -514,6 +551,11 @@ function startAttackPhase(playerCount, callback) {
           defenderPlayerId,
           checkPlayerDeadState(defenderPlayerId)
         );
+
+        if(checkPlayerDeadState(defenderPlayerId)){
+          
+        }
+
 
         let count = territoiresList[attackerTerritoireId].troops - 1;
         if (territoiresList[attackerTerritoireId].troops > 3) {
@@ -553,6 +595,9 @@ function startAttackPhase(playerCount, callback) {
             `${attackerTerritoireId}-${defenderTerritoireId}`
           ].movedTroops = count;
         }
+      } else {
+        document.getElementById("protect-sound").load();
+        document.getElementById("protect-sound").play();
       }
 
       setSelectedTerritoire(null);
@@ -565,7 +610,7 @@ function startAttackPhase(playerCount, callback) {
   }
 }
 
-function startFortifyPhase(playerCount, callback) {
+function startFortifyPhase(playerCount, callback, canGetCard) {
   const Move = {
     player: data.currentPlayerId,
     fortifyDraft: {},
@@ -573,21 +618,27 @@ function startFortifyPhase(playerCount, callback) {
 
   console.log("startFortifyPhase");
   updateCurrentPhase(EPhases.FORTIFY);
-
+  if (canGetCard) {
+    console.log("Pickacard");
+    drawCard(data.currentPlayerId);
+    console.log(playersList[data.currentPlayerId].cards);
+  }
   if (playersList[data.currentPlayerId].bot) {
-    const bot = playersList[data.currentPlayerId].bot;
-    const fortify = bot.pickFortify();
+    setTimeout(() => {
+      const bot = playersList[data.currentPlayerId].bot;
+      const fortify = bot.pickFortify();
 
-    if (fortify) {
-      moveTroopsFromTerritory(
-        fortify.from,
-        fortify.to,
-        data.currentPlayerId,
-        fortify.troops
-      );
-      Move.fortifyDraft[fortify.to] = fortify.troops;
-    }
-    setTimeout(callback, 1000);
+      if (fortify) {
+        moveTroopsFromTerritory(
+          fortify.from,
+          fortify.to,
+          data.currentPlayerId,
+          fortify.troops
+        );
+        Move.fortifyDraft[fortify.to] = fortify.troops;
+      }
+      callback();
+    }, data.botSpeed.delay);
   } else {
     const ownedTerritoriesIds = Object.keys(territoiresList).filter(
       (territoireId) =>
@@ -700,7 +751,12 @@ function startMainLoop(playerCount, callback) {
       callback();
       return;
     }
-
+    // afficher les cartes si c'est le tour d'un joueur
+    if (playersList[data.currentPlayerId].bot) {
+      document.getElementsByClassName("cards-container")[0].classList.add("hidden");
+    } else {
+      document.getElementsByClassName("cards-container")[0].classList.remove("hidden");
+    }
     // Commence un rounde
     startOneRound(playerCount, handler);
   };
@@ -714,31 +770,110 @@ function cardHandler() {
     const popup = new CardPopup({});
     popup.show();
 
-    let card = document.getElementsByClassName("card-wrapper");
-
-    let country = document.getElementById("alaska").cloneNode(false);
-    country.id = "territory-card";
-    country.classList.remove("territoire");
-    country.classList.remove("attackable-territory");
-
-    let svgWrapper = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "svg"
-    );
-    svgWrapper.classList.add("svg-card");
-    
-    svgWrapper.setAttribute("preserveAspectRatio", "xMidYMid meet");
-    
-    svgWrapper.appendChild(country);
-
-    card[0].appendChild(svgWrapper);
-
-    const bbox = country.getBBox();
-    svgWrapper.setAttribute("viewBox", `${bbox.x} ${bbox.y} ${bbox.width} ${bbox.height}`);
+    // generer les images des cartes du joueur
+    generateFullCardImages();
   }
 }
 
+function generateFullCardImages() {
+  let location = document.getElementById("popup-cards-remaining-cards");
+  let nbDeCartesTotal = playersList[data.currentPlayerId].cards.length;
+
+  // pour chaque carte en main, assembler une image de carte pour représenter la carte
+  for (let i = 0; i < nbDeCartesTotal; i++) {
+
+    // obtenir les informations de la carte
+
+    let card = document.createElement("img");
+    let type = playersList[data.currentPlayerId].cards[i].type;
+    let cardWrapper = document.createElement("div");
+    
+    card.classList.add("image-card");
+
+    // Obtenir le type de carte pour l'image (cavalerie, canon, infanterie, joker)
+
+    if (type == CardType.JOKER) {
+      card.src = "./assets/images/riskCardJoker.png"
+      cardWrapper.appendChild(card);
+    } else {
+
+      switch (type) {
+        case CardType.ARTILLERY:
+          card.src = "./assets/images/riskCardCannon.png";
+          break;
+        case CardType.CAVALRY:
+          card.src = "./assets/images/riskCardCavalry.png";
+          break;
+        case CardType.INFANTRY:
+          card.src = "./assets/images/riskCardInfantry.png";
+          break;
+      }
+
+      cardWrapper.appendChild(card);
+
+      let name = playersList[data.currentPlayerId].cards[i].territory;
+      let territory = document.getElementById(name).cloneNode(false);
+
+      territory.id = "territory-card";
+      territory.classList.remove("territoire");
+      territory.classList.remove("attackable-territory");
+
+
+      let svgWrapper = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "svg"
+      );
+      svgWrapper.classList.add("svg-card");
+
+      svgWrapper.setAttribute("preserveAspectRatio", "xMidYMid meet");
+
+      let territoryName = document.createElement("p");
+      territoryName.classList.add("territory-name-card");
+      name = transformName(name);
+      territoryName.innerText = name;
+
+      svgWrapper.appendChild(territory);
+
+      cardWrapper.appendChild(svgWrapper);
+      cardWrapper.appendChild(territoryName);
+
+      // doit faire un timeout pour que le viewbox du svg soit initialisé
+      setTimeout(() => {
+        const bbox = territory.getBBox();
+        svgWrapper.setAttribute(
+          "viewBox",
+          `${bbox.x} ${bbox.y} ${bbox.width} ${bbox.height}`
+        );
+      }, 0);
+
+    }
+
+    // assembler la carte
+    
+    cardWrapper.classList.add("card-wrapper");
+
+    location.appendChild(cardWrapper);
+  }
+}
+// turns a territory html element ID into its name by adding spaces if needed
+function transformName(name) {
+  let newName = name.charAt(0).toUpperCase();
+  for (let i = 1; i < name.length; i++) {
+    if (name.charAt(i) == name.charAt(i).toUpperCase()) {
+      newName += " " + name.charAt(i);
+    } else {
+      newName += name.charAt(i);
+    }
+  }
+  return newName;
+}
+
+/*
+/ DOMContentLoaded
+*/
+
 document.addEventListener("DOMContentLoaded", function () {
+  const enLigne = false;
   const autoPlacement = true;
   const playerCount = 6;
   // Where does the bots start if there is any. Else set to 0
@@ -765,42 +900,73 @@ document.addEventListener("DOMContentLoaded", function () {
     ? [startRandomTerritoryDistribution, startRandomTroopsPlacement]
     : [startTurnTerritoriesSelection, startTurnTroopsPlacement];
 
-  distributionFn(playerCount, () => {
-    console.log("Selection is done");
+  const setAsGestFn = enLigne
+    ? async () =>
+        sessionStorage.getItem("token") ? { success: false } : setAsGest()
+    : async () => {
+        return { success: false };
+      };
 
-    placementFn(playerCount, () => {
-      //create game with player info
-      initializeGame({
-        players: playersList,
-        playerCount: playerCount,
-      })
-        .then((value) => {
-          playersList.push({ game_id: value["game_id"] });
-          //nesting saveMove beacause it is dependent on playersList, save the move only after receiving game_id
-          //make inital move to save inital territory and troop distribution
-          saveMove({
+  //met le player a guest avant chaque partie TEMPORAIREMENT
+  setAsGestFn()
+    .then((response) => {
+      if (response.success === true) {
+        sessionStorage.setItem("token", response.token);
+        sessionStorage.setItem("saved-username", response.name);
+        sessionStorage.setItem("saved-userId", response.id);
+        sessionStorage.setItem("guest", true);
+      } else {
+        console.log([response.error || "Erreur inconnue"]);
+      }
+    })
+    .then(() => {
+      distributionFn(playerCount, () => {
+        console.log("Selection is done");
+
+        placementFn(playerCount, () => {
+          playersList[1].userId = sessionStorage.getItem("saved-userId");
+          //create game with player info
+          initializeGame({
             players: playersList,
-            territories: territoiresList,
-            move: {},
-          }).catch((error) => {
-            console.log("Error at api.php when making inital move: " + error);
+            playerCount: playerCount,
+          })
+            .then((value) => {
+              playersList[7] = value["gameId"];
+              //nesting saveMove beacause it is dependent on playersList, save the move only after receiving game_id
+              //make inital move to save inital territory and troop distribution
+              console.log("Game id: " + value["gameId"]);
+              saveMove({
+                players: playersList,
+                territories: territoiresList,
+                move: { player: 0 },
+              }).catch((error) => {
+                console.log(
+                  "Error at api.php when making inital move: " + error
+                );
+              });
+            })
+            .catch((error) => {
+              console.log("Error at api.php when initializing game: " + error);
+            });
+
+          console.log("Distribution is done");
+
+          startMainLoop(playerCount, () => {
+            console.log("Main game loop is done");
           });
-        })
-        .catch((error) => {
-          console.log("Error at api.php when initializing game: " + error);
         });
-
-      console.log("Distribution is done");
-
-      startMainLoop(playerCount, () => {
-        console.log("Main game loop is done");
       });
     });
-  });
 
   let containerPays = document.getElementById("pays-background");
   containerPays.addEventListener("click", function () {
-    document.getElementById("sea-music").play();
+    document
+      .getElementById("sea-music")
+      .play()
+      .catch((error) => {
+        console.error(error);
+      });
+
     if (data.currentPhase != EPhases.DRAFT) {
       setSelectedTerritoire(null);
       setAttackableTerritoires([]);
@@ -810,16 +976,20 @@ document.addEventListener("DOMContentLoaded", function () {
   let settingsButton = document.getElementById("settings-button");
   settingsButton.addEventListener("click", async () => {
     const popup = new SettingsPopup({
-      music: (volume) => {
-        console.log(volume);
+      music: setMusicVolume,
+      sfx: setSFXVolume,
+      volumeMusic: document.getElementById("sea-music").volume,
+      volumeSFX: document.getElementById("charge1-sound").volume,
+      speed: (speed) => {
+        data.botSpeed = speed;
       },
-      sfx: (volume) => {},
+      currentSpeed: data.botSpeed,
     });
     await popup.show();
   });
 
   new ResizeObserver(updatePastillesPosition).observe(document.body);
   window.addEventListener("resize", updatePastillesPosition);
-  // etablir le popup des cartes quand on clique sur l'image des cartes
+  // établir le popup des cartes quand on clique sur l'image des cartes
   document.getElementById("cards-img").addEventListener("click", cardHandler);
 });

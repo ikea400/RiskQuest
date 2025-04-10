@@ -3,7 +3,7 @@ USE tch099_riskquest;
 
 CREATE OR REPLACE TABLE User
 (
-    id            BIGINT              NOT NULL UNIQUE PRIMARY KEY CHECK ( id > 0 ),
+    id            BIGINT  NOT NULL PRIMARY KEY CHECK ( id > 0 ),
     name          VARCHAR(30) UNIQUE  NOT NULL,
     password      VARCHAR(255) UNIQUE,
     join_date DATETIME            NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -13,7 +13,7 @@ CREATE OR REPLACE TABLE User
 
 CREATE OR REPLACE TABLE Game
 (
-    id           BIGINT UNIQUE PRIMARY KEY,
+    id           BIGINT UNIQUE AUTO_INCREMENT PRIMARY KEY,
     player_count TINYINT CHECK (player_count >= 1 AND player_count <= 6),
     start_date   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     played_time  TIME     NOT NULL DEFAULT '00:00:00',
@@ -41,6 +41,30 @@ CREATE OR REPLACE TABLE User_Game
     FOREIGN KEY (user_id) REFERENCES User (id) ON DELETE CASCADE
 );
 
+/*
+DELIMITER $$
+CREATE OR REPLACE TRIGGER before_insert_User
+    BEFORE INSERT
+    ON User
+    FOR EACH ROW
+BEGIN
+    DECLARE guest_pass BIGINT;
+    DECLARE pass_exists BOOLEAN DEFAULT TRUE;
+    DECLARE max_attempts INT DEFAULT 10;
+    DECLARE attempts INT DEFAULT 0;
+
+    IF NEW.password IS NULL THEN
+        WHILE pass_exists AND attempts < max_attempts DO
+            SET guest_pass = 1 + FLOOR(RAND() * (9223372036854775806));
+            SET pass_exists = (SELECT COUNT(*) FROM User WHERE password = guest_pass) > 0;
+            SET attempts = attempts + 1;
+        END WHILE;
+        SET NEW.password = guest_pass;
+    END IF
+     
+END$$
+DELIMITER ;
+*/
 
 DELIMITER $$
 
@@ -142,4 +166,10 @@ INSERT INTO User (name, guest) VALUES('Guest01', TRUE);
 
 SELECT *
 FROM User;
+
+SELECT game_id FROM User_Game WHERE user_id=1;
+
+SELECT number, move_data as moveData, player
+FROM Move
+WHERE game_id = 1;
 

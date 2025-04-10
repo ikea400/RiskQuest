@@ -1,4 +1,11 @@
-import { data, territoiresList, playersList, continentsList } from "./data.js";
+import {
+  data,
+  territoiresList,
+  playersList,
+  continentsList,
+  CardType,
+  gameCards,
+} from "./data.js";
 import {
   updateTerritoryOwer as updateTerritoryOwner,
   updatePlayersHudTerritoireCount,
@@ -265,7 +272,7 @@ export function takeOverTerritoryFromTerritory(
   }
 
   let oldOwnerId = territoire.playerId;
-  
+
   updateTerritoryOwner(territoryId, playerId);
 
   if (oldOwnerId) updatePlayersHudTerritoireCount(oldOwnerId);
@@ -349,7 +356,9 @@ export function countNewTroops(ownedTerritoriesIds, playerId) {
 
     if (!continent.territoires.some(territoireNotOwnedByPlayer)) {
       newTroops += continent.bonus;
-      console.log(`+ ${continent.bonus}(${newTroops}) troups to ${playerId} for owning ${continentId}`);
+      console.log(
+        `+ ${continent.bonus}(${newTroops}) troups to ${playerId} for owning ${continentId}`
+      );
     }
   }
 
@@ -364,9 +373,8 @@ export function countNewTroops(ownedTerritoriesIds, playerId) {
  * @throws {Error} - Génère une erreur si le nombre de troupes à ajouter est inférieur ou égal à zéro.
  */
 export function addTroops(playerId, troopsCount) {
-
   console.log(`addTroops(${playerId}, ${troopsCount})`);
-  
+
   if (troopsCount <= 0) {
     throw new Error(`player${playerId} tried to add ${troopsCount} troops`);
   }
@@ -388,4 +396,235 @@ export function setSelectedTerritoire(territoireId) {
   if (territoireId)
     document.getElementById(territoireId).classList.add("selected-territory");
   data.selectedTerritoire = territoireId;
+}
+
+/**
+ * Vérifie si la carte donnée est de type INFANTRY.
+ * @param {Object} card - L'objet carte à vérifier.
+ * @returns {boolean} - Retourne true si la carte est INFANTERIE, sinon false.
+ */
+function isInfantry(card) {
+  return card.type === CardType.INFANTRY;
+}
+
+/**
+ * Vérifie si la carte donnée est de type ARTILLERY.
+ * @param {Object} card - L'objet carte à vérifier.
+ * @returns {boolean} - Retourne true si la carte est ARTILLERIE, sinon false.
+ */
+function isArtillery(card) {
+  return card.type === CardType.ARTILLERY;
+}
+
+/**
+ * Vérifie si la carte donnée est de type CAVALRY.
+ * @param {Object} card - L'objet carte à vérifier.
+ * @returns {boolean} - Retourne true si la carte est CAVALERIE, sinon false.
+ */
+function isCavalry(card) {
+  return card.type === CardType.CAVALRY;
+}
+
+/**
+ * Vérifie si la carte n'est pas un JOKER.
+ * @param {Object} card - L'objet carte à vérifier.
+ * @returns {boolean} - Retourne true si la carte n'est pas un JOKER, sinon false.
+ */
+function isJoker(card) {
+  return card.type === CardType.JOKER;
+}
+
+/**
+ * Calcule le nombre de troupes obtenues en échangeant des cartes.
+ *
+ * @param {Object[]} playerCards - La liste des cartes du joueur.
+ * @returns {number|undefined} - Retourne le nombre de troupes ou undefined si l'échange n'est pas possible.
+ */
+export function claimCards(playerCards) {
+  let bonus = 0;
+  for (const card of playerCards) {
+    if (!isJoker(card)) {
+      if (territoiresList[card.territory].playerId === data.currentPlayerId) {
+        bonus = 2;
+      }
+    }
+  }
+  switch (getSelectionType(playerCards)) {
+    case CardType.INFANTRY:
+      return 4 + bonus;
+    case CardType.CAVALRY:
+      return 6 + bonus;
+    case CardType.ARTILLERY:
+      return 8 + bonus;
+    case 1:
+      return 10 + bonus;
+    default:
+      return null;
+  }
+}
+
+/**
+ * Détermine le type de sélection en fonction des cartes fournies.
+ *
+ * @param {Array} cards - La liste des cartes sélectionnées.
+ * @returns {CardType|null|number} Le type de carte correspondant ou null si aucune combinaison valide n'est trouvée.
+ */
+function getSelectionType(cards) {
+  const infantryCards = cards.filter(isInfantry);
+  const artilleryCards = cards.filter(isArtillery);
+  const cavalryCards = cards.filter(isCavalry);
+  const jokerCards = cards.filter(isJoker);
+
+  if (
+    infantryCards.length === 3 ||
+    (infantryCards.length === 2 && jokerCards.length === 1)
+  ) {
+    return CardType.INFANTRY;
+  }
+  if (
+    artilleryCards.length === 3 ||
+    (artilleryCards.length === 2 && jokerCards.length === 1)
+  ) {
+    return CardType.ARTILLERY;
+  }
+  if (
+    cavalryCards.length === 3 ||
+    (cavalryCards.length === 2 && jokerCards.length === 1)
+  ) {
+    return CardType.CAVALRY;
+  }
+
+  //3 different cards with or without jokers
+  if (
+    (infantryCards.length === 1 &&
+      artilleryCards.length === 1 &&
+      cavalryCards.length === 1) ||
+    (infantryCards.length === 1 &&
+      artilleryCards.length === 1 &&
+      jokerCards.length === 1) ||
+    (infantryCards.length === 1 &&
+      cavalryCards.length === 1 &&
+      jokerCards.length === 1) ||
+    (artilleryCards.length === 1 &&
+      cavalryCards.length === 1 &&
+      jokerCards.length === 1)
+  ) {
+    return 1;
+  }
+  return null;
+}
+
+/**
+ * Génère un jeu de cartes pour le jeu, en attribuant aléatoirement des types aux territoires.
+ *
+ * @returns {Array} Le jeu de cartes mélangé, comprenant 42 cartes de territoire et 2 jokers.
+ */
+export function generateGameCards() {
+  let gameCards = [];
+  let shuffledTerritories = shuffleArray(Object.keys(territoiresList));
+  for (let i = 0; i < 42; i++) {
+    let card = {};
+    switch (utils.randomInteger(1, 3)) {
+      case 1:
+        card.type = CardType.INFANTRY;
+        break;
+      case 2:
+        card.type = CardType.CAVALRY;
+        break;
+      case 3:
+        card.type = CardType.ARTILLERY;
+        break;
+    }
+    card.territory = shuffledTerritories[i];
+    gameCards.push(card);
+  }
+  //On rajoute les 2 jokers.
+  for (let i = 0; i < 2; i++) {
+    let card = {};
+    card.type = CardType.JOKER;
+    gameCards.push(card);
+  }
+  gameCards = shuffleArray(gameCards);
+  return gameCards;
+}
+
+/**
+ * Mélange les éléments d'un tableau de manière aléatoire en utilisant l'algorithme de Fisher-Yates.
+ *
+ * @param {Array} array - Le tableau à mélanger.
+ * @returns {Array} Le tableau mélangé.
+ */
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = utils.randomInteger(0, i);
+    [array[i], array[j]] = [array[j], array[i]]; // Swap elements
+  }
+  return array;
+}
+
+/**
+ * Pioche une carte pour le joueur spécifié et l'ajoute à sa main.
+ *
+ * @param {number} playerId - L'identifiant du joueur qui pioche une carte.
+ * @returns {Array} La liste mise à jour des cartes du joueur.
+ */
+export function drawCard(playerId) {
+  if (!playersList[playerId].cards) {
+    playersList[playerId].cards = [];
+  }
+  const drawnCard = gameCards.shift();
+  playersList[playerId].cards.push(drawnCard);
+  return playersList[playerId].cards;
+}
+
+/**
+ * Défausse les cartes spécifiées du joueur et les ajoute à la pile de défausse.
+ * Mélange et remet les cartes dans le jeu si la pile de défausse contient moins de 5 cartes.
+ *
+ * @param {number} playerId - L'identifiant du joueur qui défausse les cartes.
+ * @param {Array} cards - Les cartes à défausser.
+ */
+export function discardCards(playerId, cards) {
+  for (const card of cards) {
+    let index = playersList[playerId].cards.indexOf(card);
+    playersList[playerId].cards.splice(index, 1);
+    data.discardPile.push(card);
+  }
+  if (gameCards.length < 5) {
+    data.discardPile = shuffleArray(data.discardPile);
+    for (const card of data.discardPile) {
+      gameCards.push(card);
+    }
+    data.discardPile = [];
+  }
+}
+
+/**
+ * Trouve le meilleur ensemble de trois cartes qui rapporte le maximum de troupes.
+ *
+ * @returns {Array} Le meilleur ensemble de trois cartes qui fournit le plus de troupes.
+ */
+export function getBestSetForTroops() {
+  const cards = playersList[data.currentPlayerId].cards;
+  let bestSet = null;
+  let maxTroops = 0;
+  for (let i = 0; i < cards.length - 2; i++) {
+    for (let j = i + 1; j < cards.length - 1; j++) {
+      for (let k = j + 1; k < cards.length; k++) {
+        let set = [cards[i], cards[j], cards[k]];
+        let troops = claimCards(set);
+        if (troops > maxTroops) {
+          bestSet = set;
+          maxTroops = troops;
+        }
+      }
+    }
+  }
+  return bestSet;
+}
+
+export function takeCardsFrom(attakerId, defenderId) {
+    while(playersList[defenderId].cards.length > 0){
+      playersList[attakerId].cards.push(playersList[defenderId].cards.pop());
+    }
 }

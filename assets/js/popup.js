@@ -1,4 +1,4 @@
-import { winningOdds } from "./game/data.js";
+import { EBotSpeed, winningOdds } from "./game/data.js";
 
 class PopupBase {
   #resolveCallback;
@@ -215,7 +215,7 @@ export class CountPopup extends PopupBase {
           this.resolve({ cancel: false, value: this.value });
           break;
         case "Escape":
-          this.resolve({ cancel: true });
+          if (this.params.cancel === true) this.resolve({ cancel: true });
           break;
       }
     });
@@ -399,10 +399,13 @@ export class AttackPopup extends PopupBase {
 
     if (this.params.defender && this.params.attacker) {
       let odds;
-      if (this.current === 0 && winningOdds.blitz) {
+      if (
+        this.current === 0 &&
+        winningOdds.blitz &&
+        this.params.defender < winningOdds.blitz.length &&
+        this.params.attacker < winningOdds.blitz.length
+      ) {
         odds = winningOdds.blitz;
-      } else if (this.current > 0 && winningOdds.classic) {
-        odds = winningOdds.classic;
       }
 
       if (odds) {
@@ -524,6 +527,17 @@ export class SettingsPopup extends PopupBase {
             />
           </div>
           <div class="popup-settings-line"></div>
+          <div id="popup-settings-category-bot" class="popup-settings-category">
+            <label for="speed" class="kanit-900">Bot Speed</label>
+            <input
+              type="range"
+              id="popup-settings-speed"
+              class="popup-settings-slider"
+              min="0"
+              max="2"
+            />
+          </div>
+          <div class="popup-settings-line"></div>
         </div>`;
 
     const sliders = document.getElementsByClassName("popup-settings-slider");
@@ -539,6 +553,8 @@ export class SettingsPopup extends PopupBase {
       this.params.volumeMusic * 100;
     document.getElementById("popup-settings-sfx").value =
       this.params.volumeSFX * 100;
+    document.getElementById("popup-settings-speed").value =
+      this.params.currentSpeed.index;
     for (const slider of sliders) {
       updateSliderGradiant(slider);
 
@@ -550,6 +566,11 @@ export class SettingsPopup extends PopupBase {
             break;
           case "popup-settings-sfx":
             this.params.sfx(slider.value * 0.01);
+            break;
+          case "popup-settings-speed":
+            this.params.speed(
+              [EBotSpeed.SLOW, EBotSpeed.NORMAL, EBotSpeed.FAST][slider.value]
+            );
             break;
         }
       });
@@ -570,10 +591,10 @@ export class SettingsPopup extends PopupBase {
     this.params.music ??= () => {};
     this.params.sfx ??= () => {};
     this.params.ui ??= () => {};
+    this.params.speed ??= (speed) => {};
     this.params.volumeMusic ??= 0.5;
     this.params.volumeSFX ??= 0.5;
-
-    console.log(this.params.volumeMusic);
+    this.params.currentSpeed ??= EBotSpeed.SLOW;
   }
 }
 
@@ -593,19 +614,39 @@ export class CardPopup extends PopupBase {
 
     <div id="flex-center-popup-cards">
       <div id="selected-card-1" class="selected-card-holder">
-        <img class='image-card' src='./assets/images/riskCardInfantry.png' alt='infantry'img>
+        <img class='image-card' src='./assets/images/riskCardInfantry.png' alt='infantry'>
       </div>
 
       <div id="selected-card-2" class="selected-card-holder">
-        <img class='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
+        <img class='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'>
       </div>
 
       <div id="selected-card-3" class="selected-card-holder">
         
       </div>
       
-      
-      
+    </div>
+
+    <div id="legend-card">
+      <img id="card-legend-header" src='./assets/images/riskBonusLegendHeader.png' alt='Legend'img>
+      <div id="legend-card-information">
+        <span>
+          <span class="legend-number">4</span> <span class="legend-texte">Infantry</span>
+        </span>
+
+        <span>
+          <span class="legend-number">6</span> <span class="legend-texte">Cavalry</span>
+        </span>
+
+        <span>
+          <span class="legend-number">8</span> <span class="legend-texte">Artillery</span>
+        </span>
+
+        <span>
+          <span class="legend-number">10</span> <span class="legend-texte">All Three</span>
+        </span>
+
+      </div>
     </div>
 
     <div id="popup-cards-button-container">
@@ -624,13 +665,6 @@ export class CardPopup extends PopupBase {
     
     <footer id="popup-cards-footer">
       <div id="popup-cards-remaining-cards">
-        <div class="card-wrapper">
-          <img class='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
-        </div>
-        <img class='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
-        <img class='image-card' src='./assets/images/riskCardJoker.png' alt='cavalry'img>
-        <img class='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
-        <img class='image-card' src='./assets/images/riskCardCavalry.png' alt='cavalry'img>
       </div>
     </footer>
     `;
