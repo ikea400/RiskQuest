@@ -1,2 +1,9 @@
 Order allow,deny
 Allow from all
+
+<IfModule mod_headers.c>
+    Header always set Access-Control-Allow-Origin "http://localhost:8081"
+    Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header always set Access-Control-Allow-Headers "Authorization, Content-Type"
+    Header always set Access-Control-Allow-Credentials "true"
+</IfModule>
