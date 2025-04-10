@@ -132,7 +132,7 @@ export function takeOverTerritory(territoryId, playerId, troopsCount) {
  * @param {string} territoireId - L'ID du territoire auquel ajouter des troupes.
  * @param {number} troopsCount - Le nombre de troupes à ajouter.
  */
-function addTroopsToTerritory(territoireId, troopsCount) {
+export function addTroopsToTerritory(territoireId, troopsCount) {
   territoiresList[territoireId].troops += troopsCount;
   updatePastilleTroopsCount(territoireId);
   updatePlayerHudTroopsCount(territoiresList[territoireId].playerId);
@@ -624,7 +624,7 @@ export function getBestSetForTroops() {
 }
 
 export function takeCardsFrom(attakerId, defenderId) {
-    while(playersList[defenderId].cards.length > 0){
-      playersList[attakerId].cards.push(playersList[defenderId].cards.pop());
-    }
+  while (playersList[defenderId].cards.length > 0) {
+    playersList[attakerId].cards.push(playersList[defenderId].cards.pop());
+  }
 }
