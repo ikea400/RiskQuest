@@ -956,8 +956,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const enLigne = false;
   const autoPlacement = true;
   const playerCount = 6;
-  // Where does the bots start if there is any. Else set to 0
-  const botPlayerStart = 1;
+  // Where does the bots start if there is any. Else set to 0 for no bots. set to 2 for one player
+  const botPlayerStart = 2;
 
   // Initialization des troops
   for (let playerId = 1; playerId <= playerCount; playerId++) {
