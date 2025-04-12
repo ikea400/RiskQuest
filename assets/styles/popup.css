@@ -746,8 +746,11 @@
 .selected-card-holder {
   display: flex;
   border: 1vh solid rgb(80, 77, 77);
-  padding: 0.5vw;
-  width: min(10vw,17vh);
+  padding: 0.2vw;
+  padding-bottom: 0.1vh;
+  width: min(10.5vw, 17.4vh);
+  aspect-ratio: 309 / 520;
+  height: auto;
   justify-content: center;
   align-items: center;
   box-shadow: rgb(255, 0, 68) 0px 0px 5px 5px;
@@ -809,4 +812,5 @@
   text-wrap: wrap;
   text-align: center;
   overflow: visible;
+  pointer-events: none;
 }

@@ -441,23 +441,15 @@ function isJoker(card) {
  * @returns {number|undefined} - Retourne le nombre de troupes ou undefined si l'échange n'est pas possible.
  */
 export function claimCards(playerCards) {
-  let bonus = 0;
-  for (const card of playerCards) {
-    if (!isJoker(card)) {
-      if (territoiresList[card.territory].playerId === data.currentPlayerId) {
-        bonus = 2;
-      }
-    }
-  }
   switch (getSelectionType(playerCards)) {
     case CardType.INFANTRY:
-      return 4 + bonus;
+      return 4;
     case CardType.CAVALRY:
-      return 6 + bonus;
+      return 6;
     case CardType.ARTILLERY:
-      return 8 + bonus;
+      return 8;
     case 1:
-      return 10 + bonus;
+      return 10;
     default:
       return null;
   }
@@ -572,6 +564,14 @@ export function drawCard(playerId) {
   if (!playersList[playerId].cards) {
     playersList[playerId].cards = [];
   }
+
+  if (gameCards.length < 5) {
+    data.discardPile = shuffleArray(data.discardPile);
+    for (const card of data.discardPile) {
+      gameCards.push(card);
+    }
+    data.discardPile = [];
+  }
   const drawnCard = gameCards.shift();
   playersList[playerId].cards.push(drawnCard);
   return playersList[playerId].cards;
@@ -589,13 +589,6 @@ export function discardCards(playerId, cards) {
     let index = playersList[playerId].cards.indexOf(card);
     playersList[playerId].cards.splice(index, 1);
     data.discardPile.push(card);
-  }
-  if (gameCards.length < 5) {
-    data.discardPile = shuffleArray(data.discardPile);
-    for (const card of data.discardPile) {
-      gameCards.push(card);
-    }
-    data.discardPile = [];
   }
 }
 
@@ -624,7 +617,19 @@ export function getBestSetForTroops() {
 }
 
 export function takeCardsFrom(attakerId, defenderId) {
-  while (playersList[defenderId].cards.length > 0) {
-    playersList[attakerId].cards.push(playersList[defenderId].cards.pop());
+    while(playersList[defenderId].cards.length > 0){
+      playersList[attakerId].cards.push(playersList[defenderId].cards.pop());
+    }
+    //restart to draft phase if cards > 5
+}
+
+export function possessTerritory(playerCards){
+  for (const card of playerCards) {
+    if (!isJoker(card)) {
+      if (territoiresList[card.territory].playerId === data.currentPlayerId) {
+        return card.territory;
+      }
+    }
   }
+  return null;
 }

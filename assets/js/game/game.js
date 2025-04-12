@@ -28,6 +28,9 @@ import {
   claimCards,
   getBestSetForTroops,
   discardCards,
+  takeCardsFrom,
+  possessTerritory,
+  addTroopsToTerritory,
 } from "./logic.js";
 import {
   updatePastillesPosition,
@@ -262,6 +265,9 @@ function startDraftPhase(playerCount, callback) {
     let cards = getBestSetForTroops();
     console.log(cards);
     addTroops(data.currentPlayerId, claimCards(cards));
+    if(possessTerritory(cards)!== null){
+      addTroopsToTerritory(possessTerritory(cards), 2);
+    }
     discardCards(data.currentPlayerId, cards);
     console.log(playersList[data.currentPlayerId].cards);
   }
@@ -455,6 +461,8 @@ function startAttackPhase(playerCount, callback) {
     document.getElementById("protect-sound").play();
   };
 
+  
+
   console.log("startAttackPhase");
   updateCurrentPhase(EPhases.ATTACK);
 
@@ -477,6 +485,10 @@ function startAttackPhase(playerCount, callback) {
 
         if (territoiresList[defenderTerritoireId].troops <= 0) {
           doTakeOver(defenderTerritoireId, attackerTerritoireId);
+
+          if(checkPlayerDeadState(defenderPlayerId)){
+              takeCardsFrom(data.currentPlayerId,defenderPlayerId)
+          }
 
           let count = 2;
           if (territoiresList[attackerTerritoireId].troops > 3) {
@@ -771,25 +783,27 @@ function generateFullCardImages() {
     // obtenir les informations de la carte
 
     let card = document.createElement("img");
-    let type = playersList[data.currentPlayerId].cards[i].type;
+    let type = playersList[data.currentPlayerId].cards[i].type.description;
     let cardWrapper = document.createElement("div");
 
     card.classList.add("image-card");
 
     // Obtenir le type de carte pour l'image (cavalerie, canon, infanterie, joker)
 
-    if (type == CardType.JOKER) {
-      card.src = "./assets/images/riskCardJoker.png";
+    if (type == "JOKER") {
+      card.src = "./assets/images/riskCardJoker.png"
+      // ajouter la classe joker pour savoir quelle carte on manipule
+      card.classList.add(type);
       cardWrapper.appendChild(card);
     } else {
       switch (type) {
-        case CardType.ARTILLERY:
+        case "ARTILLERY":
           card.src = "./assets/images/riskCardCannon.png";
           break;
-        case CardType.CAVALRY:
+        case "CAVALRY":
           card.src = "./assets/images/riskCardCavalry.png";
           break;
-        case CardType.INFANTRY:
+        case "INFANTRY":
           card.src = "./assets/images/riskCardInfantry.png";
           break;
       }
@@ -802,6 +816,9 @@ function generateFullCardImages() {
       territory.id = "territory-card";
       territory.classList.remove("territoire");
       territory.classList.remove("attackable-territory");
+
+      //ajouter les classes de la carte pour savoir quelle carte on manipule
+      addClassesToCard(card,type,name);
 
       let svgWrapper = document.createElementNS(
         "http://www.w3.org/2000/svg",
@@ -831,12 +848,92 @@ function generateFullCardImages() {
       }, 0);
     }
 
+    // ajouter le setOnClick pour la carte
+    card.addEventListener("click",() => addOnClickToCard(cardWrapper));
+
     // assembler la carte
 
     cardWrapper.classList.add("card-wrapper");
 
     location.appendChild(cardWrapper);
   }
+}
+// ajouter la fonctionalité de clicker sur une carte pour la selectionner
+function addOnClickToCard(card) {
+  let deck = document.getElementById("popup-cards-remaining-cards");
+  let bonusTroopsCountText = document.getElementById("extra-troops-count");
+  // si la carte est dans la main, on peut l'ajouter a un des emplacement de carte selectionnés
+  if (deck.contains(card)) {
+    // le html id de l'emplacement ou la carte va aller sans le numéro
+    let slot = "selected-card-";
+    for (let i = 1; i <= 3 && i > 0; i++) {
+      let slotId = slot + i;
+      let selectedCardContainer = document.getElementById(slotId);
+      if (selectedCardContainer.childElementCount == 0) {
+        selectedCardContainer.appendChild(card);
+
+        // sortir de la boucle for
+        i = -1;
+      }
+    }
+
+    if (document.getElementById("selected-card-1").childElementCount != 0 &&
+      document.getElementById("selected-card-2").childElementCount != 0 &&
+      document.getElementById("selected-card-3").childElementCount != 0) {
+      let bonusCount = obtainBonusTroopCount();
+      bonusTroopsCountText.innerText = "+" + bonusCount;
+    }
+
+
+  } else {
+    // si la carte fait partie de la selection, on la remet dans notre main
+    deck.appendChild(card);
+    bonusTroopsCountText.innerText = "+" + 0;
+  }
+}
+
+function obtainBonusTroopCount() {
+
+  // obtenir les elements html des cartes qu'on veut convertir en troop
+  let SelectedCard1 = document.getElementById("selected-card-1").firstElementChild.firstElementChild;
+  let SelectedCard2 = document.getElementById("selected-card-2").firstElementChild.firstElementChild;
+  let SelectedCard3 = document.getElementById("selected-card-3").firstElementChild.firstElementChild;
+
+  let deckArray = [];
+  let playerArray = playersList[data.currentPlayerId].cards;
+
+  // traverser la liste des cartes dans la main du joueur pour determiner quelles cartes sont selectionnées
+  // et les ajouter dans un tableau
+  let classList1 = SelectedCard1.classList;
+  let classList2 = SelectedCard2.classList;
+  let classList3 = SelectedCard3.classList;
+  
+  for (let i = 0; i < playerArray.length; i++) {
+    // regarder si la carte i de la main fait partie des cartes selectionnées. Si oui, on la rajoute au tableau
+    // on ne regarde pas pour les joker
+    if (classList1.contains(playerArray[i].type?.description) && classList1.contains(playerArray[i].territory)
+      || classList2.contains(playerArray[i].type?.description) && classList2.contains(playerArray[i].territory)
+      || classList3.contains(playerArray[i].type?.description) && classList3.contains(playerArray[i].territory)) {
+      deckArray.push(playerArray[i]);
+    }
+  }
+  let nbOfJokers = 3 - deckArray.length;
+
+  for (let i = 0; i < playerArray.length && nbOfJokers > 0; i++) {
+    if (playerArray[i].type.description == "JOKER") {
+      deckArray.push(playerArray[i]);
+      nbOfJokers--;
+    }
+  }
+  console.log("deck to claim: ");
+  console.log(deckArray);
+  console.log("ammount returned: " + claimCards(deckArray));
+  return claimCards(deckArray);
+}
+
+function addClassesToCard(card, type, name) {
+  card.classList.add(type);
+  card.classList.add(name);
 }
 // turns a territory html element ID into its name by adding spaces if needed
 function transformName(name) {
@@ -852,7 +949,7 @@ function transformName(name) {
 }
 
 /*
-/ DOMContentLoaded
+*  DOMContentLoaded
 */
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -860,7 +957,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const autoPlacement = true;
   const playerCount = 6;
   // Where does the bots start if there is any. Else set to 0
-  const botPlayerStart = 2;
+  const botPlayerStart = 1;
 
   // Initialization des troops
   for (let playerId = 1; playerId <= playerCount; playerId++) {
