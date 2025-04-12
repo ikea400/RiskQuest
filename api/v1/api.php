@@ -179,7 +179,7 @@ $router->get("/games/{userId}", function ($userId, $tokenPayload): JsonResponse 
     }
 
     return JsonResponse::success(["games" => $requete->fetchAll()]);
-}, $authMiddleware );
+}, $authMiddleware);
 
 $router->get("/game/{gameId}", function ($gameId, $tokenPayload): JsonResponse {
     if (!is_numeric($gameId) || is_null($gameId)) {
@@ -193,12 +193,11 @@ $router->get("/game/{gameId}", function ($gameId, $tokenPayload): JsonResponse {
         ['gameId' => $gameId]
     );
     $result = $requete->fetch();
-    
+
     if (!$result) {
         return JsonResponse::notFound();
     }
     return JsonResponse::success($result);
-
 }, $authMiddleware);
 
 
@@ -207,12 +206,19 @@ $router->get("/moves/{gameId}", function ($gameId, $tokenPayload): JsonResponse 
         return JsonResponse::badRequest();
     }
 
+    $limit = is_numeric($_GET["limit"]) ? intval($_GET["limit"]) : 20;
+    $after = is_numeric($_GET["after"]) ? intval($_GET["after"]) : 0;
+
     $pdo = new DatabaseConnection();
     $result = $pdo->safeQuery(
         "SELECT number, move_data as moveData, player
                             FROM Move
-                            WHERE game_id = :gameId;",
-        ["gameId" => $gameId]
+                            WHERE game_id = :gameId
+                            AND number > :after LIMIT $limit", // php force me to use LIMIT before prepare so should be safe as long as its a int
+        [
+            "gameId" => $gameId,
+            "after" => $after
+        ]
     );
 
     if ($result == false) {
