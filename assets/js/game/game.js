@@ -890,15 +890,60 @@ function addOnClickToCard(card) {
   }
 }
 
+export function manualClaimCards() {
+
+  const selectedCard1 = document.getElementById("selected-card-1").firstElementChild;
+  const selectedCard2 = document.getElementById("selected-card-2").firstElementChild;
+  const selectedCard3 = document.getElementById("selected-card-3").firstElementChild;
+  // si ils existent 3 cartes selectionnées, on calcule le bonus de troop et l'ajoute pour le prochain tour
+  if (selectedCard1 && selectedCard2 && selectedCard3) {
+
+    const deckArray = obtainSelectedCards();
+    const bonus = obtainBonusTroopCount();
+    if (bonus != 0) {
+      addTroops(data.currentPlayerId, bonus);
+        if (possessTerritory(deckArray) !== null) {
+          addTroopsToTerritory(possessTerritory(deckArray), 2);
+        }
+      discardCards(data.currentPlayerId, deckArray);
+    }
+    // on doit enlever les cartes selectionnées du html, car elles n'existent plus dans la main du joueur
+    selectedCard1.remove();
+    selectedCard2.remove();
+    selectedCard3.remove();
+    // remettre les texte de troop bonus a +0
+    document.getElementById("extra-troops-count").innerText = "+0";
+  }
+  
+}
+
 function obtainBonusTroopCount() {
+  const deckArray = obtainSelectedCards();
+
+  let jokerCount = 0;
+  for (let i = 0; i < deckArray.length; i++) {
+    if (deckArray[i].type == "JOKER") {
+      jokerCount++;
+    }
+  }
+  // on ne peut pas reclamer plus d'un joker
+  if (jokerCount > 1) {
+    return 0;
+  }
+  
+  // si claimCards retourne null, on retourne 0 pour afficher 0
+  return claimCards(deckArray) == null ? 0 : claimCards(deckArray);
+}
+
+function obtainSelectedCards() {
   // obtenir les elements html des cartes qu'on veut convertir en troop
-  let SelectedCard1 =
+  const SelectedCard1 =
     document.getElementById("selected-card-1").firstElementChild
       .firstElementChild;
-  let SelectedCard2 =
+  const SelectedCard2 =
     document.getElementById("selected-card-2").firstElementChild
       .firstElementChild;
-  let SelectedCard3 =
+  const SelectedCard3 =
     document.getElementById("selected-card-3").firstElementChild
       .firstElementChild;
 
@@ -926,17 +971,14 @@ function obtainBonusTroopCount() {
     }
   }
   let nbOfJokers = 3 - deckArray.length;
-
+ // maintenant on regarde pour les jokers
   for (let i = 0; i < playerArray.length && nbOfJokers > 0; i++) {
     if (playerArray[i].type.description == "JOKER") {
       deckArray.push(playerArray[i]);
       nbOfJokers--;
     }
   }
-  console.log("deck to claim: ");
-  console.log(deckArray);
-  console.log("ammount returned: " + claimCards(deckArray));
-  return claimCards(deckArray);
+  return deckArray;
 }
 
 function addClassesToCard(card, type, name) {

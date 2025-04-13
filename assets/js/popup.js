@@ -1,4 +1,5 @@
 import { EBotSpeed, winningOdds } from "./game/data.js";
+import { manualClaimCards } from "./game/game.js";
 
 class PopupBase {
   #resolveCallback;
@@ -669,11 +670,12 @@ export class CardPopup extends PopupBase {
     </footer>
     `;
 
-    document
-      .getElementById("popup-cards-button-close")
+    document.getElementById("popup-cards-button-close")
       .addEventListener("click", function () {
         document.getElementById("popup-cards-container").remove();
       });
+      document.getElementById("popup-cards-button")
+      .addEventListener("click", () => manualClaimCards());
 
     this.backgroundDiv.classList.add("background-popup-cards");
     this.backgroundDiv.classList.remove("background-popup-center");
