@@ -1,4 +1,4 @@
-import { EBotSpeed, winningOdds } from "./game/data.js";
+import { EBotSpeed, EPhases, winningOdds, data } from "./game/data.js";
 import { manualClaimCards } from "./game/game.js";
 
 class PopupBase {
@@ -675,7 +675,11 @@ export class CardPopup extends PopupBase {
         document.getElementById("popup-cards-container").remove();
       });
       document.getElementById("popup-cards-button")
-      .addEventListener("click", () => manualClaimCards());
+      .addEventListener("click", () =>  {
+        if (EPhases.DRAFT == data.currentPhase) {
+          manualClaimCards()
+        }
+      });
 
     this.backgroundDiv.classList.add("background-popup-cards");
     this.backgroundDiv.classList.remove("background-popup-center");
