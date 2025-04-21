@@ -514,22 +514,21 @@ function getSelectionType(cards) {
 export function generateGameCards() {
   let gameCards = [];
   let shuffledTerritories = shuffleArray(Object.keys(territoiresList));
-  for (let i = 0; i < 42; i++) {
+  for (let i = 0; i < 20; i++) {
     let card = {};
-    switch (utils.randomInteger(1, 6)) {
-      case 1:
-      case 2:
-      case 3:
-        card.type = CardType.INFANTRY;
-        break;
-      case 4:
-      case 5:
-        card.type = CardType.CAVALRY;
-        break;
-      case 6:
-        card.type = CardType.ARTILLERY;
-        break;
-    }
+    card.type = CardType.INFANTRY;
+    card.territory = shuffledTerritories[i];
+    gameCards.push(card);
+  }
+  for (let i = 20; i < 34; i++) {
+    let card = {};
+    card.type = CardType.CAVALRY;
+    card.territory = shuffledTerritories[i];
+    gameCards.push(card);
+  }
+  for (let i = 34; i < 42; i++) {
+    let card = {};
+    card.type = CardType.ARTILLERY;
     card.territory = shuffledTerritories[i];
     gameCards.push(card);
   }
@@ -540,6 +539,7 @@ export function generateGameCards() {
     gameCards.push(card);
   }
   gameCards = shuffleArray(gameCards);
+  countTypeCards(gameCards);
   return gameCards;
 }
 
@@ -651,4 +651,26 @@ export function autoClaim() {
     }
     discardCards(data.currentPlayerId, cards);
   }
+}
+
+function countTypeCards(cards) {
+  let contINF = 0;
+  let contCAVAL = 0;
+  let contART = 0;
+  for (const card of cards) {
+    switch (card.type) {
+      case CardType.INFANTRY:
+        contINF++;
+        break;
+      case CardType.CAVALRY:
+        contCAVAL++;
+        break;
+      case CardType.ARTILLERY:
+        contART++;
+        break;
+    }
+  }
+  console.log("Le nombre de carte de type INFANTRY: " + contINF);
+  console.log("Le nombre de carte de type CAVALRY: " + contCAVAL);
+  console.log("Le nombre de carte de type ARTILLERY: " + contART);
 }
