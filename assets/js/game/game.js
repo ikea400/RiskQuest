@@ -31,6 +31,7 @@ import {
   takeCardsFrom,
   possessTerritory,
   addTroopsToTerritory,
+  autoClaim,
 } from "./logic.js";
 import {
   updatePastillesPosition,
@@ -260,17 +261,8 @@ function startDraftPhase(playerCount, callback) {
   // Ajouter les troupes
   addTroops(data.currentPlayerId, newTroops);
 
-  console.log(playersList[data.currentPlayerId].cards.length);
-  if (playersList[data.currentPlayerId].cards.length >= 5) {
-    let cards = getBestSetForTroops();
-    console.log(cards);
-    addTroops(data.currentPlayerId, claimCards(cards));
-    if (possessTerritory(cards) !== null) {
-      addTroopsToTerritory(possessTerritory(cards), 2);
-    }
-    discardCards(data.currentPlayerId, cards);
-    console.log(playersList[data.currentPlayerId].cards);
-  }
+  //on check pour auto claim.
+  autoClaim()
 
   const nextPhase = () => {
     startAttackPhase(playerCount, callback);

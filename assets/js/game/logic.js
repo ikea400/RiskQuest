@@ -428,7 +428,7 @@ function isCavalry(card) {
 /**
  * Vérifie si la carte n'est pas un JOKER.
  * @param {Object} card - L'objet carte à vérifier.
- * @returns {boolean} - Retourne true si la carte n'est pas un JOKER, sinon false.
+ * @returns {boolean} - Retourne true si la carte est un JOKER, sinon false.
  */
 function isJoker(card) {
   return card.type === CardType.JOKER;
@@ -567,7 +567,7 @@ export function drawCard(playerId) {
   if (!playersList[playerId].cards) {
     playersList[playerId].cards = [];
   }
-
+  // on shuffle si les games cards sont low.
   if (gameCards.length < 5) {
     data.discardPile = shuffleArray(data.discardPile);
     for (const card of data.discardPile) {
@@ -577,6 +577,9 @@ export function drawCard(playerId) {
   }
   const drawnCard = gameCards.shift();
   playersList[playerId].cards.push(drawnCard);
+
+  autoClaim();
+
   return playersList[playerId].cards;
 }
 
@@ -623,6 +626,8 @@ export function takeCardsFrom(attakerId, defenderId) {
   while (playersList[defenderId].cards.length > 0) {
     playersList[attakerId].cards.push(playersList[defenderId].cards.pop());
   }
+  autoClaim();
+
   //restart to draft phase if cards > 5
 }
 
@@ -635,4 +640,15 @@ export function possessTerritory(playerCards) {
     }
   }
   return null;
+}
+
+export function autoClaim() {
+  while (playersList[data.currentPlayerId].cards.length >= 5) {
+    let cards = getBestSetForTroops();
+    addTroops(data.currentPlayerId, claimCards(cards));
+    if (possessTerritory(cards) !== null) {
+      addTroopsToTerritory(possessTerritory(cards), 2);
+    }
+    discardCards(data.currentPlayerId, cards);
+  }
 }
