@@ -779,6 +779,7 @@
   background-color: rgb(0, 0, 0, 0.4);
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
+  padding-bottom: 1vh;
 }
 .legend-number {
   margin-right: 1em;
