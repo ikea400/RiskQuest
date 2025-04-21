@@ -516,14 +516,17 @@ export function generateGameCards() {
   let shuffledTerritories = shuffleArray(Object.keys(territoiresList));
   for (let i = 0; i < 42; i++) {
     let card = {};
-    switch (utils.randomInteger(1, 3)) {
+    switch (utils.randomInteger(1, 6)) {
       case 1:
+      case 2:
+      case 3:
         card.type = CardType.INFANTRY;
         break;
-      case 2:
+      case 4:
+      case 5:
         card.type = CardType.CAVALRY;
         break;
-      case 3:
+      case 6:
         card.type = CardType.ARTILLERY;
         break;
     }
@@ -617,13 +620,13 @@ export function getBestSetForTroops() {
 }
 
 export function takeCardsFrom(attakerId, defenderId) {
-    while(playersList[defenderId].cards.length > 0){
-      playersList[attakerId].cards.push(playersList[defenderId].cards.pop());
-    }
-    //restart to draft phase if cards > 5
+  while (playersList[defenderId].cards.length > 0) {
+    playersList[attakerId].cards.push(playersList[defenderId].cards.pop());
+  }
+  //restart to draft phase if cards > 5
 }
 
-export function possessTerritory(playerCards){
+export function possessTerritory(playerCards) {
   for (const card of playerCards) {
     if (!isJoker(card)) {
       if (territoiresList[card.territory].playerId === data.currentPlayerId) {
