@@ -46,16 +46,16 @@ import { CountPopup, AttackPopup, SettingsPopup, CardPopup } from "../popup.js";
 
 import RandomBot from "../bot/bot.js";
 
-// window.addEventListener("pageshow", function (event) {
-//   // S'assurer qu'un token et username est disponible sinon redirection vers la page principale
-//   if (
-//     !sessionStorage.getItem("token") ||
-//     !sessionStorage.getItem("saved-username") ||
-//     !sessionStorage.getItem("saved-userId")
-//   ) {
-//     window.location.replace("/riskquest/login");
-//   }
-// });
+window.addEventListener("pageshow", function (event) {
+  // S'assurer qu'un token et username est disponible sinon redirection vers la page principale
+  if (
+    !sessionStorage.getItem("token") ||
+    !sessionStorage.getItem("saved-username") ||
+    !sessionStorage.getItem("saved-userId")
+  ) {
+    window.location.replace("/riskquest/login");
+  }
+});
 
 let gameFinished = false;
 /**

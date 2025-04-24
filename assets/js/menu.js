@@ -1,3 +1,14 @@
+window.addEventListener("pageshow", function (event) {
+  // S'assurer qu'un token et username est disponible sinon redirection vers la page principale
+  if (
+    !sessionStorage.getItem("token") ||
+    !sessionStorage.getItem("saved-username") ||
+    !sessionStorage.getItem("saved-userId")
+  ) {
+    window.location.replace("/riskquest/login");
+  }
+});
+
 document.addEventListener("DOMContentLoaded", function () {
   const humanPastilles = document.querySelectorAll("#human-players .pastille");
   const botPastilles = document.querySelectorAll("#bot-players .pastille");
