@@ -1,24 +1,50 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Riskquest: Login</title>
-    <link rel="stylesheet" href="/riskquest/assets/styles/styles.css">
+    <link rel="stylesheet" href="/riskquest/assets/styles/styles.css" />
     <script src="/riskquest/assets/js/login.js"></script>
-</head>
-<body>
+  </head>
+  <body>
     <form id="formulaire">
-    <img id="logo-img" src="/riskquest/assets/images/logo.png" alt="logo">
-    <div id="errors"></div>
-    <h3>Se connecter :</h3>
-    <label for="name">Nom d'utilisateur</label>
-    <input id="input-username" name="name" type="text" autocomplete="username" required>
-    <label for="password">Mot de passe</label>
-    <input id="input-password" name="password" type="password" autocomplete="current-password" required>
-    <div>
-        <button type="submit">Se connecter</button> <button id="guest-btn">Continuer en tant qu'invité</button>
-    </div>
-    <a href="/riskquest/register">Pas de compte? S'enregistrer</a>
-</body>
+      <div id="login-container">
+        <img id="logo-img" src="/riskquest/assets/images/logo.png" alt="logo" />
+        <div id="errors"></div>
+        <h3>Se connecter</h3>
+
+        <div class="input-group">
+          <label for="name">Nom d'utilisateur</label>
+          <input
+            id="input-username"
+            name="name"
+            type="text"
+            autocomplete="username"
+            required
+          />
+        </div>
+
+        <div class="input-group">
+          <label for="password">Mot de passe</label>
+          <input
+            id="input-password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            required
+          />
+        </div>
+
+        <div class="button-group">
+          <button type="submit">Se connecter</button>
+          <button id="guest-btn" type="button">
+            Continuer en tant qu'invité
+          </button>
+        </div>
+
+        <a href="/riskquest/register">Pas de compte? S'enregistrer</a>
+      </div>
+    </form>
+  </body>
 </html>

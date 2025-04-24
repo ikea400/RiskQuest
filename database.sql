@@ -1,40 +1,50 @@
 -- Sélectionner la base de données
 USE tch099_riskquest;
 
+DROP TABLE IF EXISTS User_Game CASCADE;
+DROP TABLE IF EXISTS Move CASCADE;
+DROP TABLE IF EXISTS Game CASCADE;
+DROP TABLE IF EXISTS User CASCADE;
+
 CREATE OR REPLACE TABLE User
 (
-    id            BIGINT              NOT NULL UNIQUE PRIMARY KEY CHECK ( id > 0 ),
+    id            BIGINT  NOT NULL PRIMARY KEY CHECK ( id > 0 ),
     name          VARCHAR(30) UNIQUE  NOT NULL,
     password      VARCHAR(255) UNIQUE,
-    join_date DATETIME            NOT NULL DEFAULT NOW(),
+    join_date DATETIME            NOT NULL DEFAULT CURRENT_TIMESTAMP,
     guest         BOOLEAN             NOT NULL DEFAULT FALSE,
     CHECK (guest = TRUE OR password IS NOT NULL)
 );
 
 CREATE OR REPLACE TABLE Game
 (
-    id           BIGINT UNIQUE PRIMARY KEY,
-    player_count INT1 CHECK (player_count >= 1 AND player_count <= 6),
-    start_date   DATETIME NOT NULL DEFAULT NOW(),
-    played_time  TIME     NOT NULL DEFAULT 0,
+    id           BIGINT UNIQUE AUTO_INCREMENT PRIMARY KEY,
+    player_count TINYINT CHECK (player_count >= 1 AND player_count <= 6),
+    start_date   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    played_time  TIME     NOT NULL DEFAULT '00:00:00',
     finished     BOOLEAN  NOT NULL DEFAULT FALSE
 );
 
 CREATE OR REPLACE TABLE Move
 (
-    game_id   BIGINT NOT NULL REFERENCES Game (id),
+    game_id   BIGINT NOT NULL,
     number    INT    NOT NULL,
-    data      JSON   NOT NULL CHECK ( JSON_VALID(data) ),
-    player_id INT1   NOT NULL
+    move_data JSON   NOT NULL CHECK ( JSON_VALID(move_data)),
+    player TINYINT   NOT NULL,
+    PRIMARY KEY (game_id, number),
+    FOREIGN KEY (game_id) REFERENCES Game (id) ON DELETE CASCADE
 );
 
 CREATE OR REPLACE TABLE User_Game
 (
-    game_id   BIGINT NOT NULL REFERENCES Game (id),
-    user_id   BIGINT NOT NULL REFERENCES User (id),
-    player_id INT1   NOT NULL CHECK (player_id >= 1 AND player_id <= 6)
+    game_id   BIGINT NOT NULL,
+    user_id   BIGINT NULL,
+    player_name VARCHAR(30) NOT NULL,
+    player_id TINYINT  NOT NULL CHECK (player_id >= 1 AND player_id <= 6),
+    PRIMARY KEY (game_id, player_id),
+    FOREIGN KEY (game_id) REFERENCES Game (id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES User (id) ON DELETE CASCADE
 );
-
 
 DELIMITER $$
 
@@ -50,7 +60,7 @@ BEGIN
 
     IF NEW.id IS NULL OR NEW.id = 0 THEN
         WHILE id_exists AND attempts < max_attempts DO
-            SET new_id = 1 + FLOOR(RAND() * (9223372036854775806));
+            SET new_id = 1 + FLOOR(RAND() * (9007199254740991));
             SET id_exists = (SELECT COUNT(*) FROM User WHERE id = new_id) > 0;
             SET attempts = attempts + 1;
         END WHILE;
@@ -87,7 +97,7 @@ BEGIN
 
     IF NEW.id IS NULL OR NEW.id = 0 THEN
         WHILE id_exists AND attempts < max_attempts DO
-            SET new_id = 1 + FLOOR(RAND() * (9223372036854775807));
+            SET new_id = 1 + FLOOR(RAND() * (9007199254740991));
             SET id_exists = (SELECT COUNT(*) FROM Game WHERE id = new_id) > 0;
             SET attempts = attempts + 1;
         END WHILE;
@@ -136,4 +146,10 @@ INSERT INTO User (name, guest) VALUES('Guest01', TRUE);
 
 SELECT *
 FROM User;
+
+SELECT game_id FROM User_Game WHERE user_id=1;
+
+SELECT number, move_data as moveData, player
+FROM Move
+WHERE game_id = 1;
 

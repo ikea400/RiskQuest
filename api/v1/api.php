@@ -16,6 +16,10 @@ require_once "./includes/middlewares.php";
 require_once "./includes/database_connection.php";
 require_once "./includes/token.php";
 
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
 // Instancier le routeur
 $router = new Router();
 
@@ -45,7 +49,7 @@ $router->post("/register", function ($bodyArray): JsonResponse {
 
     // Generation de la requete
     $requete = $pdo->safeQuery(
-        "SELECT 1 FROM User WHERE name = :username",
+        "SELECT 1 FROM user WHERE name = :username",
         ['username' => $username]
     );
     if (!$requete) {
@@ -61,7 +65,7 @@ $router->post("/register", function ($bodyArray): JsonResponse {
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
     // Generation de la seconde requete
-    $requete = $pdo->prepare("INSERT INTO User (name, password) VALUES (:username, :password);");
+    $requete = $pdo->prepare("INSERT INTO user (name, password) VALUES (:username, :password);");
     if (!$requete->execute(
         [
             'username' => $username,
@@ -89,7 +93,7 @@ $router->post("/login", function ($bodyArray): JsonResponse {
 
     // Generation de la requete
     $requete = $pdo->safeQuery(
-        "SELECT password, id FROM User WHERE name = :name AND guest = FALSE",
+        "SELECT password, id FROM user WHERE name = :name AND guest = FALSE",
         ['name' => $username]
     );
 
@@ -115,7 +119,7 @@ $router->post("/guest", function (): JsonResponse {
 
     // Préparer la requête
     $requete = $pdo->prepare(
-        "SELECT 1 FROM User WHERE name=:name;"
+        "SELECT 1 FROM user WHERE name=:name;"
     );
 
 
@@ -134,14 +138,14 @@ $router->post("/guest", function (): JsonResponse {
 
     // Insérer le nouveaux invité
     if (!$pdo->safeQuery(
-        "INSERT INTO User (name, guest) VALUES (:username, TRUE);",
+        "INSERT INTO user (name, guest) VALUES (:username, TRUE);",
         ['username' => $guestName]
     )) {
         return JsonResponse::internalServerError();
     }
 
     $requete = $pdo->safeQuery(
-        "SELECT id FROM User WHERE name=:name AND guest=TRUE;",
+        "SELECT id FROM user WHERE name=:name AND guest=TRUE;",
         ['name' => $guestName]
     );
 
@@ -158,12 +162,155 @@ $router->post("/guest", function (): JsonResponse {
     ]);
 });
 
+$router->get("/games/{userId}", function ($userId, $tokenPayload): JsonResponse {
+    if (!$userId || !is_numeric($userId) || $userId != $tokenPayload["id"]) {
+        return JsonResponse::unauthorized();
+    }
+
+    $pdo = new DatabaseConnection();
+
+    $requete = $pdo->safeQuery(
+        "SELECT g.finished, g.id, g.played_time, g.player_count, g.start_date FROM Game g JOIN User_Game u ON g.id = u.game_id WHERE u.user_id=:userId;",
+        ['userId' => $userId]
+    );
+
+    if (!$requete) {
+        return JsonResponse::internalServerError();
+    }
+
+    return JsonResponse::success(["games" => $requete->fetchAll()]);
+}, $authMiddleware);
+
+$router->get("/game/{gameId}", function ($gameId, $tokenPayload): JsonResponse {
+    if (!is_numeric($gameId) || is_null($gameId)) {
+        return JsonResponse::badRequest();
+    }
+
+    $pdo = new DatabaseConnection();
+
+    $requete = $pdo->safeQuery(
+        "SELECT * FROM Game JOIN Move ON Game.id = Move.game_id WHERE Game.id = :gameId;",
+        ['gameId' => $gameId]
+    );
+    $result = $requete->fetch();
+
+    if (!$result) {
+        return JsonResponse::notFound();
+    }
+    return JsonResponse::success($result);
+}, $authMiddleware);
+
+
+$router->get("/moves/{gameId}", function ($gameId, $tokenPayload): JsonResponse {
+    if ($gameId == null || !is_numeric($gameId)) {
+        return JsonResponse::badRequest();
+    }
+
+    $limit = is_numeric($_GET["limit"]) ? intval($_GET["limit"]) : 20;
+    $after = is_numeric($_GET["after"]) ? intval($_GET["after"]) : 0;
+
+    $pdo = new DatabaseConnection();
+    $result = $pdo->safeQuery(
+        "SELECT number, move_data as moveData, player
+                            FROM Move
+                            WHERE game_id = :gameId
+                            AND number > :after LIMIT $limit", // php force me to use LIMIT before prepare so should be safe as long as its a int
+        [
+            "gameId" => $gameId,
+            "after" => $after
+        ]
+    );
+
+    if ($result == false) {
+        return JsonResponse::internalServerError();
+    }
+
+    return JsonResponse::success(["moves" => $result->fetchAll()]);
+}, $authMiddleware);
+
+$router->post("/saveMove", function ($tokenPayload, $bodyArray): JsonResponse {
+
+    if (empty($bodyArray)) {
+        return JsonResponse::badRequest();
+    }
+
+    $pdo = new DatabaseConnection();
+    //retrieve game id to identify the move 
+    $playerList = $bodyArray["players"];
+    $game_id = $playerList[7];
+    $move = $bodyArray["move"];
+    $currentPlayer = $move["player"];
+    $moveJson = json_encode($bodyArray, true);
+    if (!$pdo->safeQuery(
+        "INSERT INTO Move (game_id, move_data, player) VALUES (:game_id, :move_data, :player);",
+        [
+            "game_id" => $game_id,
+            "move_data" => $moveJson,
+            "player" => $currentPlayer
+        ]
+    )) {
+        return JsonResponse::badRequest();
+    }
+
+    return JsonResponse::success();
+}, $authMiddleware, $jsonMiddleware);
+
+
+
+$router->post("/initializegame", function ($tokenPayload, $bodyArray): JsonResponse {
+
+    if (empty($bodyArray)) {
+        return JsonResponse::badRequest();
+    }
+
+    $pdo = new DatabaseConnection();
+
+    $pdo->beginTransaction();
+
+    if (!$pdo->safeQuery(
+        "INSERT INTO Game (player_count, start_date) VALUES (:player_count, NOW());",
+        ['player_count' => $bodyArray["playerCount"]]
+    )) {
+        $pdo->rollBack();
+        return JsonResponse::internalServerError();
+    }
+
+    $game_id = $pdo->lastInsertId();
+    $counter = 0;
+    foreach ($bodyArray["players"] as $index => $player) {
+        //dans players, le premier element est null
+        if ($index == 0) continue;
+        if (isset($player["bot"]) && $player["bot"] != false) continue;
+
+        $playerName = $player["name"];
+        if (!$pdo->safeQuery(
+            "INSERT INTO User_Game (game_id, player_name, player_id, user_id) 
+             VALUES (:game_id, :player_name, :player_id, :user_id);",
+            [
+                'game_id'     => $game_id,
+                'player_name' => $playerName,
+                'player_id'   => $index,
+                "user_id" => $player["userId"] ?? null
+            ]
+
+        )) {
+            $pdo->rollBack();
+            return JsonResponse::internalServerError();
+        }
+    }
+
+    $pdo->commit();
+    //need the game_id to add it to game data, and to save move
+    return JsonResponse::success(['gameId' => $game_id]);
+}, $authMiddleware, $jsonMiddleware);
+
+
 $router->get("/user/{userId}", function ($userId): JsonResponse {
     // Instancier la connexion
     $pdo = new DatabaseConnection();
 
     // Préparer la requête
-    $requete = $pdo->prepare("SELECT name, join_date, guest FROM User WHERE id = :id");
+    $requete = $pdo->prepare("SELECT name, join_date, guest FROM user WHERE id = :id");
 
     // Envoyer les paramètres
     $requete->execute(['id' => $userId]);
@@ -186,12 +333,14 @@ $router->post("/user/password/{userId}", function ($userId, $tokenPayload, $body
         return JsonResponse::unauthorized();
     }
 
-    if (empty($bodyArray['old-password']) || empty($bodyArray['new-password']) ||
-    !is_string($bodyArray['old-password']) || !is_string($bodyArray['new-password'])) {
+    if (
+        empty($bodyArray['old-password']) || empty($bodyArray['new-password']) ||
+        !is_string($bodyArray['old-password']) || !is_string($bodyArray['new-password'])
+    ) {
         return JsonResponse::badRequest();
     }
 
-    
+
 
     return JsonResponse::success(['id' => $userId, 'payload' => $tokenPayload, 'body' => $bodyArray]);
 }, $authMiddleware, $jsonMiddleware);

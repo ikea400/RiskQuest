@@ -1,27 +1,58 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Riskquest: Register</title>
-    <link rel="stylesheet" href="/riskquest/assets/styles/styles.css">
+    <link rel="stylesheet" href="/riskquest/assets/styles/styles.css" />
     <script type="module" src="/riskquest/assets/js/register.js"></script>
-</head>
-<body>
+  </head>
+  <body>
     <form id="formulaire">
-    <img id="logo-img" src="/riskquest/assets/images/logo.png" alt="logo">
-    <div id="errors"></div>
-    <h3>S'enregistrer :</h3>
-    <label for="name">Nom d'utilisateur</label>
-    <input id="input-username" name="name" type="text" autocomplete="username" required>
-    <label for="password">Mot de passe</label>
-    <input id="input-password" name="password" type="password" autocomplete="new-password" required>
-    <label for="confirm-password">Confirmer le mot de passe</label>
-    <input id="input-confirm-password" name="confirm-password" type="password" autocomplete="off" required>
-    <div>
-        <button type="submit">S'enregistrer</button>
-    </div>
-    <a href="/riskquest/login">Déjà un compte? Se connecter</a>
+      <div id="login-container">
+        <img id="logo-img" src="/riskquest/assets/images/logo.png" alt="logo" />
+        <div id="errors"></div>
+        <h3>S'enregistrer</h3>
+
+        <div class="input-group">
+          <label for="name">Nom d'utilisateur</label>
+          <input
+            id="input-username"
+            name="name"
+            type="text"
+            autocomplete="username"
+            required
+          />
+        </div>
+
+        <div class="input-group">
+          <label for="password">Mot de passe</label>
+          <input
+            id="input-password"
+            name="password"
+            type="password"
+            autocomplete="new-password"
+            required
+          />
+        </div>
+
+        <div class="input-group">
+          <label for="confirm-password">Confirmer le mot de passe</label>
+          <input
+            id="input-confirm-password"
+            name="confirm-password"
+            type="password"
+            autocomplete="off"
+            required
+          />
+        </div>
+
+        <div class="button-group">
+          <button type="submit">S'enregistrer</button>
+        </div>
+
+        <a href="/riskquest/login">Déjà un compte? Se connecter</a>
+      </div>
     </form>
-</body>
+  </body>
 </html>
