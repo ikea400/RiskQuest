@@ -122,8 +122,13 @@ document.addEventListener("DOMContentLoaded", function () {
   // Gère le clic sur le bouton "jouer"
   playButton.addEventListener("click", function () {
     if (validateGameSetup()) {
-      const randomAssignment =
-        document.getElementById("random-assignment").checked;
+      const randomAssignment = document.getElementById("random-assignment").checked;
+      
+      // Stocker les configurations dans sessionStorage pour les récupérer dans la page de jeu
+      sessionStorage.setItem("selectedHumanPlayers", JSON.stringify(selectedPlayers.human));
+      sessionStorage.setItem("selectedBotPlayers", JSON.stringify(selectedPlayers.bot));
+      sessionStorage.setItem("randomAssignment", randomAssignment);
+      
       window.location.href = "game"; // Redirige vers le jeu
     }
   });

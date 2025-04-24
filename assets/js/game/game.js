@@ -995,18 +995,37 @@ function transformName(name) {
  */
 
 document.addEventListener("DOMContentLoaded", function () {
-  const enLigne = false;
-  const autoPlacement = true;
-  const playerCount = 6;
-  // Where does the bots start if there is any. Else set to 0 for no bots. set to 2 for one player
-  const botPlayerStart = 2;
+  // Récupérer les configurations depuis sessionStorage
+  const selectedHumanPlayers = JSON.parse(sessionStorage.getItem("selectedHumanPlayers")) || [];
+  const selectedBotPlayers = JSON.parse(sessionStorage.getItem("selectedBotPlayers")) || [];
+  const randomAssignment = sessionStorage.getItem("randomAssignment") === "true";
+  
+  const playerCount = selectedHumanPlayers.length + selectedBotPlayers.length;
+  const botPlayerStart = selectedHumanPlayers.length + 1; // Les bots commencent après les humains
 
-  // Initialization des troops
-  for (let playerId = 1; playerId <= playerCount; playerId++) {
-    playersList[playerId].troops = getStartingTroops(playerCount);
-    if (botPlayerStart && playerId >= botPlayerStart) {
-      playersList[playerId].bot = new RandomBot({ playerId: playerId });
-    }
+  // Initialisation des joueurs
+  for (let i = 0; i < selectedHumanPlayers.length; i++) {
+    const playerId = i + 1;
+    playersList[playerId] = {
+      userId: sessionStorage.getItem("saved-userId"),
+      troops: getStartingTroops(playerCount),
+      dead: false,
+      cards: [],
+      bot: null,
+      color: parseInt(selectedHumanPlayers[i])
+    };
+  }
+
+  for (let i = 0; i < selectedBotPlayers.length; i++) {
+    const playerId = selectedHumanPlayers.length + i + 1;
+    playersList[playerId] = {
+      userId: null,
+      troops: getStartingTroops(playerCount),
+      dead: false,
+      cards: [],
+      bot: new RandomBot({ playerId: playerId }),
+      color: parseInt(selectedBotPlayers[i])
+    };
   }
 
   // Création dynamiques du side player hud
@@ -1018,100 +1037,45 @@ document.addEventListener("DOMContentLoaded", function () {
     )
   );
 
-  const [distributionFn, placementFn] = autoPlacement
+  // Utiliser random assignment si coché, sinon sélection manuelle
+  const [distributionFn, placementFn] = randomAssignment
     ? [startRandomTerritoryDistribution, startRandomTroopsPlacement]
     : [startTurnTerritoriesSelection, startTurnTroopsPlacement];
 
-  const setAsGestFn = enLigne
-    ? async () =>
-        sessionStorage.getItem("token") ? { success: false } : setAsGest()
-    : async () => {
-        return { success: false };
-      };
+  distributionFn(playerCount, () => {
+    console.log("Selection is done");
 
-  //met le player a guest avant chaque partie TEMPORAIREMENT
-  setAsGestFn()
-    .then((response) => {
-      if (response.success === true) {
-        sessionStorage.setItem("token", response.token);
-        sessionStorage.setItem("saved-username", response.name);
-        sessionStorage.setItem("saved-userId", response.id);
-        sessionStorage.setItem("guest", true);
-      } else {
-        console.log([response.error || "Erreur inconnue"]);
-      }
-    })
-    .then(() => {
-      distributionFn(playerCount, () => {
-        console.log("Selection is done");
-
-        placementFn(playerCount, () => {
-          playersList[1].userId = sessionStorage.getItem("saved-userId");
-          //create game with player info
-          initializeGame({
+    placementFn(playerCount, () => {
+      playersList[1].userId = sessionStorage.getItem("saved-userId");
+      //create game with player info
+      initializeGame({
+        players: playersList,
+        playerCount: playerCount,
+      })
+        .then((value) => {
+          playersList[7] = value["gameId"];
+          //nesting saveMove beacause it is dependent on playersList, save the move only after receiving game_id
+          //make inital move to save inital territory and troop distribution
+          console.log("Game id: " + value["gameId"]);
+          saveMove({
             players: playersList,
-            playerCount: playerCount,
-          })
-            .then((value) => {
-              playersList[7] = value["gameId"];
-              //nesting saveMove beacause it is dependent on playersList, save the move only after receiving game_id
-              //make inital move to save inital territory and troop distribution
-              console.log("Game id: " + value["gameId"]);
-              saveMove({
-                players: playersList,
-                territories: territoiresList,
-                move: { player: 0 },
-              }).catch((error) => {
-                console.log(
-                  "Error at api.php when making inital move: " + error
-                );
-              });
-            })
-            .catch((error) => {
-              console.log("Error at api.php when initializing game: " + error);
-            });
-
-          console.log("Distribution is done");
-
-          startMainLoop(playerCount, () => {
-            console.log("Main game loop is done");
+            territories: territoiresList,
+            move: { player: 0 },
+          }).catch((error) => {
+            console.log(
+              "Error at api.php when making inital move: " + error
+            );
           });
+        })
+        .catch((error) => {
+          console.log("Error at api.php when initializing game: " + error);
         });
+
+      console.log("Distribution is done");
+
+      startMainLoop(playerCount, () => {
+        console.log("Main game loop is done");
       });
     });
-
-  let containerPays = document.getElementById("pays-background");
-  containerPays.addEventListener("click", function () {
-    document
-      .getElementById("sea-music")
-      .play()
-      .catch((error) => {
-        console.error(error);
-      });
-
-    if (data.currentPhase != EPhases.DRAFT) {
-      setSelectedTerritoire(null);
-      setAttackableTerritoires([]);
-    }
   });
-
-  let settingsButton = document.getElementById("settings-button");
-  settingsButton.addEventListener("click", async () => {
-    const popup = new SettingsPopup({
-      music: setMusicVolume,
-      sfx: setSFXVolume,
-      volumeMusic: document.getElementById("sea-music").volume,
-      volumeSFX: document.getElementById("charge1-sound").volume,
-      speed: (speed) => {
-        data.botSpeed = speed;
-      },
-      currentSpeed: data.botSpeed,
-    });
-    await popup.show();
-  });
-
-  new ResizeObserver(updatePastillesPosition).observe(document.body);
-  window.addEventListener("resize", updatePastillesPosition);
-  // établir le popup des cartes quand on clique sur l'image des cartes
-  document.getElementById("cards-img").addEventListener("click", cardHandler);
 });
