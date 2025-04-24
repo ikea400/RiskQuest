@@ -550,6 +550,7 @@ export function generateGameCards() {
  * @returns {Array} Le tableau mélangé.
  */
 function shuffleArray(array) {
+  document.getElementById("shuffleCard-sound").play();
   for (let i = array.length - 1; i > 0; i--) {
     const j = utils.randomInteger(0, i);
     [array[i], array[j]] = [array[j], array[i]]; // Swap elements
@@ -567,6 +568,8 @@ export function drawCard(playerId) {
   if (!playersList[playerId].cards) {
     playersList[playerId].cards = [];
   }
+  document.getElementById("drawCard-sound").play();
+
   // on shuffle si les games cards sont low.
   if (gameCards.length < 5) {
     data.discardPile = shuffleArray(data.discardPile);
