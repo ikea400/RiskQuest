@@ -430,44 +430,6 @@ export class SettingsPopup extends PopupBase {
 
     this.popupDiv.innerHTML = `<div id="popup-settings-top">
           <div id="popup-settings-top-play-stop">
-            <div class="popup-settings-top-button">
-              <div
-                id="popup-settings-stop-back"
-                class="popup-settings-top-back"
-              ></div>
-              <div id="popup-settings-stop" class="popup-settings-img">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 320 512"
-                  id="popup-settings-stop-svg"
-                >
-                  <!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.-->
-                  <path
-                    id="popup-settings-stop-path"
-                    d="M48 64C21.5 64 0 85.5 0 112L0 400c0 26.5 21.5 48 48 48l32 0c26.5 0 48-21.5 48-48l0-288c0-26.5-21.5-48-48-48L48 64zm192 0c-26.5 0-48 21.5-48 48l0 288c0 26.5 21.5 48 48 48l32 0c26.5 0 48-21.5 48-48l0-288c0-26.5-21.5-48-48-48l-32 0z"
-                  />
-                </svg>
-              </div>
-            </div>
-            <div class="popup-settings-top-button">
-              <div
-                id="popup-settings-play-back"
-                class="popup-settings-top-back"
-              ></div>
-              <div id="popup-settings-play" class="popup-settings-img">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 384 512"
-                  id="popup-settings-play-svg"
-                >
-                  <!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.-->
-                  <path
-                    id="popup-settings-play-path"
-                    d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80L0 432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"
-                  />
-                </svg>
-              </div>
-            </div>
           </div>
           <div id="popup-settings-title" class="kanit-900">Settings</div>
           <div id="popup-settings-top-close" class="popup-settings-top-button">
@@ -517,7 +479,7 @@ export class SettingsPopup extends PopupBase {
           </div>
           <div class="popup-settings-line"></div>
           <div id="popup-settings-category-ui" class="popup-settings-category">
-            <label for="scale" class="kanit-900">UI Scale</label>
+            <label for="scale" class="kanit-900" hidden>UI Scale</label>
             <input
               type="range"
               id="popup-settings-scale"
@@ -525,9 +487,9 @@ export class SettingsPopup extends PopupBase {
               name="scale"
               min="0"
               max="100"
-            />
+              hidden />
           </div>
-          <div class="popup-settings-line"></div>
+          <div class="popup-settings-line" hidden></div>
           <div id="popup-settings-category-bot" class="popup-settings-category">
             <label for="speed" class="kanit-900">Bot Speed</label>
             <input
@@ -539,6 +501,10 @@ export class SettingsPopup extends PopupBase {
             />
           </div>
           <div class="popup-settings-line"></div>
+          <div class="id-container">
+                <div class="id-label">YOUR GAME ID:</div>
+                <div class="id-value">${this.params.gameId}</div>
+            </div>
         </div>`;
 
     const sliders = document.getElementsByClassName("popup-settings-slider");
@@ -596,6 +562,7 @@ export class SettingsPopup extends PopupBase {
     this.params.volumeMusic ??= 0.5;
     this.params.volumeSFX ??= 0.5;
     this.params.currentSpeed ??= EBotSpeed.SLOW;
+    this.params.gameId ??= "Unknown Game ID";
   }
 }
 
@@ -670,19 +637,119 @@ export class CardPopup extends PopupBase {
     </footer>
     `;
 
-    document.getElementById("popup-cards-button-close")
+    document
+      .getElementById("popup-cards-button-close")
       .addEventListener("click", function () {
         document.getElementById("popup-cards-container").remove();
       });
-      document.getElementById("popup-cards-button")
-      .addEventListener("click", () =>  {
+    document
+      .getElementById("popup-cards-button")
+      .addEventListener("click", () => {
         if (EPhases.DRAFT == data.currentPhase) {
-          manualClaimCards()
+          manualClaimCards();
         }
       });
 
     this.backgroundDiv.classList.add("background-popup-cards");
     this.backgroundDiv.classList.remove("background-popup-center");
     this.backgroundDiv.id = "popup-cards-container";
+  }
+}
+
+export class GameOverPopup extends PopupBase {
+  constructor(params = {}) {
+    super(params);
+    this.init();
+  }
+
+  init() {
+    this.#applyDefault();
+    super.init();
+
+    this.popupDiv.innerHTML = `
+      <div class="popup-over-container">
+        <div class="game-over-popup">
+            <h1 class="game-over-title">GAME OVER</h1>
+            
+            <div class="id-container">
+                <div class="id-label">YOUR GAME ID:</div>
+                <div class="id-value">${this.params.gameId}</div>
+            </div>
+            
+            <div class="buttons-container">
+                <button class="button" id="retry-button">Play Again</button>
+                <button class="button" id="menu-button">Back to Menu</button>
+            </div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById("retry-button").addEventListener("click", () => {
+      location.reload();
+      console.log("Game reset");
+    });
+    document.getElementById("menu-button").addEventListener("click", () => {
+      window.location.replace("/riskquest/");
+      console.log("Back to menu");
+    });
+
+    this.backgroundDiv.classList.add("background-popup-game-over");
+    this.backgroundDiv.classList.remove("background-popup-center");
+    this.backgroundDiv.id = "game-over-popup-container";
+  }
+  #applyDefault() {
+    this.params.id ??= "game-over-popup";
+    this.params.bottom ??= true;
+    this.params.cancel ??= true;
+    this.params.gameId ??= "Unknown Game ID";
+  }
+}
+
+export class GameWonPopup extends PopupBase {
+  constructor(params = {}) {
+    super(params);
+    this.init();
+  }
+
+  init() {
+    this.#applyDefault();
+    super.init();
+
+    this.popupDiv.innerHTML = `
+      <div class="popup-over-container">
+        <div class="game-over-popup">
+            <h1 class="game-won-title">YOU WON</h1>
+            
+            <div class="id-container">
+                <div class="id-label">YOUR GAME ID:</div>
+                <div class="id-value">${this.params.gameId}</div>
+            </div>
+            
+            <div class="buttons-container">
+                <button class="button" id="retry-button">Play Again</button>
+                <button class="button" id="menu-button">Back to Menu</button>
+            </div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById("retry-button").addEventListener("click", () => {
+      location.reload();
+      console.log("Game reset");
+    });
+    document.getElementById("menu-button").addEventListener("click", () => {
+      window.location.replace("/riskquest/");
+      console.log("Back to menu");
+    });
+
+    this.backgroundDiv.classList.add("background-popup-game-won");
+    this.backgroundDiv.classList.remove("background-popup-center");
+    this.backgroundDiv.id = "game-won-popup-container";
+  }
+  #applyDefault() {
+    this.params.id ??= "game-won-popup";
+    this.params.bottom ??= true;
+    this.params.cancel ??= true;
+    this.params.gameId ??= "Unknown Game ID";
   }
 }

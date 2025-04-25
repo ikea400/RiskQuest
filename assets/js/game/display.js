@@ -47,7 +47,9 @@ export function updatePastillesPosition() {
  */
 function createPastille(territoireId, playerId) {
   const territoire = document.getElementById(territoireId);
-  territoire.classList.add(`svg-player${playerId}`);
+  const playerColor = playersList[playerId].color;
+
+  territoire.classList.add(`svg-player${playerColor}`);
 
   // Obtient le rectangle délimitant le territoire
   const bbox = territoire.getBoundingClientRect();
@@ -62,7 +64,7 @@ function createPastille(territoireId, playerId) {
   // Crée un nouvel élément <div> pour représenter la pastille
   const newDiv = document.createElement("div");
   newDiv.id = `pastille-${territoireId}`;
-  newDiv.classList.add(`background-player${playerId}`);
+  newDiv.classList.add(`background-player${playerColor}`);
   newDiv.classList.add(`pastille`);
   newDiv.innerText = 1;
   newDiv.setAttribute("territoire", territoireId);
@@ -82,8 +84,11 @@ function createPastille(territoireId, playerId) {
  * @param {number} newPlayerId - L'identifiant du nouveau joueur.
  */
 export function changeBackgroundPlayer(element, oldPlayerId, newPlayerId) {
-  element.classList.remove(`background-player${oldPlayerId}`);
-  element.classList.add(`background-player${newPlayerId}`);
+  const oldColor = playersList[oldPlayerId].color;
+  const newColor = playersList[newPlayerId].color;
+
+  element.classList.remove(`background-player${oldColor}`);
+  element.classList.add(`background-player${newColor}`);
 }
 
 /**
@@ -95,11 +100,14 @@ export function changeBackgroundPlayer(element, oldPlayerId, newPlayerId) {
 export function updateTerritoryOwer(territoireId, playerId) {
   const territoire = territoiresList[territoireId];
   const territoireSvg = document.getElementById(territoireId);
+  const playerColor = playersList[playerId].color;
 
   // Supprime l'ancienne classe SVG du joueur précédent (le cas échéant)
-  if (territoire.playerId)
-    territoireSvg.classList.remove(`svg-player${territoire.playerId}`);
-  territoireSvg.classList.add(`svg-player${playerId}`);
+  if (territoire.playerId) {
+    const oldPlayerColor = playersList[territoire.playerId].color;
+    territoireSvg.classList.remove(`svg-player${oldPlayerColor}`);
+  }
+  territoireSvg.classList.add(`svg-player${playerColor}`);
 
   // Gère la pastille associée au territoire
   let pastille = document.getElementById(`pastille-${territoireId}`);
@@ -183,10 +191,12 @@ export function updatePhaseTroopsCount(troopsCount) {
 export function initializePlayersHud(playerCount) {
   let hudContent = "";
   for (let playerId = 1; playerId <= playerCount; playerId++) {
+    const player = playersList[playerId];
     const territoireCount = countPlayerTerritoires(playerId);
     const troopsCount = countPlayerTroops(playerId);
+
     hudContent += `<div class="side-player">
-        <div class="background-player${playerId} side-player-color"></div>
+        <div class="background-player${player.color} side-player-color"></div>
         <div class="side-player-info" id="side-player-info-${playerId}">
             <div class="side-player-info-troops" id="side-player-info-troops-${playerId}">${troopsCount}</div>
             <div class="side-player-info-territories" id="side-player-info-territories-${playerId}">${territoireCount}</div>
@@ -245,17 +255,21 @@ export function updateCurrentPhase(phase) {
     );
   }
 
+  const color = playersList[data.currentPlayerId].color;
+
   // Retire la classe de l'élément de la phase actuelle
   const currentElement = getPhaseElement(data.currentPhase);
   if (currentElement) {
-    currentElement.classList.remove(`background-player${data.currentPlayerId}`);
+    currentElement.classList.remove(`background-player${color}`);
   }
 
   // Ajoute/retire la classe pour le nouvel élément de phase
   const newElement = getPhaseElement(phase);
   if (newElement) {
-    newElement.classList.add(`background-player${data.currentPlayerId}`);
+    newElement.classList.add(`background-player${color}`);
   }
+
+  console.log(data.currentPlayerId, color, currentElement, newElement);
 
   // Met à jour le nom de la phase dans l'interface utilisateur
   const turnHudPhaseName = document.getElementById("turn-hud-phase-name");
@@ -312,10 +326,11 @@ export function addTroopsChangeParticle(territoireId, playerId, troopsCount) {
   });
 
   const pastille = document.getElementById(`pastille-${territoireId}`);
+  const playerColor = playersList[playerId].color;
 
   const particule = document.createElement("div");
   particule.textContent = formatter.format(troopsCount);
-  particule.className = `change-particule kanit-900 color-player${playerId}`;
+  particule.className = `change-particule kanit-900 color-player${playerColor}`;
   particule.style.left = pastille.style.left; // Position the particule
   particule.style.top = pastille.style.top;
 

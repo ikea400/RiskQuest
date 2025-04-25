@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Riskquest: Menu</title>
+  <link rel="stylesheet" href="/riskquest/assets/styles/menu.css" />
+  <script src="./assets/js/menu.js"></script>
+
+</head>
+<body>
+  <div id="menu-container">
+    <img id="logo-img" src="/riskquest/assets/images/logo.png" alt="logo">
+    <h3>Game Setup</h3>
+    
+    <div class="selection-section">
+      <div class="selection-title">Human Players</div>
+      <div class="pastilles-container" id="human-players">
+        <div class="pastille pastille-player1" data-color="1" data-type="human"></div>
+        <div class="pastille pastille-player2" data-color="2" data-type="human"></div>
+        <div class="pastille pastille-player3" data-color="3" data-type="human"></div>
+        <div class="pastille pastille-player4" data-color="4" data-type="human"></div>
+        <div class="pastille pastille-player5" data-color="5" data-type="human"></div>
+        <div class="pastille pastille-player6" data-color="6" data-type="human"></div>
+      </div>
+    </div>
+    
+    <div class="selection-section">
+      <div class="selection-title">Bot Players</div>
+      <div class="pastilles-container" id="bot-players">
+        <div class="pastille pastille-player1" data-color="1" data-type="bot"></div>
+        <div class="pastille pastille-player2" data-color="2" data-type="bot"></div>
+        <div class="pastille pastille-player3" data-color="3" data-type="bot"></div>
+        <div class="pastille pastille-player4" data-color="4" data-type="bot"></div>
+        <div class="pastille pastille-player5" data-color="5" data-type="bot"></div>
+        <div class="pastille pastille-player6" data-color="6" data-type="bot"></div>
+      </div>
+    </div>
+    
+    <div class="option-container">
+      <input type="checkbox" id="random-assignment">
+      <label for="random-assignment" class="checkbox-label">Random Territory Assignment</label>
+    </div>
+    
+    <div class="status-message" id="status-message"></div>
+    
+    <div class="button-group">
+      <button id="exit-button" class="action-button">Exit</button>
+      <button id="play-button" class="action-button" disabled>Play</button>
+    </div>
+  </div>
+</body>
+</html>

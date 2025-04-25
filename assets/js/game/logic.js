@@ -428,7 +428,7 @@ function isCavalry(card) {
 /**
  * Vérifie si la carte n'est pas un JOKER.
  * @param {Object} card - L'objet carte à vérifier.
- * @returns {boolean} - Retourne true si la carte n'est pas un JOKER, sinon false.
+ * @returns {boolean} - Retourne true si la carte est un JOKER, sinon false.
  */
 function isJoker(card) {
   return card.type === CardType.JOKER;
@@ -514,19 +514,21 @@ function getSelectionType(cards) {
 export function generateGameCards() {
   let gameCards = [];
   let shuffledTerritories = shuffleArray(Object.keys(territoiresList));
-  for (let i = 0; i < 42; i++) {
+  for (let i = 0; i < 20; i++) {
     let card = {};
-    switch (utils.randomInteger(1, 3)) {
-      case 1:
-        card.type = CardType.INFANTRY;
-        break;
-      case 2:
-        card.type = CardType.CAVALRY;
-        break;
-      case 3:
-        card.type = CardType.ARTILLERY;
-        break;
-    }
+    card.type = CardType.INFANTRY;
+    card.territory = shuffledTerritories[i];
+    gameCards.push(card);
+  }
+  for (let i = 20; i < 34; i++) {
+    let card = {};
+    card.type = CardType.CAVALRY;
+    card.territory = shuffledTerritories[i];
+    gameCards.push(card);
+  }
+  for (let i = 34; i < 42; i++) {
+    let card = {};
+    card.type = CardType.ARTILLERY;
     card.territory = shuffledTerritories[i];
     gameCards.push(card);
   }
@@ -537,6 +539,7 @@ export function generateGameCards() {
     gameCards.push(card);
   }
   gameCards = shuffleArray(gameCards);
+  countTypeCards(gameCards);
   return gameCards;
 }
 
@@ -547,6 +550,7 @@ export function generateGameCards() {
  * @returns {Array} Le tableau mélangé.
  */
 function shuffleArray(array) {
+  document.getElementById("shuffleCard-sound").play();
   for (let i = array.length - 1; i > 0; i--) {
     const j = utils.randomInteger(0, i);
     [array[i], array[j]] = [array[j], array[i]]; // Swap elements
@@ -564,7 +568,9 @@ export function drawCard(playerId) {
   if (!playersList[playerId].cards) {
     playersList[playerId].cards = [];
   }
+  document.getElementById("drawCard-sound").play();
 
+  // on shuffle si les games cards sont low.
   if (gameCards.length < 5) {
     data.discardPile = shuffleArray(data.discardPile);
     for (const card of data.discardPile) {
@@ -574,6 +580,9 @@ export function drawCard(playerId) {
   }
   const drawnCard = gameCards.shift();
   playersList[playerId].cards.push(drawnCard);
+
+  autoClaim();
+
   return playersList[playerId].cards;
 }
 
@@ -617,13 +626,15 @@ export function getBestSetForTroops() {
 }
 
 export function takeCardsFrom(attakerId, defenderId) {
-    while(playersList[defenderId].cards.length > 0){
-      playersList[attakerId].cards.push(playersList[defenderId].cards.pop());
-    }
-    //restart to draft phase if cards > 5
+  while (playersList[defenderId].cards.length > 0) {
+    playersList[attakerId].cards.push(playersList[defenderId].cards.pop());
+  }
+  autoClaim();
+
+  //restart to draft phase if cards > 5
 }
 
-export function possessTerritory(playerCards){
+export function possessTerritory(playerCards) {
   for (const card of playerCards) {
     if (!isJoker(card)) {
       if (territoiresList[card.territory].playerId === data.currentPlayerId) {
@@ -632,4 +643,37 @@ export function possessTerritory(playerCards){
     }
   }
   return null;
+}
+
+export function autoClaim() {
+  while (playersList[data.currentPlayerId].cards.length >= 5) {
+    let cards = getBestSetForTroops();
+    addTroops(data.currentPlayerId, claimCards(cards));
+    if (possessTerritory(cards) !== null) {
+      addTroopsToTerritory(possessTerritory(cards), 2);
+    }
+    discardCards(data.currentPlayerId, cards);
+  }
+}
+
+function countTypeCards(cards) {
+  let contINF = 0;
+  let contCAVAL = 0;
+  let contART = 0;
+  for (const card of cards) {
+    switch (card.type) {
+      case CardType.INFANTRY:
+        contINF++;
+        break;
+      case CardType.CAVALRY:
+        contCAVAL++;
+        break;
+      case CardType.ARTILLERY:
+        contART++;
+        break;
+    }
+  }
+  console.log("Le nombre de carte de type INFANTRY: " + contINF);
+  console.log("Le nombre de carte de type CAVALRY: " + contCAVAL);
+  console.log("Le nombre de carte de type ARTILLERY: " + contART);
 }

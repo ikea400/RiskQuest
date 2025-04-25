@@ -31,6 +31,7 @@ import {
   takeCardsFrom,
   possessTerritory,
   addTroopsToTerritory,
+  autoClaim,
 } from "./logic.js";
 import {
   updatePastillesPosition,
@@ -41,22 +42,30 @@ import {
   updatePastilleFakeTroops,
 } from "./display.js";
 import { initializeGame, saveMove, setAsGest } from "../api/gameDataService.js";
-import { CountPopup, AttackPopup, SettingsPopup, CardPopup } from "../popup.js";
+import {
+  CountPopup,
+  AttackPopup,
+  SettingsPopup,
+  CardPopup,
+  GameOverPopup,
+  GameWonPopup,
+} from "../popup.js";
 
 import RandomBot from "../bot/bot.js";
 
-// window.addEventListener("pageshow", function (event) {
-//   // S'assurer qu'un token et username est disponible sinon redirection vers la page principale
-//   if (
-//     !sessionStorage.getItem("token") ||
-//     !sessionStorage.getItem("saved-username") ||
-//     !sessionStorage.getItem("saved-userId")
-//   ) {
-//     window.location.replace("/riskquest/login");
-//   }
-// });
+window.addEventListener("pageshow", function (event) {
+  // S'assurer qu'un token et username est disponible sinon redirection vers la page principale
+  if (
+    !sessionStorage.getItem("token") ||
+    !sessionStorage.getItem("saved-username") ||
+    !sessionStorage.getItem("saved-userId")
+  ) {
+    window.location.replace("/riskquest/login");
+  }
+});
 
 let gameFinished = false;
+let gameWon = false;
 /**
  * Démarre la phase de sélection des territoires pour les joueurs.
  * @param {number} playerCount - Nombre total de joueurs participant au jeu.
@@ -260,17 +269,8 @@ function startDraftPhase(playerCount, callback) {
   // Ajouter les troupes
   addTroops(data.currentPlayerId, newTroops);
 
-  console.log(playersList[data.currentPlayerId].cards.length);
-  if (playersList[data.currentPlayerId].cards.length >= 5) {
-    let cards = getBestSetForTroops();
-    console.log(cards);
-    addTroops(data.currentPlayerId, claimCards(cards));
-    if (possessTerritory(cards) !== null) {
-      addTroopsToTerritory(possessTerritory(cards), 2);
-    }
-    discardCards(data.currentPlayerId, cards);
-    console.log(playersList[data.currentPlayerId].cards);
-  }
+  //on check pour auto claim.
+  autoClaim();
 
   const nextPhase = () => {
     startAttackPhase(playerCount, callback);
@@ -730,6 +730,9 @@ function startOneRound(playerCount, callback) {
 
       if (nextPlayerId === data.currentPlayerId) {
         gameFinished = true;
+        gameWon = true;
+      } else if (playersList[1].dead) {
+        gameFinished = true;
       } else {
         setCurrentPlayer(nextPlayerId);
       }
@@ -761,7 +764,9 @@ function startMainLoop(playerCount, callback) {
   // Demarage de la boucle
   handler();
 }
-
+/**
+* generer l'interface des cartes
+*/
 function cardHandler() {
   if (document.getElementById("popup-cards-container") == null) {
     const popup = new CardPopup({});
@@ -771,7 +776,10 @@ function cardHandler() {
     generateFullCardImages();
   }
 }
-
+/**
+* générer les cartes html pour afficher dans l'interface des cartes
+* selon les cartes que possède le joueur et les ajoutes au DOM
+*/
 function generateFullCardImages() {
   let location = document.getElementById("popup-cards-remaining-cards");
   let nbDeCartesTotal = playersList[data.currentPlayerId].cards.length;
@@ -856,7 +864,9 @@ function generateFullCardImages() {
     location.appendChild(cardWrapper);
   }
 }
-// ajouter la fonctionalité de clicker sur une carte pour la selectionner
+/*
+* ajouter la fonctionalité de clicker sur une carte pour la selectionner
+*/
 function addOnClickToCard(card) {
   let deck = document.getElementById("popup-cards-remaining-cards");
   let bonusTroopsCountText = document.getElementById("extra-troops-count");
@@ -889,22 +899,25 @@ function addOnClickToCard(card) {
     bonusTroopsCountText.innerText = "+" + 0;
   }
 }
-
+/**
+* reclamer manuellement 3 cartes selectionnées
+*/
 export function manualClaimCards() {
-
-  const selectedCard1 = document.getElementById("selected-card-1").firstElementChild;
-  const selectedCard2 = document.getElementById("selected-card-2").firstElementChild;
-  const selectedCard3 = document.getElementById("selected-card-3").firstElementChild;
+  const selectedCard1 =
+    document.getElementById("selected-card-1").firstElementChild;
+  const selectedCard2 =
+    document.getElementById("selected-card-2").firstElementChild;
+  const selectedCard3 =
+    document.getElementById("selected-card-3").firstElementChild;
   // si ils existent 3 cartes selectionnées, on calcule le bonus de troop et l'ajoute pour le prochain tour
   if (selectedCard1 && selectedCard2 && selectedCard3) {
-
     const deckArray = obtainSelectedCards();
     const bonus = obtainBonusTroopCount();
     if (bonus != 0) {
       addTroops(data.currentPlayerId, bonus);
-        if (possessTerritory(deckArray) !== null) {
-          addTroopsToTerritory(possessTerritory(deckArray), 2);
-        }
+      if (possessTerritory(deckArray) !== null) {
+        addTroopsToTerritory(possessTerritory(deckArray), 2);
+      }
       discardCards(data.currentPlayerId, deckArray);
     }
     // on doit enlever les cartes selectionnées du html, car elles n'existent plus dans la main du joueur
@@ -914,9 +927,11 @@ export function manualClaimCards() {
     // remettre les texte de troop bonus a +0
     document.getElementById("extra-troops-count").innerText = "+0";
   }
-  
 }
-
+/**
+* obtenir le nombre de troupes bonus pour afficher sur l'interface de cartes
+* @return {int} le nombre de cartes bonus
+*/
 function obtainBonusTroopCount() {
   const deckArray = obtainSelectedCards();
 
@@ -930,11 +945,14 @@ function obtainBonusTroopCount() {
   if (jokerCount > 1) {
     return 0;
   }
-  
+
   // si claimCards retourne null, on retourne 0 pour afficher 0
   return claimCards(deckArray) == null ? 0 : claimCards(deckArray);
 }
-
+/**
+* obtenir la sélection des 3 cartes selectionnées dans l'interface des cartes
+* @return {card[]} une liste des cartes selectionnées
+*/
 function obtainSelectedCards() {
   // obtenir les elements html des cartes qu'on veut convertir en troop
   const SelectedCard1 =
@@ -971,7 +989,7 @@ function obtainSelectedCards() {
     }
   }
   let nbOfJokers = 3 - deckArray.length;
- // maintenant on regarde pour les jokers
+  // maintenant on regarde pour les jokers
   for (let i = 0; i < playerArray.length && nbOfJokers > 0; i++) {
     if (playerArray[i].type.description == "JOKER") {
       deckArray.push(playerArray[i]);
@@ -985,7 +1003,11 @@ function addClassesToCard(card, type, name) {
   card.classList.add(type);
   card.classList.add(name);
 }
-// turns a territory html element ID into its name by adding spaces if needed
+/**
+* transform un string en string formaté pour mettre sur les cartes
+* @param {string} le nom a formaté
+* @return {string} le string formaté
+*/
 function transformName(name) {
   let newName = name.charAt(0).toUpperCase();
   for (let i = 1; i < name.length; i++) {
@@ -998,23 +1020,62 @@ function transformName(name) {
   return newName;
 }
 
+function resetAllTerritoryColors() {
+  const territories = document.getElementsByClassName("territoire");
+  for (let i = 0; i < territories.length; i++) {
+    const territory = territories[i];
+    const classList = Array.from(territory.classList);
+    classList.forEach((className) => {
+      if (className.startsWith("svg-player")) {
+        territory.classList.remove(className);
+      }
+    });
+  }
+}
+
 /*
  *  DOMContentLoaded
  */
 
 document.addEventListener("DOMContentLoaded", function () {
-  const enLigne = false;
-  const autoPlacement = true;
-  const playerCount = 6;
-  // Where does the bots start if there is any. Else set to 0 for no bots. set to 2 for one player
-  const botPlayerStart = 2;
+  resetAllTerritoryColors();
+  // Récupérer les configurations depuis sessionStorage
+  const selectedHumanPlayers =
+    JSON.parse(sessionStorage.getItem("selectedHumanPlayers")) || [];
+  const selectedBotPlayers =
+    JSON.parse(sessionStorage.getItem("selectedBotPlayers")) || [];
+  const randomAssignment =
+    sessionStorage.getItem("randomAssignment") === "true";
 
-  // Initialization des troops
-  for (let playerId = 1; playerId <= playerCount; playerId++) {
-    playersList[playerId].troops = getStartingTroops(playerCount);
-    if (botPlayerStart && playerId >= botPlayerStart) {
-      playersList[playerId].bot = new RandomBot({ playerId: playerId });
-    }
+    console.log(selectedHumanPlayers, selectedBotPlayers);
+
+  const playerCount = selectedHumanPlayers.length + selectedBotPlayers.length;
+  const botPlayerStart = selectedHumanPlayers.length + 1; // Les bots commencent après les humains
+
+  const setupPlayer = (userId, playerId, color) => {
+    const player = playersList[playerId];
+    player.dead = false;
+    player.userId = userId;
+    player.troops = getStartingTroops(playerCount);
+    player.bot = userId == null ? new RandomBot({ playerId: playerId }) : null;
+    player.color = parseInt(color);
+  };
+
+  // Initialisation des joueurs
+  for (let i = 0; i < selectedHumanPlayers.length; i++) {
+    const playerId = i + 1;
+
+    setupPlayer(
+      sessionStorage.getItem("saved-userId"),
+      playerId,
+      selectedHumanPlayers[i]
+    );
+  }
+
+  for (let i = 0; i < selectedBotPlayers.length; i++) {
+    const playerId = selectedHumanPlayers.length + i + 1;
+
+    setupPlayer(null, playerId, selectedBotPlayers[i]);
   }
 
   // Création dynamiques du side player hud
@@ -1026,68 +1087,56 @@ document.addEventListener("DOMContentLoaded", function () {
     )
   );
 
-  const [distributionFn, placementFn] = autoPlacement
+  // Utiliser random assignment si coché, sinon sélection manuelle
+  const [distributionFn, placementFn] = randomAssignment
     ? [startRandomTerritoryDistribution, startRandomTroopsPlacement]
     : [startTurnTerritoriesSelection, startTurnTroopsPlacement];
 
-  const setAsGestFn = enLigne
-    ? async () =>
-        sessionStorage.getItem("token") ? { success: false } : setAsGest()
-    : async () => {
-        return { success: false };
-      };
+  distributionFn(playerCount, () => {
+    console.log("Selection is done");
 
-  //met le player a guest avant chaque partie TEMPORAIREMENT
-  setAsGestFn()
-    .then((response) => {
-      if (response.success === true) {
-        sessionStorage.setItem("token", response.token);
-        sessionStorage.setItem("saved-username", response.name);
-        sessionStorage.setItem("saved-userId", response.id);
-        sessionStorage.setItem("guest", true);
-      } else {
-        console.log([response.error || "Erreur inconnue"]);
-      }
-    })
-    .then(() => {
-      distributionFn(playerCount, () => {
-        console.log("Selection is done");
-
-        placementFn(playerCount, () => {
-          playersList[1].userId = sessionStorage.getItem("saved-userId");
-          //create game with player info
-          initializeGame({
+    placementFn(playerCount, () => {
+      playersList[1].userId = sessionStorage.getItem("saved-userId");
+      //create game with player info
+      initializeGame({
+        players: playersList,
+        playerCount: playerCount,
+      })
+        .then((value) => {
+          playersList[7] = value["gameId"];
+          //nesting saveMove beacause it is dependent on playersList, save the move only after receiving game_id
+          //make inital move to save inital territory and troop distribution
+          console.log("Game id: " + value["gameId"]);
+          saveMove({
             players: playersList,
-            playerCount: playerCount,
-          })
-            .then((value) => {
-              playersList[7] = value["gameId"];
-              //nesting saveMove beacause it is dependent on playersList, save the move only after receiving game_id
-              //make inital move to save inital territory and troop distribution
-              console.log("Game id: " + value["gameId"]);
-              saveMove({
-                players: playersList,
-                territories: territoiresList,
-                move: { player: 0 },
-              }).catch((error) => {
-                console.log(
-                  "Error at api.php when making inital move: " + error
-                );
-              });
-            })
-            .catch((error) => {
-              console.log("Error at api.php when initializing game: " + error);
-            });
-
-          console.log("Distribution is done");
-
-          startMainLoop(playerCount, () => {
-            console.log("Main game loop is done");
+            territories: territoiresList,
+            move: { player: 0 },
+          }).catch((error) => {
+            console.log("Error at api.php when making inital move: " + error);
           });
+        })
+        .catch((error) => {
+          console.log("Error at api.php when initializing game: " + error);
         });
+
+      console.log("Distribution is done");
+
+      startMainLoop(playerCount, async () => {
+        if (gameWon) {
+          const gameWon = new GameWonPopup({
+            gameId: playersList[7],
+          });
+          await gameWon.show();
+        } else {
+          const gameOver = new GameOverPopup({
+            gameId: playersList[7],
+          });
+          await gameOver.show();
+        }
+        console.log("Main game loop is done");
       });
     });
-
+  });
   let containerPays = document.getElementById("pays-background");
   containerPays.addEventListener("click", function () {
     document
@@ -1114,6 +1163,7 @@ document.addEventListener("DOMContentLoaded", function () {
         data.botSpeed = speed;
       },
       currentSpeed: data.botSpeed,
+      gameId: playersList[7],
     });
     await popup.show();
   });

@@ -170,7 +170,7 @@ $router->get("/games/{userId}", function ($userId, $tokenPayload): JsonResponse 
     $pdo = new DatabaseConnection();
 
     $requete = $pdo->safeQuery(
-        "SELECT g.finished, g.id, g.played_time, g.player_count, g.start_date FROM Game g JOIN User_Game u ON g.id = u.game_id WHERE u.user_id=:userId;",
+        "SELECT g.finished, g.id, g.played_time, g.player_count, g.start_date FROM Game g JOIN User_Game u ON g.id = u.game_id WHERE u.user_id=:userId ORDER BY g.start_date DESC;",
         ['userId' => $userId]
     );
 
@@ -210,6 +210,11 @@ $router->get("/moves/{gameId}", function ($gameId, $tokenPayload): JsonResponse 
     $after = is_numeric($_GET["after"]) ? intval($_GET["after"]) : 0;
 
     $pdo = new DatabaseConnection();
+
+    $result =  $pdo->safeQuery("SELECT player_count FROM Game WHERE id=:gameId", ["gameId" => $gameId]);
+
+    $playerCount = $result->fetch()["player_count"];
+
     $result = $pdo->safeQuery(
         "SELECT number, move_data as moveData, player
                             FROM Move
@@ -225,7 +230,7 @@ $router->get("/moves/{gameId}", function ($gameId, $tokenPayload): JsonResponse 
         return JsonResponse::internalServerError();
     }
 
-    return JsonResponse::success(["moves" => $result->fetchAll()]);
+    return JsonResponse::success(["moves" => $result->fetchAll(), "player_count" => $playerCount]);
 }, $authMiddleware);
 
 $router->post("/saveMove", function ($tokenPayload, $bodyArray): JsonResponse {

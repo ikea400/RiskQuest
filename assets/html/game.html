@@ -82,6 +82,18 @@
       preload="auto"
       src="./assets/sounds/go-go-go-version-1-northern-british-soldier.wav"
     ></audio>
+    <audio
+      id="shuffleCard-sound"
+      preload="auto"
+      src="./assets/sounds/shuffle.wav"
+    ></audio>
+    <audio
+      id="drawCard-sound"
+      preload="auto"
+      src="./assets/sounds/draw-card.wav"
+    ></audio>
+
+
 
     <div id="top-buttons-container">
       <div id="settings-button" class="top-button">
@@ -379,18 +391,18 @@
               alt="profile"
             />
             <div id="turn-hud-info">
-              <div id="turn-hud-who-name">Your turns</div>
+              <div id="turn-hud-who-name">Your turn</div>
               <div id="turn-hud-phase-bars">
                 <div id="turn-hud-draft-bar" class="turn-hud-phase-bar"></div>
                 <div
                   id="turn-hud-attack-bar"
-                  class="turn-hud-phase-bar background-player1"
+                  class="turn-hud-phase-bar"
                 ></div>
                 <div id="turn-hud-fortify-bar" class="turn-hud-phase-bar"></div>
               </div>
               <div id="turn-hud-phase-name">Attack</div>
             </div>
-            <div id="turn-hud-action" class="background-player1">
+            <div id="turn-hud-action">
               <img
                 id="turn-hub-action-img"
                 src="/riskquest/assets/images/chevrons-right-solid.svg"
@@ -399,7 +411,7 @@
               <div id="turn-hub-action-troops-count" hidden>10</div>
             </div>
           </div>
-          <div id="turn-hud-name" class="background-player1">Some name</div>
+          <div id="turn-hud-name">Some name</div>
         </div>
       </footer>
     </div>
