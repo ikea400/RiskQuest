@@ -727,6 +727,7 @@ export class GameOverPopup extends PopupBase {
       console.log("Game reset");
     });
     document.getElementById("menu-button").addEventListener("click", () => {
+      window.location.replace("/riskquest/");
       console.log("Back to menu");
     });
 
@@ -776,6 +777,7 @@ export class GameWonPopup extends PopupBase {
       console.log("Game reset");
     });
     document.getElementById("menu-button").addEventListener("click", () => {
+      window.location.replace("/riskquest/");
       console.log("Back to menu");
     });
 
