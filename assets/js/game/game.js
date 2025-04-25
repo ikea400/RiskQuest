@@ -46,16 +46,16 @@ import { CountPopup, AttackPopup, SettingsPopup, CardPopup, GameOverPopup, GameW
 
 import RandomBot from "../bot/bot.js";
 
-// window.addEventListener("pageshow", function (event) {
-//   // S'assurer qu'un token et username est disponible sinon redirection vers la page principale
-//   if (
-//     !sessionStorage.getItem("token") ||
-//     !sessionStorage.getItem("saved-username") ||
-//     !sessionStorage.getItem("saved-userId")
-//   ) {
-//     window.location.replace("/riskquest/login");
-//   }
-// });
+window.addEventListener("pageshow", function (event) {
+  // S'assurer qu'un token et username est disponible sinon redirection vers la page principale
+  if (
+    !sessionStorage.getItem("token") ||
+    !sessionStorage.getItem("saved-username") ||
+    !sessionStorage.getItem("saved-userId")
+  ) {
+    window.location.replace("/riskquest/login");
+  }
+});
 
 let gameFinished = false;
 let gameWon = false;
@@ -263,7 +263,7 @@ function startDraftPhase(playerCount, callback) {
   addTroops(data.currentPlayerId, newTroops);
 
   //on check pour auto claim.
-  autoClaim()
+  autoClaim();
 
   const nextPhase = () => {
     startAttackPhase(playerCount, callback);
@@ -888,20 +888,21 @@ function addOnClickToCard(card) {
 }
 
 export function manualClaimCards() {
-
-  const selectedCard1 = document.getElementById("selected-card-1").firstElementChild;
-  const selectedCard2 = document.getElementById("selected-card-2").firstElementChild;
-  const selectedCard3 = document.getElementById("selected-card-3").firstElementChild;
+  const selectedCard1 =
+    document.getElementById("selected-card-1").firstElementChild;
+  const selectedCard2 =
+    document.getElementById("selected-card-2").firstElementChild;
+  const selectedCard3 =
+    document.getElementById("selected-card-3").firstElementChild;
   // si ils existent 3 cartes selectionnées, on calcule le bonus de troop et l'ajoute pour le prochain tour
   if (selectedCard1 && selectedCard2 && selectedCard3) {
-
     const deckArray = obtainSelectedCards();
     const bonus = obtainBonusTroopCount();
     if (bonus != 0) {
       addTroops(data.currentPlayerId, bonus);
-        if (possessTerritory(deckArray) !== null) {
-          addTroopsToTerritory(possessTerritory(deckArray), 2);
-        }
+      if (possessTerritory(deckArray) !== null) {
+        addTroopsToTerritory(possessTerritory(deckArray), 2);
+      }
       discardCards(data.currentPlayerId, deckArray);
     }
     // on doit enlever les cartes selectionnées du html, car elles n'existent plus dans la main du joueur
@@ -911,7 +912,6 @@ export function manualClaimCards() {
     // remettre les texte de troop bonus a +0
     document.getElementById("extra-troops-count").innerText = "+0";
   }
-  
 }
 
 function obtainBonusTroopCount() {
@@ -927,7 +927,7 @@ function obtainBonusTroopCount() {
   if (jokerCount > 1) {
     return 0;
   }
-  
+
   // si claimCards retourne null, on retourne 0 pour afficher 0
   return claimCards(deckArray) == null ? 0 : claimCards(deckArray);
 }
@@ -968,7 +968,7 @@ function obtainSelectedCards() {
     }
   }
   let nbOfJokers = 3 - deckArray.length;
- // maintenant on regarde pour les jokers
+  // maintenant on regarde pour les jokers
   for (let i = 0; i < playerArray.length && nbOfJokers > 0; i++) {
     if (playerArray[i].type.description == "JOKER") {
       deckArray.push(playerArray[i]);
@@ -1000,18 +1000,41 @@ function transformName(name) {
  */
 
 document.addEventListener("DOMContentLoaded", function () {
-  const enLigne = false;
-  const autoPlacement = true;
-  const playerCount = 6;
-  // Where does the bots start if there is any. Else set to 0 for no bots. set to 2 for one player
-  const botPlayerStart = 2;
+  // Récupérer les configurations depuis sessionStorage
+  const selectedHumanPlayers =
+    JSON.parse(sessionStorage.getItem("selectedHumanPlayers")) || [];
+  const selectedBotPlayers =
+    JSON.parse(sessionStorage.getItem("selectedBotPlayers")) || [];
+  const randomAssignment =
+    sessionStorage.getItem("randomAssignment") === "true";
 
-  // Initialization des troops
-  for (let playerId = 1; playerId <= playerCount; playerId++) {
-    playersList[playerId].troops = getStartingTroops(playerCount);
-    if (botPlayerStart && playerId >= botPlayerStart) {
-      playersList[playerId].bot = new RandomBot({ playerId: playerId });
-    }
+  const playerCount = selectedHumanPlayers.length + selectedBotPlayers.length;
+  const botPlayerStart = selectedHumanPlayers.length + 1; // Les bots commencent après les humains
+
+  const setupPlayer = (userId, playerId, color) => {
+    const player = playersList[playerId];
+    player.dead = false;
+    player.userId = userId;
+    player.troops = getStartingTroops(playerCount);
+    player.bot = userId == null ? new RandomBot({ playerId: playerId }) : null;
+    player.color = parseInt(color);
+  };
+
+  // Initialisation des joueurs
+  for (let i = 0; i < selectedHumanPlayers.length; i++) {
+    const playerId = i + 1;
+
+    setupPlayer(
+      sessionStorage.getItem("saved-userId"),
+      playerId,
+      selectedHumanPlayers[i]
+    );
+  }
+
+  for (let i = 0; i < selectedBotPlayers.length; i++) {
+    const playerId = selectedHumanPlayers.length + i + 1;
+
+    setupPlayer(null, playerId, selectedBotPlayers[i]);
   }
 
   // Création dynamiques du side player hud
@@ -1023,32 +1046,13 @@ document.addEventListener("DOMContentLoaded", function () {
     )
   );
 
-  const [distributionFn, placementFn] = autoPlacement
+  // Utiliser random assignment si coché, sinon sélection manuelle
+  const [distributionFn, placementFn] = randomAssignment
     ? [startRandomTerritoryDistribution, startRandomTroopsPlacement]
     : [startTurnTerritoriesSelection, startTurnTroopsPlacement];
 
-  const setAsGestFn = enLigne
-    ? async () =>
-        sessionStorage.getItem("token") ? { success: false } : setAsGest()
-    : async () => {
-        return { success: false };
-      };
-
-  //met le player a guest avant chaque partie TEMPORAIREMENT
-  setAsGestFn()
-    .then((response) => {
-      if (response.success === true) {
-        sessionStorage.setItem("token", response.token);
-        sessionStorage.setItem("saved-username", response.name);
-        sessionStorage.setItem("saved-userId", response.id);
-        sessionStorage.setItem("guest", true);
-      } else {
-        console.log([response.error || "Erreur inconnue"]);
-      }
-    })
-    .then(() => {
-      distributionFn(playerCount, () => {
-        console.log("Selection is done");
+  distributionFn(playerCount, () => {
+    console.log("Selection is done");
 
         placementFn(playerCount, () => {
           playersList[1].userId = sessionStorage.getItem("saved-userId");
@@ -1099,8 +1103,6 @@ document.addEventListener("DOMContentLoaded", function () {
           });
         });
       });
-    });
-
   let containerPays = document.getElementById("pays-background");
   containerPays.addEventListener("click", function () {
     document
@@ -1131,9 +1133,4 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     await popup.show();
   });
-
-  new ResizeObserver(updatePastillesPosition).observe(document.body);
-  window.addEventListener("resize", updatePastillesPosition);
-  // établir le popup des cartes quand on clique sur l'image des cartes
-  document.getElementById("cards-img").addEventListener("click", cardHandler);
 });

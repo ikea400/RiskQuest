@@ -1,3 +1,14 @@
+window.addEventListener("pageshow", function (event) {
+  // S'assurer qu'un token et username est disponible sinon redirection vers la page principale
+  if (
+    !sessionStorage.getItem("token") ||
+    !sessionStorage.getItem("saved-username") ||
+    !sessionStorage.getItem("saved-userId")
+  ) {
+    window.location.replace("/riskquest/login");
+  }
+});
+
 document.addEventListener("DOMContentLoaded", function () {
   const humanPastilles = document.querySelectorAll("#human-players .pastille");
   const botPastilles = document.querySelectorAll("#bot-players .pastille");
@@ -122,8 +133,13 @@ document.addEventListener("DOMContentLoaded", function () {
   // Gère le clic sur le bouton "jouer"
   playButton.addEventListener("click", function () {
     if (validateGameSetup()) {
-      const randomAssignment =
-        document.getElementById("random-assignment").checked;
+      const randomAssignment = document.getElementById("random-assignment").checked;
+      
+      // Stocker les configurations dans sessionStorage pour les récupérer dans la page de jeu
+      sessionStorage.setItem("selectedHumanPlayers", JSON.stringify(selectedPlayers.human));
+      sessionStorage.setItem("selectedBotPlayers", JSON.stringify(selectedPlayers.bot));
+      sessionStorage.setItem("randomAssignment", randomAssignment);
+      
       window.location.href = "game"; // Redirige vers le jeu
     }
   });
