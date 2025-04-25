@@ -919,7 +919,10 @@ export function manualClaimCards() {
     document.getElementById("extra-troops-count").innerText = "+0";
   }
 }
-
+/**
+* obtenir le nombre de troupes bonus pour afficher sur l'interface de cartes
+* @return {int} le nombre de cartes bonus
+*/
 function obtainBonusTroopCount() {
   const deckArray = obtainSelectedCards();
 
@@ -937,7 +940,10 @@ function obtainBonusTroopCount() {
   // si claimCards retourne null, on retourne 0 pour afficher 0
   return claimCards(deckArray) == null ? 0 : claimCards(deckArray);
 }
-
+/**
+* obtenir la sélection des 3 cartes selectionnées dans l'interface des cartes
+* @return {card[]} une liste des cartes selectionnées
+*/
 function obtainSelectedCards() {
   // obtenir les elements html des cartes qu'on veut convertir en troop
   const SelectedCard1 =
@@ -988,7 +994,11 @@ function addClassesToCard(card, type, name) {
   card.classList.add(type);
   card.classList.add(name);
 }
-// turns a territory html element ID into its name by adding spaces if needed
+/**
+* transform un string en string formaté pour mettre sur les cartes
+* @param {string} le nom a formaté
+* @return {string} le string formaté
+*/
 function transformName(name) {
   let newName = name.charAt(0).toUpperCase();
   for (let i = 1; i < name.length; i++) {
