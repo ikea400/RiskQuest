@@ -764,7 +764,9 @@ function startMainLoop(playerCount, callback) {
   // Demarage de la boucle
   handler();
 }
-
+/**
+* generer l'interface des cartes
+*/
 function cardHandler() {
   if (document.getElementById("popup-cards-container") == null) {
     const popup = new CardPopup({});
@@ -774,7 +776,10 @@ function cardHandler() {
     generateFullCardImages();
   }
 }
-
+/**
+* générer les cartes html pour afficher dans l'interface des cartes
+* selon les cartes que possède le joueur et les ajoutes au DOM
+*/
 function generateFullCardImages() {
   let location = document.getElementById("popup-cards-remaining-cards");
   let nbDeCartesTotal = playersList[data.currentPlayerId].cards.length;
@@ -859,7 +864,9 @@ function generateFullCardImages() {
     location.appendChild(cardWrapper);
   }
 }
-// ajouter la fonctionalité de clicker sur une carte pour la selectionner
+/*
+* ajouter la fonctionalité de clicker sur une carte pour la selectionner
+*/
 function addOnClickToCard(card) {
   let deck = document.getElementById("popup-cards-remaining-cards");
   let bonusTroopsCountText = document.getElementById("extra-troops-count");
@@ -892,7 +899,9 @@ function addOnClickToCard(card) {
     bonusTroopsCountText.innerText = "+" + 0;
   }
 }
-
+/**
+* reclamer manuellement 3 cartes selectionnées
+*/
 export function manualClaimCards() {
   const selectedCard1 =
     document.getElementById("selected-card-1").firstElementChild;
