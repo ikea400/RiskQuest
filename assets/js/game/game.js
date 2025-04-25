@@ -990,11 +990,25 @@ function transformName(name) {
   return newName;
 }
 
+function resetAllTerritoryColors() {
+  const territories = document.getElementsByClassName("territoire");
+  for (let i = 0; i < territories.length; i++) {
+    const territory = territories[i];
+    const classList = Array.from(territory.classList);
+    classList.forEach(className => {
+      if (className.startsWith('svg-player')) {
+        territory.classList.remove(className);
+      }
+    });
+  }
+}
+
 /*
  *  DOMContentLoaded
  */
 
 document.addEventListener("DOMContentLoaded", function () {
+  resetAllTerritoryColors();
   // Récupérer les configurations depuis sessionStorage
   const selectedHumanPlayers =
     JSON.parse(sessionStorage.getItem("selectedHumanPlayers")) || [];
