@@ -539,6 +539,10 @@ export class SettingsPopup extends PopupBase {
             />
           </div>
           <div class="popup-settings-line"></div>
+          <div class="id-container">
+                <div class="id-label">YOUR GAME ID:</div>
+                <div class="id-value">${this.params.gameId}</div>
+            </div>
         </div>`;
 
     const sliders = document.getElementsByClassName("popup-settings-slider");
@@ -596,6 +600,7 @@ export class SettingsPopup extends PopupBase {
     this.params.volumeMusic ??= 0.5;
     this.params.volumeSFX ??= 0.5;
     this.params.currentSpeed ??= EBotSpeed.SLOW;
+    this.params.gameId ??= "Unknown Game ID";
   }
 }
 
@@ -684,5 +689,106 @@ export class CardPopup extends PopupBase {
     this.backgroundDiv.classList.add("background-popup-cards");
     this.backgroundDiv.classList.remove("background-popup-center");
     this.backgroundDiv.id = "popup-cards-container";
+  }
+
+}
+
+export class GameOverPopup extends PopupBase {
+  constructor(params = {}){
+    super(params);
+    this.init();
+  }
+
+  init(){
+    this.#applyDefault();
+    super.init();
+    
+    
+    this.popupDiv.innerHTML = `
+      <div class="popup-over-container">
+        <div class="game-over-popup">
+            <h1 class="game-over-title">GAME OVER</h1>
+            
+            <div class="id-container">
+                <div class="id-label">YOUR GAME ID:</div>
+                <div class="id-value">${this.params.gameId}</div>
+            </div>
+            
+            <div class="buttons-container">
+                <button class="button" id="retry-button">Play Again</button>
+                <button class="button" id="menu-button">Back to Menu</button>
+            </div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById("retry-button").addEventListener("click", () => {
+      location.reload();
+      console.log("Game reset");
+    });
+    document.getElementById("menu-button").addEventListener("click", () => {
+      window.location.replace("/riskquest/");
+      console.log("Back to menu");
+    });
+
+    this.backgroundDiv.classList.add("background-popup-game-over");
+    this.backgroundDiv.classList.remove("background-popup-center");
+    this.backgroundDiv.id = "game-over-popup-container";
+  }
+  #applyDefault() {
+    this.params.id ??= "game-over-popup";
+    this.params.bottom ??= true;
+    this.params.cancel ??= true;
+    this.params.gameId ??= "Unknown Game ID";
+  }
+}
+
+export class GameWonPopup extends PopupBase {
+  constructor(params = {}){
+    super(params);
+    this.init();
+  }
+
+  init(){
+    this.#applyDefault();
+    super.init();
+    
+    
+    this.popupDiv.innerHTML = `
+      <div class="popup-over-container">
+        <div class="game-over-popup">
+            <h1 class="game-won-title">YOU WON</h1>
+            
+            <div class="id-container">
+                <div class="id-label">YOUR GAME ID:</div>
+                <div class="id-value">${this.params.gameId}</div>
+            </div>
+            
+            <div class="buttons-container">
+                <button class="button" id="retry-button">Play Again</button>
+                <button class="button" id="menu-button">Back to Menu</button>
+            </div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById("retry-button").addEventListener("click", () => {
+      location.reload();
+      console.log("Game reset");
+    });
+    document.getElementById("menu-button").addEventListener("click", () => {
+      window.location.replace("/riskquest/");
+      console.log("Back to menu");
+    });
+
+    this.backgroundDiv.classList.add("background-popup-game-won");
+    this.backgroundDiv.classList.remove("background-popup-center");
+    this.backgroundDiv.id = "game-won-popup-container";
+  }
+  #applyDefault() {
+    this.params.id ??= "game-won-popup";
+    this.params.bottom ??= true;
+    this.params.cancel ??= true;
+    this.params.gameId ??= "Unknown Game ID";
   }
 }

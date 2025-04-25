@@ -42,7 +42,7 @@ import {
   updatePastilleFakeTroops,
 } from "./display.js";
 import { initializeGame, saveMove, setAsGest } from "../api/gameDataService.js";
-import { CountPopup, AttackPopup, SettingsPopup, CardPopup } from "../popup.js";
+import { CountPopup, AttackPopup, SettingsPopup, CardPopup, GameOverPopup, GameWonPopup } from "../popup.js";
 
 import RandomBot from "../bot/bot.js";
 
@@ -58,6 +58,7 @@ window.addEventListener("pageshow", function (event) {
 });
 
 let gameFinished = false;
+let gameWon = false;
 /**
  * Démarre la phase de sélection des territoires pour les joueurs.
  * @param {number} playerCount - Nombre total de joueurs participant au jeu.
@@ -722,6 +723,10 @@ function startOneRound(playerCount, callback) {
 
       if (nextPlayerId === data.currentPlayerId) {
         gameFinished = true;
+        gameWon = true;
+      }
+      else if(playersList[1].dead){
+        gameFinished = true;
       } else {
         setCurrentPlayer(nextPlayerId);
       }
@@ -1063,42 +1068,69 @@ document.addEventListener("DOMContentLoaded", function () {
   distributionFn(playerCount, () => {
     console.log("Selection is done");
 
-    placementFn(playerCount, () => {
-      playersList[1].userId = sessionStorage.getItem("saved-userId");
-      //create game with player info
-      initializeGame({
-        players: playersList,
-        playerCount: playerCount,
-      })
-        .then((value) => {
-          playersList[7] = value["gameId"];
-          //nesting saveMove beacause it is dependent on playersList, save the move only after receiving game_id
-          //make inital move to save inital territory and troop distribution
-          console.log("Game id: " + value["gameId"]);
-          saveMove({
+        placementFn(playerCount, () => {
+          playersList[1].userId = sessionStorage.getItem("saved-userId");
+          //create game with player info
+          initializeGame({
             players: playersList,
-            territories: territoiresList,
-            move: { player: 0 },
-          }).catch((error) => {
-            console.log("Error at api.php when making inital move: " + error);
+            playerCount: playerCount,
+          })
+            .then((value) => {
+              playersList[7] = value["gameId"];
+              //nesting saveMove beacause it is dependent on playersList, save the move only after receiving game_id
+              //make inital move to save inital territory and troop distribution
+              console.log("Game id: " + value["gameId"]);
+              saveMove({
+                players: playersList,
+                territories: territoiresList,
+                move: { player: 0 },
+              }).catch((error) => {
+                console.log(
+                  "Error at api.php when making inital move: " + error
+                );
+              });
+              
+            })
+            .catch((error) => {
+              console.log("Error at api.php when initializing game: " + error);
+            });
+
+          console.log("Distribution is done");
+          
+          startMainLoop(playerCount, async () => {
+            if (gameWon){
+
+              const gameWon = new GameWonPopup({
+                gameId: playersList[7],
+              });
+              await gameWon.show();
+
+            }else{
+
+              const gameOver = new GameOverPopup({
+                gameId: playersList[7],
+              });
+              await gameOver.show();
+              
+            }
+            console.log("Main game loop is done");
           });
-        })
-        .catch((error) => {
-          console.log("Error at api.php when initializing game: " + error);
         });
-
-      console.log("Distribution is done");
-
-      startMainLoop(playerCount, () => {
-        console.log("Main game loop is done");
       });
-    });
-  });
+  let containerPays = document.getElementById("pays-background");
+  containerPays.addEventListener("click", function () {
+    document
+      .getElementById("sea-music")
+      .play()
+      .catch((error) => {
+        console.error(error);
+      });
 
-  new ResizeObserver(updatePastillesPosition).observe(document.body);
-  window.addEventListener("resize", updatePastillesPosition);
-  // établir le popup des cartes quand on clique sur l'image des cartes
-  document.getElementById("cards-img").addEventListener("click", cardHandler);
+    if (data.currentPhase != EPhases.DRAFT) {
+      setSelectedTerritoire(null);
+      setAttackableTerritoires([]);
+    }
+  });
 
   let settingsButton = document.getElementById("settings-button");
   settingsButton.addEventListener("click", async () => {
@@ -1111,6 +1143,7 @@ document.addEventListener("DOMContentLoaded", function () {
         data.botSpeed = speed;
       },
       currentSpeed: data.botSpeed,
+      gameId: playersList[7],
     });
     await popup.show();
   });
