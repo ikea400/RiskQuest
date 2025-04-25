@@ -88,7 +88,7 @@ function createPastille(territoireId, playerId) {
 export function changeBackgroundPlayer(element, oldPlayerId, newPlayerId) {
   const oldColor = playersList[oldPlayerId].color;
   const newColor = playersList[newPlayerId].color;
-  
+
   element.classList.remove(`background-player${oldColor}`);
   element.classList.add(`background-player${newColor}`);
 }
@@ -105,7 +105,7 @@ export function updateTerritoryOwer(territoireId, playerId) {
   const playerColor = playersList[playerId].color;
 
   // Supprime l'ancienne classe SVG du joueur précédent (le cas échéant)
-  if (territoire.playerId){
+  if (territoire.playerId) {
     const oldPlayerColor = playersList[territoire.playerId].color;
     territoireSvg.classList.remove(`svg-player${oldPlayerColor}`);
   }
@@ -196,7 +196,7 @@ export function initializePlayersHud(playerCount) {
     const player = playersList[playerId];
     const territoireCount = countPlayerTerritoires(playerId);
     const troopsCount = countPlayerTroops(playerId);
-    
+
     hudContent += `<div class="side-player">
         <div class="background-player${player.color} side-player-color"></div>
         <div class="side-player-info" id="side-player-info-${playerId}">
@@ -257,16 +257,18 @@ export function updateCurrentPhase(phase) {
     );
   }
 
+  const color = playersList[data.currentPlayerId].color;
+
   // Retire la classe de l'élément de la phase actuelle
   const currentElement = getPhaseElement(data.currentPhase);
   if (currentElement) {
-    currentElement.classList.remove(`background-player${data.currentPlayerId}`);
+    currentElement.classList.remove(`background-player${color}`);
   }
 
   // Ajoute/retire la classe pour le nouvel élément de phase
   const newElement = getPhaseElement(phase);
   if (newElement) {
-    newElement.classList.add(`background-player${data.currentPlayerId}`);
+    newElement.classList.add(`background-player${color}`);
   }
 
   // Met à jour le nom de la phase dans l'interface utilisateur
@@ -288,7 +290,7 @@ export function updateCurrentPhase(phase) {
     data.currentPhase === EPhases.PLACING
   ) {
     const turnHubActionImg = document.getElementById("turn-hub-action-img");
-    turnHubActionImg.src = "./assets/images/chevrons-right-solid.svg"; 
+    turnHubActionImg.src = "./assets/images/chevrons-right-solid.svg";
     const turnHubActionTroopsCount = document.getElementById(
       "turn-hub-action-troops-count"
     );
