@@ -42,7 +42,7 @@ import {
   updatePastilleFakeTroops,
 } from "./display.js";
 import { initializeGame, saveMove, setAsGest } from "../api/gameDataService.js";
-import { CountPopup, AttackPopup, SettingsPopup, CardPopup } from "../popup.js";
+import { CountPopup, AttackPopup, SettingsPopup, CardPopup, GameOverPopup, GameWonPopup } from "../popup.js";
 
 import RandomBot from "../bot/bot.js";
 
@@ -58,6 +58,7 @@ import RandomBot from "../bot/bot.js";
 // });
 
 let gameFinished = false;
+let gameWon = false;
 /**
  * Démarre la phase de sélection des territoires pour les joueurs.
  * @param {number} playerCount - Nombre total de joueurs participant au jeu.
@@ -722,6 +723,10 @@ function startOneRound(playerCount, callback) {
 
       if (nextPlayerId === data.currentPlayerId) {
         gameFinished = true;
+        gameWon = true;
+      }
+      else if(playersList[1].dead){
+        gameFinished = true;
       } else {
         setCurrentPlayer(nextPlayerId);
       }
@@ -1066,14 +1071,30 @@ document.addEventListener("DOMContentLoaded", function () {
                   "Error at api.php when making inital move: " + error
                 );
               });
+              
             })
             .catch((error) => {
               console.log("Error at api.php when initializing game: " + error);
             });
 
           console.log("Distribution is done");
+          
+          startMainLoop(playerCount, async () => {
+            if (gameWon){
 
-          startMainLoop(playerCount, () => {
+              const gameWon = new GameWonPopup({
+                gameId: playersList[7],
+              });
+              await gameWon.show();
+
+            }else{
+
+              const gameOver = new GameOverPopup({
+                gameId: playersList[7],
+              });
+              await gameOver.show();
+              
+            }
             console.log("Main game loop is done");
           });
         });
@@ -1106,6 +1127,7 @@ document.addEventListener("DOMContentLoaded", function () {
         data.botSpeed = speed;
       },
       currentSpeed: data.botSpeed,
+      gameId: playersList[7],
     });
     await popup.show();
   });
