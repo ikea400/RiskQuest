@@ -49,8 +49,6 @@ function createPastille(territoireId, playerId) {
   const territoire = document.getElementById(territoireId);
   const playerColor = playersList[playerId].color;
 
-  territoire.classList.add(`svg-player${playerId}`);
-
   territoire.classList.add(`svg-player${playerColor}`);
 
   // Obtient le rectangle délimitant le territoire
@@ -270,6 +268,8 @@ export function updateCurrentPhase(phase) {
   if (newElement) {
     newElement.classList.add(`background-player${color}`);
   }
+
+  console.log(data.currentPlayerId, color, currentElement, newElement);
 
   // Met à jour le nom de la phase dans l'interface utilisateur
   const turnHudPhaseName = document.getElementById("turn-hud-phase-name");

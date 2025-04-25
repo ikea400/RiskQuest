@@ -42,7 +42,14 @@ import {
   updatePastilleFakeTroops,
 } from "./display.js";
 import { initializeGame, saveMove, setAsGest } from "../api/gameDataService.js";
-import { CountPopup, AttackPopup, SettingsPopup, CardPopup, GameOverPopup, GameWonPopup } from "../popup.js";
+import {
+  CountPopup,
+  AttackPopup,
+  SettingsPopup,
+  CardPopup,
+  GameOverPopup,
+  GameWonPopup,
+} from "../popup.js";
 
 import RandomBot from "../bot/bot.js";
 
@@ -724,8 +731,7 @@ function startOneRound(playerCount, callback) {
       if (nextPlayerId === data.currentPlayerId) {
         gameFinished = true;
         gameWon = true;
-      }
-      else if(playersList[1].dead){
+      } else if (playersList[1].dead) {
         gameFinished = true;
       } else {
         setCurrentPlayer(nextPlayerId);
@@ -1000,8 +1006,8 @@ function resetAllTerritoryColors() {
   for (let i = 0; i < territories.length; i++) {
     const territory = territories[i];
     const classList = Array.from(territory.classList);
-    classList.forEach(className => {
-      if (className.startsWith('svg-player')) {
+    classList.forEach((className) => {
+      if (className.startsWith("svg-player")) {
         territory.classList.remove(className);
       }
     });
@@ -1021,6 +1027,8 @@ document.addEventListener("DOMContentLoaded", function () {
     JSON.parse(sessionStorage.getItem("selectedBotPlayers")) || [];
   const randomAssignment =
     sessionStorage.getItem("randomAssignment") === "true";
+
+    console.log(selectedHumanPlayers, selectedBotPlayers);
 
   const playerCount = selectedHumanPlayers.length + selectedBotPlayers.length;
   const botPlayerStart = selectedHumanPlayers.length + 1; // Les bots commencent après les humains
@@ -1068,55 +1076,48 @@ document.addEventListener("DOMContentLoaded", function () {
   distributionFn(playerCount, () => {
     console.log("Selection is done");
 
-        placementFn(playerCount, () => {
-          playersList[1].userId = sessionStorage.getItem("saved-userId");
-          //create game with player info
-          initializeGame({
+    placementFn(playerCount, () => {
+      playersList[1].userId = sessionStorage.getItem("saved-userId");
+      //create game with player info
+      initializeGame({
+        players: playersList,
+        playerCount: playerCount,
+      })
+        .then((value) => {
+          playersList[7] = value["gameId"];
+          //nesting saveMove beacause it is dependent on playersList, save the move only after receiving game_id
+          //make inital move to save inital territory and troop distribution
+          console.log("Game id: " + value["gameId"]);
+          saveMove({
             players: playersList,
-            playerCount: playerCount,
-          })
-            .then((value) => {
-              playersList[7] = value["gameId"];
-              //nesting saveMove beacause it is dependent on playersList, save the move only after receiving game_id
-              //make inital move to save inital territory and troop distribution
-              console.log("Game id: " + value["gameId"]);
-              saveMove({
-                players: playersList,
-                territories: territoiresList,
-                move: { player: 0 },
-              }).catch((error) => {
-                console.log(
-                  "Error at api.php when making inital move: " + error
-                );
-              });
-              
-            })
-            .catch((error) => {
-              console.log("Error at api.php when initializing game: " + error);
-            });
-
-          console.log("Distribution is done");
-          
-          startMainLoop(playerCount, async () => {
-            if (gameWon){
-
-              const gameWon = new GameWonPopup({
-                gameId: playersList[7],
-              });
-              await gameWon.show();
-
-            }else{
-
-              const gameOver = new GameOverPopup({
-                gameId: playersList[7],
-              });
-              await gameOver.show();
-              
-            }
-            console.log("Main game loop is done");
+            territories: territoiresList,
+            move: { player: 0 },
+          }).catch((error) => {
+            console.log("Error at api.php when making inital move: " + error);
           });
+        })
+        .catch((error) => {
+          console.log("Error at api.php when initializing game: " + error);
         });
+
+      console.log("Distribution is done");
+
+      startMainLoop(playerCount, async () => {
+        if (gameWon) {
+          const gameWon = new GameWonPopup({
+            gameId: playersList[7],
+          });
+          await gameWon.show();
+        } else {
+          const gameOver = new GameOverPopup({
+            gameId: playersList[7],
+          });
+          await gameOver.show();
+        }
+        console.log("Main game loop is done");
       });
+    });
+  });
   let containerPays = document.getElementById("pays-background");
   containerPays.addEventListener("click", function () {
     document
@@ -1147,4 +1148,9 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     await popup.show();
   });
+
+  new ResizeObserver(updatePastillesPosition).observe(document.body);
+  window.addEventListener("resize", updatePastillesPosition);
+  // établir le popup des cartes quand on clique sur l'image des cartes
+  document.getElementById("cards-img").addEventListener("click", cardHandler);
 });
